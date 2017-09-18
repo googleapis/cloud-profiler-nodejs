@@ -25,6 +25,7 @@
     "protobufjs": "~5.0.1"
   },
   "devDependencies": {
+    "@types/node": "^8.0.30",
     "clang-format": "^1.0.33"
   }
 }
