@@ -19,12 +19,14 @@ export interface CpuProfileNode {
 export interface AllocationProfileNode {
   name: string;
   scriptName: string;
-  line: number;
+  scriptId: number;
+  lineNumber: number;
+  columnNumber: number;
   allocations: Array<Allocation>;
   children: Array<AllocationProfileNode>;
 }
 
 export interface Allocation {
-  count: number;
   size: number;
+  count: number;
 }

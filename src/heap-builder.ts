@@ -69,7 +69,7 @@ function getFunction(stackNode: AllocationProfileNode) {
 
 function getLine(stackNode: AllocationProfileNode) {
   return new perftools.profiles.Line(
-      {functionId : (getFunction(stackNode) as perftools.profiles.Function).id, line : stackNode.line});
+      {functionId : (getFunction(stackNode) as perftools.profiles.Function).id, line : stackNode.lineNumber});
 }
 
 function getLocation(stackNode: AllocationProfileNode) {
