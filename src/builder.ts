@@ -105,7 +105,8 @@ function serializeNode(node: CpuProfileNode, stack: Stack) {
   stack.shift();
 }
 
-export function serialize(prof: CpuProfile, startTimeNanos: number) {
+export function serialize(prof: CpuProfile, startTimeNanos: number):
+perftools.profiles.IProfile {
   samples = [];
   locations = [];
   functions = [];
@@ -113,7 +114,7 @@ export function serialize(prof: CpuProfile, startTimeNanos: number) {
   functionMap = new Map();
   strings = strings.slice(0, 5);
   serializeNode(prof.topDownRoot, []);
-  let profile = new perftools.profiles.Profile({
+  return {
     sampleType: [timeValue, sampleValue],
     sample: samples,
     // mapping: mappings,
@@ -127,6 +128,5 @@ export function serialize(prof: CpuProfile, startTimeNanos: number) {
 
     periodType: timeValue,
     period: SAMPLE_INTERVAL
-  });
-  return profile;
+  };
 }
