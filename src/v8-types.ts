@@ -15,3 +15,16 @@ export interface CpuProfileNode {
   hitCount: number;
   children: Array<CpuProfileNode>;
 }
+
+export interface AllocationProfileNode {
+  name: string;
+  scriptName: string;
+  line: number;
+  allocations: Array<Allocation>;
+  children: Array<AllocationProfileNode>;
+}
+
+export interface Allocation {
+  count: number;
+  size: number;
+}
