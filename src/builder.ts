@@ -17,7 +17,7 @@
 'use strict';
 
 import {CpuProfile, CpuProfileNode} from './v8-types';
-import {perftools} from '../build/src/profile.d';
+import {perftools} from './profile';
 
 // TODO: CpuProfiler::sample_interval_ can be customized.. should query that
 const SAMPLE_INTERVAL = 1000;

@@ -13,7 +13,7 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run check",
-    "proto": "mkdir -p build/src && pbjs -t static-module -w commonjs -o build/src/profile.js third_party/proto/profile.proto && pbts -o build/src/profile.d.ts build/src/profile.js"
+    "proto": "mkdir -p build/src && pbjs -t static-module -w commonjs -o src/profile.js third_party/proto/profile.proto && pbts -o src/profile.d.ts src/profile.js && cp src/profile.js build/src"
   },
   "author": {
     "name": "Google Inc."

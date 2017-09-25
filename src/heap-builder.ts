@@ -17,7 +17,7 @@
 'use strict';
 
 import {AllocationProfileNode} from './v8-types';
-import {perftools} from '../build/src/profile.d';
+import {perftools} from './profile';
 
 // A stack of function UIDs.
 // TODO: duplicated in builder.ts

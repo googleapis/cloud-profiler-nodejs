@@ -20,7 +20,7 @@ import * as util from 'util';
 import * as zlib from 'zlib';
 
 import {serialize} from './builder';
-import {perftools} from '../build/src/profile.d';
+import {perftools} from './profile';
 
 type HrTimeTuple = [number, number];
 

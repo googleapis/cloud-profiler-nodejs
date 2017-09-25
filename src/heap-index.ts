@@ -20,7 +20,7 @@ import * as zlib from 'zlib';
 
 import {AllocationProfileNode} from './v8-types';
 import {serialize} from './heap-builder';
-import {perftools} from '../build/src/profile.d';
+import {perftools} from './profile';
 
 const profiler = require('bindings')('sampling_heap_profiler');
 const stats = require('bindings')('statistics');
