@@ -1,8 +1,8 @@
 {
-  "name": "google-cloud-profile",
+  "name": "@google-cloud/profiler",
   "version": "0.0.1",
   "description": "Adds support for Google Cloud Profiler to node.js applications",
-  "main": "lib/index.js",
+  "main": "build/src/index.js",
   "scripts": {
     "install": "node-gyp rebuild",
     "test": "mocha --timeout 4000",
