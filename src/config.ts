@@ -14,7 +14,4 @@
  * limitations under the License.
  */
 
-export interface Config {
-  projectId?: string;
-};
-
+export interface Config { projectId?: string; }
