@@ -26,7 +26,9 @@ type HrTimeTuple = [number, number];
 
 let profiler = require('bindings')('cpu_profiler');
 
-function timeToNanos(tuple: HrTimeTuple) { return tuple[0] * 1e9 + tuple[1]; }
+function timeToNanos(tuple: HrTimeTuple) {
+  return tuple[0] * 1e9 + tuple[1];
+}
 
 let durationMillis = 10 * 1000;
 let intervalMillis = 60 * 1000;
@@ -51,8 +53,8 @@ function profileInterval() {
       let inp = new stream.PassThrough();
       inp.end(buffer);
       inp.pipe(zlib.createGzip()).pipe(outp).on('close', function() {
-        setTimeout(profileInterval,
-                   intervalMillis - startDelay - durationMillis)
+        setTimeout(
+            profileInterval, intervalMillis - startDelay - durationMillis)
             .unref();
       });
     }, durationMillis).unref();

@@ -43,7 +43,7 @@ function getStringIndex(str: string) {
   return index - 1;
 }
 
-function getFunction(node: CpuProfileNode){
+function getFunction(node: CpuProfileNode) {
   let id = node.callUid;
   if (functionMap.has(id)) {
     // Map.get returns possibly undefined, but we know it is defined.
@@ -54,7 +54,7 @@ function getFunction(node: CpuProfileNode){
     id: id,
     name: getStringIndex(node.functionName || '(anonymous)'),
     systemName: getStringIndex('callUID-' + id),
-    filename: getStringIndex(node.scriptResourceName|| '(unknown)')
+    filename: getStringIndex(node.scriptResourceName || '(unknown)')
     // start_line
   });
   functions.push(f);
@@ -105,8 +105,8 @@ function serializeNode(node: CpuProfileNode, stack: Stack) {
   stack.shift();
 }
 
-export function serialize(prof: CpuProfile, startTimeNanos: number):
-perftools.profiles.IProfile {
+export function serialize(
+    prof: CpuProfile, startTimeNanos: number): perftools.profiles.IProfile {
   samples = [];
   locations = [];
   functions = [];
