@@ -39,10 +39,5 @@
     "package-lock.json",
     "package.json",
     "README.md"
-  ],
-  "gitHead": "c62359aca7a7d811ec8027c09b7dcfd3bceaea27",
-  "readme": "# Google Cloud Profiler\n\n[![Dependency Status][david-image]][david-url]\n[![devDependency Status][david-dev-image]][david-dev-url]\n\nThis module implements experimental support for profiling Node.js apps.\nThis module is under development and is not suitable for production\nuse at this point.\n\nThis module uses APIs there are undocumented and are not covered by any\ndeprecation policy, and this may be subject to change without notice.\n\nThe API this module exports is experimental and is not covered by any\ndeprecation policy, and may be changed without notice.\n\n[david-image]: https://david-dm.org/GoogleCloudPlatform/cloud-profiler-nodejs.svg\n[david-url]: https://david-dm.org/GoogleCloudPlatform/cloud-profiler-nodejs\n[david-dev-image]: https://david-dm.org/GoogleCloudPlatform/cloud-profiler-nodejs/dev-status.svg\n[david-dev-url]: https://david-dm.org/GoogleCloudPlatform/cloud-profiler-nodejs#info=devDependencies\n",
-  "readmeFilename": "README.md",
-  "gypfile": true,
-  "_id": "google-cloud-profile@0.0.1"
+  ]
 }
