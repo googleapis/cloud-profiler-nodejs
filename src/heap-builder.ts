@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-'use strict';
-
-import {AllocationProfileNode} from './v8-types';
 import {perftools} from './profile';
+import {getIndexOrAdd} from './util';
+import {AllocationProfileNode} from './v8-types';
 
 // A stack of function UIDs.
 // TODO: duplicated in builder.ts
@@ -38,26 +36,17 @@ let functionIds = ['dummy'];
 let functions: Array<perftools.profiles.Function> = [];
 let functionMap: Map<number, perftools.profiles.Function>;
 
-function getIndexOrAdd<T>(element: T, lst: Array<T>) {
-  let index = lst.indexOf(element);
-  if (index !== -1) {
-    return index;
-  }
-  index = lst.push(element);
-  return index - 1;
-}
-
 function getStringIndex(str: string) {
   return getIndexOrAdd(str, strings);
 }
 
 function getFunction(stackNode: AllocationProfileNode) {
-  let unique = JSON.stringify(stackNode);
-  let id = getIndexOrAdd(unique, functionIds);
+  const unique = JSON.stringify(stackNode);
+  const id = getIndexOrAdd(unique, functionIds);
   if (functionMap.has(id)) {
     return functionMap.get(id);
   }
-  let f = new perftools.profiles.Function({
+  const f = new perftools.profiles.Function({
     id: id,
     name: getStringIndex(stackNode.name || '(anonymous)'),
     systemName: getStringIndex('callUID-' + id),
@@ -77,12 +66,12 @@ function getLine(stackNode: AllocationProfileNode) {
 }
 
 function getLocation(stackNode: AllocationProfileNode) {
-  let unique = JSON.stringify(stackNode);
-  let id = getIndexOrAdd(unique, locationIds);
+  const unique = JSON.stringify(stackNode);
+  const id = getIndexOrAdd(unique, locationIds);
   if (locationMap.has(id)) {
     return locationMap.get(id);
   }
-  let location = new perftools.profiles.Location({
+  const location = new perftools.profiles.Location({
     id: id,
     // mapping_id: getMapping(node).id,
     line: [getLine(stackNode)]
@@ -92,18 +81,18 @@ function getLocation(stackNode: AllocationProfileNode) {
   return location;
 }
 
-let countValue = new perftools.profiles.ValueType(
+const countValue = new perftools.profiles.ValueType(
     {type: getStringIndex('objects'), unit: getStringIndex('count')});
-let bytesValue = new perftools.profiles.ValueType(
+const bytesValue = new perftools.profiles.ValueType(
     {type: getStringIndex('space'), unit: getStringIndex('bytes')});
 
 function serializeNode(node: AllocationProfileNode, stack: Stack) {
   // TODO: get rid of the cast.
-  let location = getLocation(node) as perftools.profiles.Location;
+  const location = getLocation(node) as perftools.profiles.Location;
   // TODO: get rid of the cast
   stack.unshift(location.id as number);  // leaf is first in the stack
-  for (let alloc of node.allocations) {
-    let sample = new perftools.profiles.Sample({
+  for (const alloc of node.allocations) {
+    const sample = new perftools.profiles.Sample({
       locationId: stack,
       value: [alloc.count, alloc.count * alloc.size]
       // label?

@@ -24,33 +24,33 @@ import {perftools} from './profile';
 
 type HrTimeTuple = [number, number];
 
-let profiler = require('bindings')('cpu_profiler');
+const profiler = require('bindings')('cpu_profiler');
 
 function timeToNanos(tuple: HrTimeTuple) {
   return tuple[0] * 1e9 + tuple[1];
 }
 
-let durationMillis = 10 * 1000;
-let intervalMillis = 60 * 1000;
+const durationMillis = 10 * 1000;
+const intervalMillis = 60 * 1000;
 let isActive = false;
 
 function profileInterval() {
   assert(durationMillis <= intervalMillis);
-  let startDelay = (intervalMillis - durationMillis) * Math.random();
+  const startDelay = (intervalMillis - durationMillis) * Math.random();
   setTimeout(function() {
-    let startTime = Date.now();
-    let runName = 'cloud-profile-' + startTime;
+    const startTime = Date.now();
+    const runName = 'cloud-profile-' + startTime;
     profiler.startProfiling(runName, true);
     isActive = true;
     setTimeout(function() {
       isActive = false;
-      let result = profiler.stopProfiling(runName);
-      let serialized = serialize(result, startTime * 1e6);
-      let writer = perftools.profiles.Profile.encode(serialized);
-      let buffer = writer.finish();
+      const result = profiler.stopProfiling(runName);
+      const serialized = serialize(result, startTime * 1e6);
+      const writer = perftools.profiles.Profile.encode(serialized);
+      const buffer = writer.finish();
 
-      let outp = fs.createWriteStream(runName + '.pb.gz');
-      let inp = new stream.PassThrough();
+      const outp = fs.createWriteStream(runName + '.pb.gz');
+      const inp = new stream.PassThrough();
       inp.end(buffer);
       inp.pipe(zlib.createGzip()).pipe(outp).on('close', function() {
         setTimeout(

@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-'use strict';
-
-import {CpuProfile, CpuProfileNode} from './v8-types';
 import {perftools} from './profile';
+import {getIndexOrAdd} from './util';
+import {CpuProfile, CpuProfileNode} from './v8-types';
 
 // TODO: CpuProfiler::sample_interval_ can be customized.. should query that
 const SAMPLE_INTERVAL = 1000;
@@ -34,27 +32,18 @@ let locationMap: Map<number, perftools.profiles.Location>;
 let functions: Array<perftools.profiles.Function> = [];
 let functionMap: Map<number, perftools.profiles.Function>;
 
-function getStringIndex(str: string) {
-  let index = strings.indexOf(str);
-  if (index !== -1) {
-    return index;
-  }
-  index = strings.push(str);
-  return index - 1;
-}
-
 function getFunction(node: CpuProfileNode) {
-  let id = node.callUid;
+  const id = node.callUid;
   if (functionMap.has(id)) {
     // Map.get returns possibly undefined, but we know it is defined.
     // TODO: figure out how to avoid the cast.
     return functionMap.get(id) as perftools.profiles.Function;
   }
-  let f = new perftools.profiles.Function({
+  const f = new perftools.profiles.Function({
     id: id,
-    name: getStringIndex(node.functionName || '(anonymous)'),
-    systemName: getStringIndex('callUID-' + id),
-    filename: getStringIndex(node.scriptResourceName || '(unknown)')
+    name: getIndexOrAdd(node.functionName || '(anonymous)', strings),
+    systemName: getIndexOrAdd('callUID-' + id, strings),
+    filename: getIndexOrAdd(node.scriptResourceName || '(unknown)', strings)
     // start_line
   });
   functions.push(f);
@@ -68,11 +57,11 @@ function getLine(node: CpuProfileNode) {
 }
 
 function getLocation(node: CpuProfileNode): perftools.profiles.Location {
-  let id = node.callUid;
+  const id = node.callUid;
   if (locationMap.has(id)) {
     return locationMap.get(id) as perftools.profiles.Location;
   }
-  let location = new perftools.profiles.Location({
+  const location = new perftools.profiles.Location({
     id: id,
     // mapping_id: getMapping(node).id,
     line: [getLine(node)]
@@ -82,17 +71,19 @@ function getLocation(node: CpuProfileNode): perftools.profiles.Location {
   return location;
 }
 
-let sampleValue = new perftools.profiles.ValueType(
-    {type: getStringIndex('samples'), unit: getStringIndex('count')});
-let timeValue = new perftools.profiles.ValueType(
-    {type: getStringIndex('time'), unit: getStringIndex('µs')});
+const sampleValue = new perftools.profiles.ValueType({
+  type: getIndexOrAdd('samples', strings),
+  unit: getIndexOrAdd('count', strings)
+});
+const timeValue = new perftools.profiles.ValueType(
+    {type: getIndexOrAdd('time', strings), unit: getIndexOrAdd('µs', strings)});
 
 function serializeNode(node: CpuProfileNode, stack: Stack) {
-  let location = getLocation(node);
+  const location = getLocation(node);
   // TODO: deal with location.id being a Long.
   stack.unshift(location.id as number);  // leaf is first in the stack
   if (node.hitCount > 0) {
-    let sample = new perftools.profiles.Sample({
+    const sample = new perftools.profiles.Sample({
       locationId: stack,
       value: [node.hitCount * SAMPLE_INTERVAL, node.hitCount]
       // label?

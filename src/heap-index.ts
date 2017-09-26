@@ -25,23 +25,23 @@ import {AllocationProfileNode} from './v8-types';
 const profiler = require('bindings')('sampling_heap_profiler');
 const stats = require('bindings')('statistics');
 
-let startTime = Date.now();
+const startTime = Date.now();
 // console.log('V8 statistics', require('v8').getHeapStatistics());
 // console.log('V8 heap statistics', stats.getHeapSpaceStatistics());
 
 profiler.startSamplingHeapProfiler();
 
-let intervalMillis = 5 * 1000;
+const intervalMillis = 5 * 1000;
 
 function profileInterval() {
   setTimeout(function() {
-    let endTime = Date.now();
-    let runName = 'cloud-profile-' + endTime;
+    const endTime = Date.now();
+    const runName = 'cloud-profile-' + endTime;
     // console.log('V8 statistics', require('v8').getHeapStatistics());
     // console.log('V8 heap statistics', stats.getHeapSpaceStatistics());
-    let result = profiler.getAllocationProfile();
+    const result = profiler.getAllocationProfile();
     // console.log('sample count * sample rate', result.length * 1024);
-    let devtoolsFormat = translateToDevtools(result);
+    const devtoolsFormat = translateToDevtools(result);
 
     // // TODO: deal with the result of writing.
     fs.writeFile(
@@ -52,15 +52,15 @@ function profileInterval() {
     const writer = perftools.profiles.Profile.encode(serialized);
     const buffer = writer.finish();
 
-    let outp = fs.createWriteStream(runName + '.pb.gz');
-    let inp = new stream.PassThrough();
+    const outp = fs.createWriteStream(runName + '.pb.gz');
+    const inp = new stream.PassThrough();
     inp.end(buffer);
     inp.pipe(zlib.createGzip()).pipe(outp).on('close', profileInterval);
   }, intervalMillis).unref();
 }
 
 function translateToDevtools(node: AllocationProfileNode) {
-  let result: any = {};
+  const result: any = {};
   result.functionName = node.name;
   result.scriptId = node.scriptId;
   result.lineNumber = node.lineNumber;
