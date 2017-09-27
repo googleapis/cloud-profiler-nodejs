@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {perftools} from './profile';
-import {getIndexOrAdd} from './util';
-import {CpuProfile, CpuProfileNode} from './v8-types';
+import {perftools} from '../profile';
+import {getIndexOrAdd} from '../util';
+import {CpuProfile, CpuProfileNode} from '../v8-types';
 
 // TODO: CpuProfiler::sample_interval_ can be customized.. should query that
 const SAMPLE_INTERVAL = 1000;

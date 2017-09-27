@@ -19,8 +19,8 @@ import * as stream from 'stream';
 import * as zlib from 'zlib';
 
 import {serialize} from './heap-builder';
-import {perftools} from './profile';
-import {AllocationProfileNode} from './v8-types';
+import {perftools} from '../profile';
+import {AllocationProfileNode} from '../v8-types';
 
 const profiler = require('bindings')('sampling_heap_profiler');
 const stats = require('bindings')('statistics');

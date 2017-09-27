@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {perftools} from './profile';
-import {getIndexOrAdd} from './util';
-import {AllocationProfileNode} from './v8-types';
+import {perftools} from '../profile';
+import {getIndexOrAdd} from '../util';
+import {AllocationProfileNode} from '../v8-types';
 
 // A stack of function UIDs.
 // TODO: duplicated in builder.ts
