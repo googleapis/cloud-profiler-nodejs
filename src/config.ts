@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
   // Defaults value of 1.
   logLevel?: number;
 
-  // Specifies the service contect with which profiles from this application
+  // Specifies the service with which profiles from this application
   // will be associated.
   serviceContext?: {
     // service specified the name of the service under which the profiled data
@@ -45,10 +45,10 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
   };
 
   // Configuration for heap profiling.
-  heapProfilerConfig?: HeapProfilerConfig;
+  heap?: HeapProfilerConfig;
 
   // Configuration for cpu profiling.
-  cpuProfilerConfig?: CpuProfilerConfig;
+  cpu?: CpuProfilerConfig;
 
   // instance is the virtual machine instance to be used instead of the one read
   // from the VM metadata server.
@@ -73,6 +73,6 @@ export interface HeapProfilerConfig {
 // CpuProfilerConfig is the configuration for the cpu profiler.
 export interface CpuProfilerConfig {
   // When disable is true, cpu profiling will be disabled.
-  // The default value is false
+  // The default value is false.
   disable?: boolean;
 }

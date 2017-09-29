@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +140,6 @@ class CpuProfiler {
 
 const defaultConfig = {
   logLevel: 1,
-  heapProfilerConfig: {disable: false},
-  cpuProfilerConfig: {disbale: false},
+  heap: {disable: false},
+  cpu: {disbale: false},
 };

@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Google Inc. All Rights Reserved.
+ * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import {ProfileAgentConfig} from './config';
 import {ProfileAgent} from './agent';
 
 /**
- * Start the profiling agent
+ * Start the profiling agent.
  * Currently unimplemented
  *
- * config - ProfileAgentConfig descripting configuration for profiling.
+ * config - ProfileAgentConfig describing configuration for profiling.
  *
  * @example
  * profiler.start();
