@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-'use strict';
-
 import {ProfileAgentConfig} from './config';
 import {ProfileAgent} from './agent';
 
