@@ -37,14 +37,10 @@ export class ProfileAgent {
 
   // instance is the virtual machine instance to be used instead of the one read
   // from the VM metadata server.
-  //
-  // this field is optional. 
   instance?: string;
 
   // zone is the zone to be used instead of the one read from the VM metadata
   // server.
-  //
-  // this field is optional.
   zone?: string;
   serviceContext: {
     // service specified the name of the service under which the profiled data
@@ -56,7 +52,7 @@ export class ProfileAgent {
     // so that a globally constant profiling rate is maintained. 
     service: string;
 
-    // version is an optional field, specifying the version of the service.
+    // version is a field specifying the version of the service.
     // It can be an arbitrary string. Cloud Profiler profiles each version of
     // each service in each zone once per minute.
     // service defaults to an empty string. 
@@ -68,8 +64,7 @@ export class ProfileAgent {
 
   constructor(config: ProfileAgentConfig) {
     let initializedConfig: ProfileAgentConfig = ProfileAgent.initConfig(config);
-    
-    
+        
     let serviceConfig = {
       baseUrl: "https://cloudprofiler.googleapis.com/v2",
       scopes: ["https://www.googleapis.com/auth/monitoring.write"],
@@ -77,7 +72,7 @@ export class ProfileAgent {
     this.service = new common.Service(serviceConfig, initializedConfig);
     
     
-    let logLevel: number= initializedConfig.logLevel || defaultConfig.logLevel;
+    let logLevel: number= initializedConfig.logLevel as number;
     this.logger = new common.logger(
       {level: common.logger.LEVELS[logLevel], tag: pjson.name});
 
@@ -100,18 +95,17 @@ export class ProfileAgent {
     let normalizedConfig =  common.util.normalizeArguments(null, config);
     
     let envConfig = {
-      logLevel: process.env.GCLOUD_TRACE_LOGLEVEL,
+      logLevel: process.env.GCLOUD_PROFILER_LOGLEVEL,
       projectId: process.env.GCLOUD_PROJECT,
       serviceContext: {
         service: process.env.GAE_SERVICE || process.env.GAE_MODULE_NAME,
         version: process.env.GAE_VERSION || process.env.GAE_MODULE_VERSION,
-        minorVersion: process.env.GAE_MINOR_VERSION
       }
     };
 
     let envSetConfig = {};
-    if (process.env.hasOwnProperty('GCLOUD_PROFILE_CONFIG')) {
-      envSetConfig = require(path.resolve(process.env.GCLOUD_TRACE_CONFIG));
+    if (process.env.hasOwnProperty('GCLOUD_PROFILER_CONFIG')) {
+      envSetConfig = require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG));
     }
 
     let initializedConfig = extend(true, {}, defaultConfig, envSetConfig, 
@@ -138,8 +132,8 @@ class CpuProfiler {
   }
 }
 
-const defaultConfig = {
+const defaultConfig: ProfileAgentConfig = {
   logLevel: 1,
   heap: {disable: false},
-  cpu: {disbale: false},
+  cpu: {disable: false},
 };

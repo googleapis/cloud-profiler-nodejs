@@ -37,7 +37,7 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
     // GAE_SERVICE or GAE_MODULE_NAME (in that order)
     service: string;
 
-    // version is an optional field, specifying the version of the service.
+    // version is a field specifying the version of the service.
     // It can be an arbitrary string. Cloud Profiler profiles each version of
     // each service in each zone once per minute.
     // service defaults to an empty string. 
@@ -52,14 +52,10 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
 
   // instance is the virtual machine instance to be used instead of the one read
   // from the VM metadata server.
-  //
-  // this field is optional. 
   instance?: string;
   
   // zone is the zone to be used instead of the one read from the VM metadata
   // server.
-  //
-  // this field is optional.
   zone?: string;
 }
 
