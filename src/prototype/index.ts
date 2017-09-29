@@ -73,20 +73,3 @@ process.on('uncaughtException', function () {
 });
 
 profileInterval();
-
-/*function printNode(node, indent) {
-  indent = indent || 0;
-  var s = sprintf('%5u %s %d #%d %d %s %d', node.hitCount,
-                  Array(indent).join(' '), indent / 2, node.id, node.callUID,
-                  node.functionName, node.scriptId);
-  if (node.url !== '') {
-    s += ' ' + node.url + ':' + node.lineNumber;
-  }
-  if (node.lineTicks)
-    s += ' lineTicks ' + util.inspect(node.lineTicks);
-
-  // TODO: deopt infos
-  // TODO: bailout reason
-  console.log(s);
-  node.children.forEach(function(child) { printNode(child, indent + 2); });
-}*/

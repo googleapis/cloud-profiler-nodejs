@@ -1,21 +1,47 @@
-import {AuthenticationConfig, ServiceConfig} from '../third_party/types/common-types';
+/**
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {AuthenticationConfig, ServiceConfig} from
+    '../third_party/types/common-types';
 
 // ProfileAgentConfig is the configuration for the profiler.
 export interface ProfileAgentConfig extends AuthenticationConfig {
   // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
+  // Defaults value of 1.
   logLevel?: number;
 
   // Specifies the service contect with which profiles from this application
   // will be associated.
   serviceContext?: {
-    // The service name.
-    service?: string;
+    // service specified the name of the service under which the profiled data
+    // will be recorded and exposed at the Cloud Profiler UI for the project.
+    // You can specify an arbitray string, but see deployment.target at
+    // https://github.com/googleapis/googleapis/blob/master/google/devtools/cloudprofiler/v2/profiler.proto
+    // for restrictions.
+    // The string should be the same across different replicas of your service.
+    // so that a globally constant profiling rate is maintained. 
+    // If service is not specified, the value will default to the value of 
+    // GAE_SERVICE or GAE_MODULE_NAME (in that order)
+    service: string;
 
-    // The service version.
+    // version is an optional field, specifying the version of the service.
+    // It can be an arbitrary string. Cloud Profiler profiles each version of
+    // each service in each zone once per minute.
+    // service defaults to an empty string. 
     version?: string;
-
-    // Unique deployment identifier.
-    minorVersion?: string;
   };
 
   // Configuration for heap profiling.
@@ -24,63 +50,29 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
   // Configuration for cpu profiling.
   cpuProfilerConfig?: CpuProfilerConfig;
 
+  // instance is the virtual machine instance to be used instead of the one read
+  // from the VM metadata server.
+  //
+  // this field is optional. 
   instance?: string;
+  
+  // zone is the zone to be used instead of the one read from the VM metadata
+  // server.
+  //
+  // this field is optional.
   zone?: string;
 }
 
 // HeapProfilerConfig is the configuration for the heap profiler.
 export interface HeapProfilerConfig {
   // When disable is true, heap profiling will be disabled.
+  // The default value is false.
   disable?: boolean;
-
-  // The maximum number of stack frames to be captured on each allocation.
-  stackDepth?: number;
-
-  // Sampling interval for Heap profiler, specified in number of bytes.
-  samplingInterval?: number;
 }
 
 // CpuProfilerConfig is the configuration for the cpu profiler.
 export interface CpuProfilerConfig {
   // When disable is true, cpu profiling will be disabled.
+  // The default value is false
   disable?: boolean;
-
-  // Sampling interval for CPU profiler, specified in number of microseconds.
-  samplingInterval?: number;
 }
-
-export const defaultHeapProfilerConfig: HeapProfilerConfig = {
-  disable: false,
-  stackDepth: 32,
-  samplingInterval: 1024 * 1024
-};
-
-export const defaultCpuProfilerConfig: CpuProfilerConfig = {
-  disable: false,
-  samplingInterval: 1000,
-};
-
-export const defaultAgentConfig: ProfileAgentConfig = {
-  projectId: undefined,
-
-  keyFilename: undefined,
-
-  email: undefined,
-
-  credentials: {
-    client_email: undefined,
-    private_key: undefined,
-  },
-
-  serviceContext: { 
-    service: 'default',
-    version: '',
-    minorVersion: '',
-  },
-
-  logLevel: 1,
-
-  heapProfilerConfig: defaultHeapProfilerConfig,
-
-  cpuProfilerConfig: defaultCpuProfilerConfig
-};

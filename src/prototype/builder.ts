@@ -63,7 +63,6 @@ function getLocation(node: CpuProfileNode): perftools.profiles.Location {
   }
   const location = new perftools.profiles.Location({
     id: id,
-    // mapping_id: getMapping(node).id,
     line: [getLine(node)]
   });
   locations.push(location);
@@ -108,7 +107,6 @@ export function serialize(
   return {
     sampleType: [timeValue, sampleValue],
     sample: samples,
-    // mapping: mappings,
     location: locations,
     'function': functions,
     stringTable: strings,

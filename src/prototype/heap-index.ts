@@ -26,8 +26,6 @@ const profiler = require('bindings')('sampling_heap_profiler');
 const stats = require('bindings')('statistics');
 
 const startTime = Date.now();
-// console.log('V8 statistics', require('v8').getHeapStatistics());
-// console.log('V8 heap statistics', stats.getHeapSpaceStatistics());
 
 profiler.startSamplingHeapProfiler();
 
@@ -37,10 +35,7 @@ function profileInterval() {
   setTimeout(function() {
     const endTime = Date.now();
     const runName = 'cloud-profile-' + endTime;
-    // console.log('V8 statistics', require('v8').getHeapStatistics());
-    // console.log('V8 heap statistics', stats.getHeapSpaceStatistics());
     const result = profiler.getAllocationProfile();
-    // console.log('sample count * sample rate', result.length * 1024);
     const devtoolsFormat = translateToDevtools(result);
 
     // // TODO: deal with the result of writing.

@@ -73,7 +73,6 @@ function getLocation(stackNode: AllocationProfileNode) {
   }
   const location = new perftools.profiles.Location({
     id: id,
-    // mapping_id: getMapping(node).id,
     line: [getLine(stackNode)]
   });
   locations.push(location);
@@ -120,7 +119,6 @@ export function serialize(
   return {
     sampleType: [countValue, bytesValue],
     sample: samples,
-    // mapping: mappings,
     location: locations,
     'function': functions,
     stringTable: strings,
