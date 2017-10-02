@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-import {ProfileAgentConfig} from './config';
-import {ProfileAgent} from './agent';
+import {Config} from './config';
+import {Profiler} from './profiler';
+
+let profiler: Profiler|undefined = undefined;
 
 /**
- * Start the profiling agent.
- * Currently unimplemented
+ * Starts the profiling agent and returns a promise.
+ * If any error is encountered when profiling, the promise will be rejected.
  *
- * config - ProfileAgentConfig describing configuration for profiling.
+ * config - Config describing configuration for profiling.
  *
  * @example
- * profiler.start();
+ * profiler.start({});
+ *
+ * @example
+ * profiler.start(config);
+ *
  */
-export function start(config: ProfileAgentConfig) {
-  let agent = new ProfileAgent(config);
-  agent.start()
+export function start(config: Config): Promise<void> {
+  profiler = new Profiler(config);
+  return profiler.start();
 }
 
 // If the module was --require'd from the command line, start the agent.
 if (module.parent && module.parent.id === 'internal/preload') {
   start({});
 }
-
