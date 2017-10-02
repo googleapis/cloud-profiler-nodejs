@@ -20,27 +20,27 @@ import {AuthenticationConfig, ServiceConfig} from
 // ProfileAgentConfig is the configuration for the profiler.
 export interface ProfileAgentConfig extends AuthenticationConfig {
   // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
-  // Defaults value of 1.
+  // Defaults to value of 1.
   logLevel?: number;
 
-  // Specifies the service with which profiles from this application
-  // will be associated.
-  serviceContext?: {
-    // service specified the name of the service under which the profiled data
-    // will be recorded and exposed at the Cloud Profiler UI for the project.
-    // You can specify an arbitray string, but see deployment.target at
+  // Specifies the service with which profiles from this application will be 
+  // associated.
+  serviceContext?: { 
+    // Name of the service under which the profiled data will be recorded and 
+    // exposed in the UI for the project.
+    // You can specify an arbitrary string, see deployment.target at
     // https://github.com/googleapis/googleapis/blob/master/google/devtools/cloudprofiler/v2/profiler.proto
-    // for restrictions.
-    // The string should be the same across different replicas of your service.
+	  // for restrictions.
+    // The string should be the same across different replicas of your service
     // so that a globally constant profiling rate is maintained. 
-    // If service is not specified, the value will default to the value of 
-    // GAE_SERVICE or GAE_MODULE_NAME (in that order)
+    // service defaults to the value in the environment variable GAE_SERVICE.
     service: string;
 
-    // version is a field specifying the version of the service.
-    // It can be an arbitrary string. Cloud Profiler profiles each version of
-    // each service in each zone once per minute.
-    // service defaults to an empty string. 
+    // Version of the service. It can be an arbitrary string. Stackdriver 
+    // Profiler profiles each version of each service in each zone once per
+    // minute.
+    // version defaults to the value in the environment variable GAE_VERSION. 
+    // If there is no value for GAE_VERSION, it defaults to an empty string. 
     version?: string;
   };
 
@@ -50,12 +50,11 @@ export interface ProfileAgentConfig extends AuthenticationConfig {
   // Configuration for cpu profiling.
   cpu?: CpuProfilerConfig;
 
-  // instance is the virtual machine instance to be used instead of the one read
-  // from the VM metadata server.
+  // Virtual machine instance to be used instead of the one read from the VM 
+  // metadata server.
   instance?: string;
   
-  // zone is the zone to be used instead of the one read from the VM metadata
-  // server.
+  // Zone to be used instead of the one read from the VM metadata server.
   zone?: string;
 }
 
