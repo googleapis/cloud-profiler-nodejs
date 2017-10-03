@@ -24,11 +24,12 @@
     "nan": "^2.1.0"
   },
   "devDependencies": {
+    "@types/mocha": "^2.2.43",
     "@types/node": "^8.0.30",
     "clang-format": "^1.0.33",
-    "gts": "^0.3.1",
+    "gts": "latest",
     "protobufjs": "~6.8.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.4.1"
   },
   "files": [
     "build/src",

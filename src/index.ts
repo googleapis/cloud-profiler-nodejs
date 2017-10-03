@@ -33,8 +33,12 @@ let profiler: Profiler|undefined = undefined;
  *
  */
 export function start(config: Config): Promise<void> {
-  profiler = new Profiler(config);
-  return profiler.start();
+  try {
+    profiler = new Profiler(config);
+    return profiler.start();
+  } catch (e) {
+    return Promise.reject(e);
+  }
 }
 
 // If the module was --require'd from the command line, start the agent.

@@ -2,6 +2,6 @@
 // TODO: implement
 export class CpuProfiler {
   constructor() {
-    throw new Error('Heap Profiler is unimplemented');
+    throw new Error('CPU Profiler is unimplemented');
   }
 }

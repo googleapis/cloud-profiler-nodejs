@@ -10,8 +10,7 @@
     "src/**/*.ts",
     "test/*.ts",
     "test/**/*.ts",
-    "third_party/types/*.ts",
-    "examples/*.ts"
+    "third_party/types/*.ts"
   ],
   "exclude": [
     "node_modules"
