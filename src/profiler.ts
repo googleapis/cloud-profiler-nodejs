@@ -13,31 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import * as path from 'path';
 import {AuthenticationConfig, Common, Logger, Service, ServiceConfig} from '../third_party/types/common-types';
-
-import {Config, ConfigImpl} from './config';
+import {Config} from './config';
 import {CpuProfiler} from './profilers/cpu-profiler';
 import {HeapProfiler} from './profilers/heap-profiler';
 
+const pjson = require('../../../package.json');
 const common: Common = require('@google-cloud/common');
 
-const pjson = require('../../../package.json');
-const path = require('path');
+export interface ProfilerConfig extends AuthenticationConfig {
+  projectId: string;
+  logLevel: number;
+  serviceContext: {service: string; version?: string;};
+  instance: string;
+  zone: string;
+  disableCpu: boolean;
+  disableHeap: boolean;
+}
 
 // TODO: finish implementing Profiler.
 // TODO: add stop() method to stop profiling.
 export class Profiler {
-  config: ConfigImpl;
+  config: ProfilerConfig;
   logger: Logger;
   service: Service;
 
-  // Constructs profiler based on config.
-  // If a field which needs a value is not provided in the config and cannot be
-  // determined from environment variables, metadata, or defaults, an error will
-  // be thrown.
-  constructor(config: Config) {
-    this.config = new ConfigImpl(config);
+  constructor(config: ProfilerConfig) {
+    this.config = config;
 
     this.service = new common.Service(
         {
