@@ -27,7 +27,6 @@ export interface Config extends AuthenticationConfig {
   projectId?: string;
 
   // Log levels: 0-disabled,1-error,2-warn,3-info,4-debug.
-  // Defaults to value of 1.
   logLevel?: number;
 
   // Specifies the service with which profiles from this application will be
@@ -40,32 +39,26 @@ export interface Config extends AuthenticationConfig {
     // for restrictions.
     // The string should be the same across different replicas of your service
     // so that a globally constant profiling rate is maintained.
-    // Defaults to the value in the environment variable GAE_SERVICE.
     service?: string;
 
     // Version of the service. It can be an arbitrary string. Stackdriver
     // Profiler profiles each version of each service in each zone once per
     // minute.
-    // Defaults to an empty string.
     version?: string;
   };
 
   // Virtual machine instance to associate profiles with instead of the one
   // read from the VM metadata server.
-  // Defaults to an empty string.
   instance?: string;
 
   // Zone to associate profiles with instead of the one read from the VM
   // metadata server.
-  // Defaults to an empty string.
   zone?: string;
 
   // When true, CPU profiling will be disabled.
-  // Defaults to false.
   disableCpu?: boolean;
 
   // When true, heap profiling will be disabled.
-  // Defaults to false.
   disableHeap?: boolean;
 }
 

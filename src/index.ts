@@ -46,11 +46,11 @@ async function initConfig(config: Config): Promise<ProfilerConfig> {
   let normalizedConfig = extend(true, {}, defaultConfig, envConfig, config);
 
   if (normalizedConfig.serviceContext.service === undefined) {
-    return Promise.reject(
-        'service name must be specified in the configuration');
+    throw new Error('service name must be specified in the configuration');
   }
 
-  // TODO: fetch instance and zone from metadata.
+  // TODO: fetch instance and zone from metadata. This will require function to
+  // be asynchrous.
   if (normalizedConfig.instance === undefined) {
     normalizedConfig.instance = '';
   }
@@ -77,13 +77,9 @@ let profiler: Profiler|undefined = undefined;
  *
  */
 export async function start(config: Config = {}): Promise<void> {
-  try {
-    const normalizedConfig = await initConfig(config);
-    profiler = new Profiler(normalizedConfig);
-    return profiler.start();
-  } catch (e) {
-    return Promise.reject(e);
-  }
+  const normalizedConfig = await initConfig(config);
+  profiler = new Profiler(normalizedConfig);
+  return profiler.start();
 }
 
 // If the module was --require'd from the command line, start the agent.
