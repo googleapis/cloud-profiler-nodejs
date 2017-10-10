@@ -21,10 +21,12 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@google-cloud/common": "^0.13.6",
     "bindings": "^1.2.1",
     "delay": "^2.0.0",
     "extend": "^3.0.1",
-    "nan": "^2.1.0"
+    "nan": "^2.1.0",
+    "request": "^2.83.0"
   },
   "devDependencies": {
     "@types/delay": "^2.0.0",
@@ -37,6 +39,11 @@
     "gts": "^0.3.1",
     "mocha": "^4.0.1",
     "nyc": "^11.2.1",
+    "@types/assert": "0.0.31",
+    "@types/nock": "^8.2.1",
+    "@types/request": "^2.0.4",
+    "assert": "^1.4.1",
+    "nock": "^9.0.22",
     "protobufjs": "~6.8.0",
     "sinon": "^4.0.1",
     "typescript": "^2.4.1"
