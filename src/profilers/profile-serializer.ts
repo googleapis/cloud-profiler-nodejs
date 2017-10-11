@@ -1,6 +1,6 @@
 import {perftools} from '../profile';
 import {getIndexOrAdd} from '../util';
-import {CpuProfile, CpuProfileNode} from '../v8-types';
+import {WallProfile, WallProfileNode} from '../v8-types';
 // A stack of function UIDs.
 type Stack = Array<number>;
 
@@ -19,9 +19,9 @@ class ProfileSerializer {
     this.reset();
   }
 
-  // Converts profile returned by v8 CPU profiler to profile with format used by
-  // Stackdriver Profilers.
-  serializeCpuProfile(prof: CpuProfile, sampleInterval: number):
+  // Converts profile returned by v8 wall profiler to profile with format used
+  // by Stackdriver Profilers.
+  serializeWallProfile(prof: WallProfile, sampleInterval: number):
       perftools.profiles.IProfile {
     this.reset();
     this.samplingInterval = sampleInterval;
@@ -64,7 +64,7 @@ class ProfileSerializer {
    * node - the node which is serialized
    * stack - the stack trace to the current node.
    */
-  private serializeNode(node: CpuProfileNode, stack: Stack) {
+  private serializeNode(node: WallProfileNode, stack: Stack) {
     let that = this;
     let location = that.getLocation(node);
     // TODO: deal with location.id being a Long.
@@ -82,7 +82,7 @@ class ProfileSerializer {
     stack.shift();  // remove leaf from stack
   }
 
-  private getLocation(node: CpuProfileNode): perftools.profiles.Location {
+  private getLocation(node: WallProfileNode): perftools.profiles.Location {
     const id = node.callUid;
     if (this.locationMap.has(id)) {
       return this.locationMap.get(id) as perftools.profiles.Location;
@@ -94,12 +94,12 @@ class ProfileSerializer {
     return location;
   }
 
-  private getLine(node: CpuProfileNode): perftools.profiles.Line {
+  private getLine(node: WallProfileNode): perftools.profiles.Line {
     return new perftools.profiles.Line(
         {functionId: this.getFunction(node).id, line: node.lineNumber});
   }
 
-  private getFunction(node: CpuProfileNode): perftools.profiles.Function {
+  private getFunction(node: WallProfileNode): perftools.profiles.Function {
     const id = node.callUid;
     if (this.functionMap.has(id)) {
       // Map.get returns possibly undefined, but we know it is defined.
@@ -138,7 +138,8 @@ class ProfileSerializer {
 
 // Converts v8 Profile into profile with profile format used by Stackdriver
 // Profiler.
-export function serializeCpuProfile(prof: CpuProfile, sampleInterval: number) {
+export function serializeWallProfile(
+    prof: WallProfile, sampleInterval: number) {
   let serializer = new ProfileSerializer();
-  return serializer.serializeCpuProfile(prof, sampleInterval);
+  return serializer.serializeWallProfile(prof, sampleInterval);
 }

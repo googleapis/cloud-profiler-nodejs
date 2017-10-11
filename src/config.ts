@@ -55,8 +55,8 @@ export interface Config extends AuthenticationConfig {
   // metadata server.
   zone?: string;
 
-  // When true, CPU profiling will be disabled.
-  disableCpu?: boolean;
+  // When true, wall profiling will be disabled.
+  disableWall?: boolean;
 
   // When true, heap profiling will be disabled.
   disableHeap?: boolean;
@@ -70,5 +70,5 @@ export const defaultConfig: Config = {
     version: '',
   },
   disableHeap: false,
-  disableCpu: false,
+  disableWall: false,
 };

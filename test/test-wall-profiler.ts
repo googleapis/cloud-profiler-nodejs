@@ -1,16 +1,16 @@
 import {perftools} from '../src/profile';
-import {CpuProfiler} from '../src/profilers/cpu-profiler';
+import {WallProfiler} from '../src/profilers/wall-profiler';
 import {getIndexOrAdd} from '../src/util';
 
 let assert = require('assert');
 
-describe('CpuProfiler', function() {
+describe('WallProfiler', function() {
   describe('profile', function() {
     it('should profile during duration and finish profiling by end of duration',
        function(done) {
          const duration = 500;
          const sampleInterval = 1000;
-         let profiler = new CpuProfiler(sampleInterval);
+         let profiler = new WallProfiler(sampleInterval);
          let profilePromise = profiler.profile(duration);
          assert.equal(true, profiler.isRunning(), 'profiler is not running');
          setTimeout(function() {
@@ -21,11 +21,11 @@ describe('CpuProfiler', function() {
        });
 
     it('should return a promise that resolves to a profile with sample types' +
-           ' of CPU profile',
+           ' of wall profile',
        function(done) {
          const duration = 500;
          const sampleInterval = 1000;
-         let profiler = new CpuProfiler(sampleInterval);
+         let profiler = new WallProfiler(sampleInterval);
          let profilePromise = profiler.profile(duration);
          profilePromise.then(function(profile) {
            if (profile.sampleType !== undefined) {
@@ -35,16 +35,16 @@ describe('CpuProfiler', function() {
              if (profile.stringTable !== undefined) {
                assert.equal(
                    profile.stringTable[vt1.type as number], 'samples',
-                   'first sampleType has wrong type for CPU profile');
+                   'first sampleType has wrong type for wall profile');
                assert.equal(
                    profile.stringTable[vt1.unit as number], 'count',
-                   'first sampleType has wrong unit for CPU profile');
+                   'first sampleType has wrong unit for wall profile');
                assert.equal(
                    profile.stringTable[vt2.type as number], 'time',
-                   'second sampleType has wrong type for CPU profile');
+                   'second sampleType has wrong type for wall profile');
                assert.equal(
                    profile.stringTable[vt2.unit as number], 'microseconds',
-                   'second sampleType has wrong unit for CPU profile');
+                   'second sampleType has wrong unit for wall profile');
              } else {
                assert.fail('profile does not have string table');
              }
@@ -58,7 +58,7 @@ describe('CpuProfiler', function() {
     it('should return a profile with samples', function(done) {
       const duration = 500;
       const sampleInterval = 1000;
-      let profiler = new CpuProfiler(sampleInterval);
+      let profiler = new WallProfiler(sampleInterval);
       let profilePromise = profiler.profile(duration);
       profilePromise.then(function(profile) {
         if (profile.sample !== undefined) {
@@ -72,7 +72,7 @@ describe('CpuProfiler', function() {
 
     it('should return rejected promise when already profiling', function(done) {
       const sampleInterval = 1000;
-      const profiler = new CpuProfiler(sampleInterval);
+      const profiler = new WallProfiler(sampleInterval);
       profiler.profile(1000);
       let profilePromise = profiler.profile(500);
       profilePromise

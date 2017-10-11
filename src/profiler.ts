@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 import * as path from 'path';
+
 import {AuthenticationConfig, Common, Logger, Service, ServiceConfig} from '../third_party/types/common-types';
+
 import {Config} from './config';
-import {CpuProfiler} from './profilers/cpu-profiler';
 import {HeapProfiler} from './profilers/heap-profiler';
+import {WallProfiler} from './profilers/wall-profiler';
 
 const pjson = require('../../../package.json');
 const common: Common = require('@google-cloud/common');
@@ -28,7 +30,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   serviceContext: {service: string; version?: string;};
   instance: string;
   zone: string;
-  disableCpu: boolean;
+  disableWall: boolean;
   disableHeap: boolean;
 }
 

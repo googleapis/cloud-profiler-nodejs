@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "cpu_profiler",
-      "sources": [ "bindings/cpu-profiler.cc" ],
+      "target_name": "wall_profiler",
+      "sources": [ "bindings/wall-profiler.cc" ],
       "include_dirs": [ "<!(node -e \"require('nan')\")" ]
     },
     {

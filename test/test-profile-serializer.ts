@@ -1,12 +1,12 @@
 import {perftools} from '../src/profile';
-import {serializeCpuProfile} from '../src/profilers/profile-serializer';
-import {CpuProfile, CpuProfileNode} from '../src/v8-types';
+import {serializeWallProfile} from '../src/profilers/profile-serializer';
+import {WallProfile, WallProfileNode} from '../src/v8-types';
 
 let assert = require('assert');
 
-describe('serializeCpuProfile', function() {
+describe('serializeWallProfile', function() {
   it('should produce expected profile', function() {
-    const leaf1: CpuProfileNode = {
+    const leaf1: WallProfileNode = {
       callUid: 5,
       scriptResourceName: 'script3',
       functionName: 'function5',
@@ -51,7 +51,7 @@ describe('serializeCpuProfile', function() {
       children: [node1, leaf3],
     };
 
-    const cpuProfile: CpuProfile = {
+    const wallProfile: WallProfile = {
       startTime: 0,
       endTime: 100,
       topDownRoot: root,
@@ -101,7 +101,7 @@ describe('serializeCpuProfile', function() {
       }),
     ];
 
-    const expCpuProfileOut: perftools.profiles.IProfile = {
+    const expWallProfileOut: perftools.profiles.IProfile = {
       sampleType: [
         new perftools.profiles.ValueType({type: 1, unit: 2}),
         new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -129,7 +129,7 @@ describe('serializeCpuProfile', function() {
       period: 1000,
     };
 
-    const cpuProfileOut = serializeCpuProfile(cpuProfile, 1000);
-    assert.deepEqual(cpuProfileOut, expCpuProfileOut);
+    const wallProfileOut = serializeWallProfile(wallProfile, 1000);
+    assert.deepEqual(wallProfileOut, expWallProfileOut);
   });
 });

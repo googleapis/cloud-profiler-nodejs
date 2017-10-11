@@ -16,21 +16,21 @@
 
 // Type Definitions based on implementation in bindings/
 
-export interface CpuProfile {
+export interface WallProfile {
   /** Time in nanoseconds at which profile was stopped. */
   endTime: number;
-  topDownRoot: CpuProfileNode;
+  topDownRoot: WallProfileNode;
   /** Time in nanoseconds at which profile was started. */
   startTime: number;
 }
 
-export interface CpuProfileNode {
+export interface WallProfileNode {
   callUid: number;
   scriptResourceName?: string;
   functionName?: string;
   lineNumber: number;
   hitCount: number;
-  children: Array<CpuProfileNode>;
+  children: Array<WallProfileNode>;
 }
 
 export interface AllocationProfileNode {

@@ -1,8 +1,8 @@
 import {perftools} from '../profile';
-import {serializeCpuProfile} from './profile-serializer';
-const cpuProfiler = require('bindings')('cpu_profiler');
+import {serializeWallProfile} from './profile-serializer';
+const wallProfiler = require('bindings')('wall_profiler');
 
-export class CpuProfiler {
+export class WallProfiler {
   // Average time in microseconds between samples.
   samplingInterval: number;
 
@@ -12,7 +12,7 @@ export class CpuProfiler {
   constructor(samplingInterval: number) {
     this.samplingInterval = samplingInterval;  // us
     this.profiling = false;
-    cpuProfiler.setSamplingInterval(this.samplingInterval);
+    wallProfiler.setSamplingInterval(this.samplingInterval);
   }
 
   // Collects a profile for the duration, in milliseconds, specified by
@@ -23,20 +23,21 @@ export class CpuProfiler {
     const that = this;
     if (!that.profiling) {
       that.profiling = true;
-      cpuProfiler.startProfiling('', true);
+      wallProfiler.startProfiling('', true);
       return new Promise(function(resolve) {
         setTimeout(function() {
-          let result = cpuProfiler.stopProfiling('');
+          let result = wallProfiler.stopProfiling('');
           that.profiling = false;
-          let profile = serializeCpuProfile(result, that.samplingInterval);
+          let profile = serializeWallProfile(result, that.samplingInterval);
           resolve(profile);
         }, profileDuration);
       });
     }
-    return Promise.reject(new Error('already profiling with CpuProfiler'));
+    return Promise.reject(new Error('already profiling with WallProfiler'));
   }
 
-  // Returns true if the CpuProfiler is currently profiling and false otherwise.
+  // Returns true if the WallProfiler is currently profiling and false
+  // otherwise.
   isRunning(): boolean {
     return this.profiling;
   }
