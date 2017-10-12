@@ -1,62 +1,55 @@
+/**
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {perftools} from '../profile';
 import {getIndexOrAdd} from '../util';
 import {WallProfile, WallProfileNode} from '../v8-types';
 // A stack of function UIDs.
 type Stack = Array<number>;
 
-// Helper class used to convert v8 profile into profile format used by
-// Stackdriver Profiler.
-class ProfileSerializer {
-  private samples: Array<perftools.profiles.Sample>;
-  private locations: Array<perftools.profiles.Location>;
-  private functions: Array<perftools.profiles.Function>;
-  private locationMap: Map<number, perftools.profiles.Location>;
-  private functionMap: Map<number, perftools.profiles.Function>;
-  private strings: string[];
-  private samplingInterval: number;  // microseconds, defaults to 1000us
+// Converts v8 Profile into profile with profile format used by Stackdriver
+// Profiler.
+export function serializeWallProfile(
+    prof: WallProfile, sampleInterval: number) {
+  let samples: Array<perftools.profiles.Sample> = [];
+  let locations: Array<perftools.profiles.Location> = [];
+  let functions: Array<perftools.profiles.Function> = [];
+  let locationMap: Map<number, perftools.profiles.Location> = new Map();
+  let functionMap: Map<number, perftools.profiles.Function> = new Map();
+  let strings = [''];
 
-  constructor() {
-    this.reset();
-  }
+  let sampleValueType = getSampleValueType();
+  let timeValueType = getTimeValueType();
 
-  // Converts profile returned by v8 wall profiler to profile with format used
-  // by Stackdriver Profilers.
-  serializeWallProfile(prof: WallProfile, sampleInterval: number):
-      perftools.profiles.IProfile {
-    this.reset();
-    this.samplingInterval = sampleInterval;
+  serializeNode(prof.topDownRoot, []);
 
-    let sampleValueType = this.sampleValueType();
-    let timeValueType = this.timeValueType();
+  return {
+    sampleType: [sampleValueType, timeValueType],
+    sample: samples,
+    location: locations,
+    function: functions,
+    stringTable: strings,
+    // opt drop_frames
+    // opt keep_frames
+    timeNanos: 1000 * 1000 * prof.endTime,                         // Nanos
+    durationNanos: 1000 * 1000 * (prof.endTime - prof.startTime),  // Nanos
 
-    this.serializeNode(prof.topDownRoot, []);
-
-    return {
-      sampleType: [sampleValueType, timeValueType],
-      sample: this.samples,
-      location: this.locations,
-      function: this.functions,
-      stringTable: this.strings,
-      // opt drop_frames
-      // opt keep_frames
-      timeNanos: 1000 * 1000 * prof.endTime,                         // Nanos
-      durationNanos: 1000 * 1000 * (prof.endTime - prof.startTime),  // Nanos
-
-      periodType: timeValueType,
-      period: this.samplingInterval
-    };
-  }
-
-  // clears fields used to build a profile.
-  private reset() {
-    this.samples = [];
-    this.locations = [];
-    this.functions = [];
-    this.locationMap = new Map();
-    this.functionMap = new Map<number, perftools.profiles.Function>();
-    this.strings = [''];
-    this.samplingInterval = 1000;
-  }
+    periodType: timeValueType,
+    period: sampleInterval
+  };
 
   /* Adds samples from a node and it's children to the fields tracking
    * profile serialization.
@@ -64,82 +57,71 @@ class ProfileSerializer {
    * node - the node which is serialized
    * stack - the stack trace to the current node.
    */
-  private serializeNode(node: WallProfileNode, stack: Stack) {
-    let that = this;
-    let location = that.getLocation(node);
+  function serializeNode(node: WallProfileNode, stack: Stack) {
+    let location = getLocation(node);
     // TODO: deal with location.id being a Long.
     stack.unshift(location.id as number);  // leaf is first in the stack
     if (node.hitCount > 0) {
       const sample = new perftools.profiles.Sample({
         locationId: stack.slice(0),
-        value: [node.hitCount, node.hitCount * that.samplingInterval]
+        value: [node.hitCount, node.hitCount * sampleInterval]
       });
-      that.samples.push(sample);
+      samples.push(sample);
     }
-    node.children.forEach(function(child) {
-      that.serializeNode(child, stack);
-    });
+    for (let child of node.children) {
+      serializeNode(child, stack);
+    }
     stack.shift();  // remove leaf from stack
   }
 
-  private getLocation(node: WallProfileNode): perftools.profiles.Location {
+  function getLocation(node: WallProfileNode): perftools.profiles.Location {
     const id = node.callUid;
-    if (this.locationMap.has(id)) {
-      return this.locationMap.get(id) as perftools.profiles.Location;
+    if (locationMap.has(id)) {
+      return locationMap.get(id) as perftools.profiles.Location;
     }
     const location =
-        new perftools.profiles.Location({id: id, line: [this.getLine(node)]});
-    this.locations.push(location);
-    this.locationMap.set(id, location);
+        new perftools.profiles.Location({id: id, line: [getLine(node)]});
+    locations.push(location);
+    locationMap.set(id, location);
     return location;
   }
 
-  private getLine(node: WallProfileNode): perftools.profiles.Line {
+  function getLine(node: WallProfileNode): perftools.profiles.Line {
     return new perftools.profiles.Line(
-        {functionId: this.getFunction(node).id, line: node.lineNumber});
+        {functionId: getFunction(node).id, line: node.lineNumber});
   }
 
-  private getFunction(node: WallProfileNode): perftools.profiles.Function {
+  function getFunction(node: WallProfileNode): perftools.profiles.Function {
     const id = node.callUid;
-    if (this.functionMap.has(id)) {
+    if (functionMap.has(id)) {
       // Map.get returns possibly undefined, but we know it is defined.
       // TODO: figure out how to avoid the cast.
-      return this.functionMap.get(id) as perftools.profiles.Function;
+      return functionMap.get(id) as perftools.profiles.Function;
     }
-    const name =
-        getIndexOrAdd(node.functionName || '(anonymous)', this.strings);
+    const name = getIndexOrAdd(node.functionName || '(anonymous)', strings);
     const f = new perftools.profiles.Function({
       id: id,
       name: name,
       systemName: name,
-      filename:
-          getIndexOrAdd(node.scriptResourceName || '(unknown)', this.strings)
+      filename: getIndexOrAdd(node.scriptResourceName || '(unknown)', strings)
       // start_line
     });
-    this.functions.push(f);
-    this.functionMap.set(id, f);
+    functions.push(f);
+    functionMap.set(id, f);
     return f;
   }
 
-  private sampleValueType(): perftools.profiles.ValueType {
+  function getSampleValueType(): perftools.profiles.ValueType {
     return new perftools.profiles.ValueType({
-      type: getIndexOrAdd('samples', this.strings),
-      unit: getIndexOrAdd('count', this.strings)
+      type: getIndexOrAdd('samples', strings),
+      unit: getIndexOrAdd('count', strings)
     });
   }
 
-  private timeValueType(): perftools.profiles.ValueType {
+  function getTimeValueType(): perftools.profiles.ValueType {
     return new perftools.profiles.ValueType({
-      type: getIndexOrAdd('time', this.strings),
-      unit: getIndexOrAdd('microseconds', this.strings)
+      type: getIndexOrAdd('time', strings),
+      unit: getIndexOrAdd('microseconds', strings)
     });
   }
-}
-
-// Converts v8 Profile into profile with profile format used by Stackdriver
-// Profiler.
-export function serializeWallProfile(
-    prof: WallProfile, sampleInterval: number) {
-  let serializer = new ProfileSerializer();
-  return serializer.serializeWallProfile(prof, sampleInterval);
 }
