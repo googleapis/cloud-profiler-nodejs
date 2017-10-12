@@ -1,3 +1,4 @@
+import * as delay from 'delay';
 import {perftools} from '../src/profile';
 import {WallProfiler} from '../src/profilers/wall-profiler';
 import {getIndexOrAdd} from '../src/util';
@@ -6,18 +7,16 @@ let assert = require('assert');
 
 describe('WallProfiler', function() {
   describe('profile', function() {
-    it('should profile during duration and finish profiling by end of duration',
-       function(done) {
+    it('should profile during duration and finish profiling after duration',
+       function() {
          const duration = 500;
          const sampleInterval = 1000;
          let profiler = new WallProfiler(sampleInterval);
          let profilePromise = profiler.profile(duration);
-         assert.equal(true, profiler.isRunning(), 'profiler is not running');
-         setTimeout(function() {
+         return delay(2 * duration).then(() => {
            assert.equal(
                false, profiler.isRunning(), 'profiler is still running');
-           done();
-         }, duration);
+         });
        });
 
     it('should return a promise that resolves to a profile with sample types' +

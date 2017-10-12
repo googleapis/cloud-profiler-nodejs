@@ -28,6 +28,7 @@ export class WallProfiler {
     wallProfiler.startProfiling('', true);
     await delay(profileDuration);
     let result = wallProfiler.stopProfiling('');
+    this.profiling = false;
     return serializeWallProfile(result, this.samplingInterval);
   }
 
