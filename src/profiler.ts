@@ -19,7 +19,7 @@ import {AuthenticationConfig, Common, Logger, Service, ServiceConfig} from '../t
 
 import {Config} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
-import {WallProfiler} from './profilers/wall-profiler';
+import {TimeProfiler} from './profilers/time-profiler';
 
 const pjson = require('../../../package.json');
 const common: Common = require('@google-cloud/common');
@@ -30,7 +30,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   serviceContext: {service: string; version?: string;};
   instance: string;
   zone: string;
-  disableWall: boolean;
+  disableTime: boolean;
   disableHeap: boolean;
 }
 

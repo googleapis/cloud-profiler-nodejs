@@ -16,21 +16,21 @@
 
 // Type Definitions based on implementation in bindings/
 
-export interface WallProfile {
+export interface TimeProfile {
   /** Time in nanoseconds at which profile was stopped. */
   endTime: number;
-  topDownRoot: WallProfileNode;
+  topDownRoot: TimeProfileNode;
   /** Time in nanoseconds at which profile was started. */
   startTime: number;
 }
 
-export interface WallProfileNode {
+export interface TimeProfileNode {
   callUid: number;
   scriptResourceName?: string;
   functionName?: string;
   lineNumber: number;
   hitCount: number;
-  children: Array<WallProfileNode>;
+  children: Array<TimeProfileNode>;
 }
 
 export interface AllocationProfileNode {

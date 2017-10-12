@@ -16,14 +16,14 @@
 
 import {perftools} from '../profile';
 import {getIndexOrAdd} from '../util';
-import {WallProfile, WallProfileNode} from '../v8-types';
+import {TimeProfile, TimeProfileNode} from '../v8-types';
 // A stack of function UIDs.
 type Stack = Array<number>;
 
 // Converts v8 Profile into profile with profile format used by Stackdriver
 // Profiler.
-export function serializeWallProfile(
-    prof: WallProfile, sampleInterval: number) {
+export function serializeTimeProfile(
+    prof: TimeProfile, sampleInterval: number) {
   let samples: Array<perftools.profiles.Sample> = [];
   let locations: Array<perftools.profiles.Location> = [];
   let functions: Array<perftools.profiles.Function> = [];
@@ -57,7 +57,7 @@ export function serializeWallProfile(
    * node - the node which is serialized
    * stack - the stack trace to the current node.
    */
-  function serializeNode(node: WallProfileNode, stack: Stack) {
+  function serializeNode(node: TimeProfileNode, stack: Stack) {
     let location = getLocation(node);
     // TODO: deal with location.id being a Long.
     stack.unshift(location.id as number);  // leaf is first in the stack
@@ -74,7 +74,7 @@ export function serializeWallProfile(
     stack.shift();  // remove leaf from stack
   }
 
-  function getLocation(node: WallProfileNode): perftools.profiles.Location {
+  function getLocation(node: TimeProfileNode): perftools.profiles.Location {
     const id = node.callUid;
     if (locationMap.has(id)) {
       return locationMap.get(id) as perftools.profiles.Location;
@@ -86,12 +86,12 @@ export function serializeWallProfile(
     return location;
   }
 
-  function getLine(node: WallProfileNode): perftools.profiles.Line {
+  function getLine(node: TimeProfileNode): perftools.profiles.Line {
     return new perftools.profiles.Line(
         {functionId: getFunction(node).id, line: node.lineNumber});
   }
 
-  function getFunction(node: WallProfileNode): perftools.profiles.Function {
+  function getFunction(node: TimeProfileNode): perftools.profiles.Function {
     const id = node.callUid;
     if (functionMap.has(id)) {
       // Map.get returns possibly undefined, but we know it is defined.

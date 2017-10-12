@@ -19,7 +19,7 @@
 
 using namespace v8;
 
-Local<Value> TranslateWallProfileNode(const CpuProfileNode* node) {
+Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
   // TODO: Implement unimplemented interface
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("functionName").ToLocalChecked(),
@@ -35,20 +35,20 @@ Local<Value> TranslateWallProfileNode(const CpuProfileNode* node) {
   int32_t count = node->GetChildrenCount();
   Local<Array> children = Nan::New<Array>(count);
   for (int32_t i = 0; i < count; i++) {
-    children->Set(i, TranslateWallProfileNode(node->GetChild(i)));
+    children->Set(i, TranslateTimeProfileNode(node->GetChild(i)));
   }
   js_node->Set(Nan::New<String>("children").ToLocalChecked(),
     children);
   return js_node;
 }
 
-Local<Value> TranslateWallProfile(const CpuProfile* profile) {
+Local<Value> TranslateTimeProfile(const CpuProfile* profile) {
   // TODO: Implement unimplemented interface
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
     profile->GetTitle());
   js_profile->Set(Nan::New<String>("topDownRoot").ToLocalChecked(),
-    TranslateWallProfileNode(profile->GetTopDownRoot()));
+    TranslateTimeProfileNode(profile->GetTopDownRoot()));
   js_profile->Set(Nan::New<String>("samplesCount").ToLocalChecked(),
     Nan::New<Integer>(profile->GetSamplesCount()));
   js_profile->Set(Nan::New<String>("startTime").ToLocalChecked(),
@@ -68,7 +68,7 @@ NAN_METHOD(StopProfiling) {
   Local<String> name = info[0].As<String>();
   CpuProfile* profile =
     info.GetIsolate()->GetCpuProfiler()->StopProfiling(name);
-  Local<Value> translated_profile = TranslateWallProfile(profile);
+  Local<Value> translated_profile = TranslateTimeProfile(profile);
   profile->Delete();
   info.GetReturnValue().Set(translated_profile);
 }
@@ -94,4 +94,4 @@ NAN_MODULE_INIT(InitAll) {
     Nan::GetFunction(Nan::New<FunctionTemplate>(SetIdle)).ToLocalChecked());
 }
 
-NODE_MODULE(wall_profiler, InitAll);
+NODE_MODULE(time_profiler, InitAll);

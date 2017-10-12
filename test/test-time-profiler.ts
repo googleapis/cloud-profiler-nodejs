@@ -1,17 +1,17 @@
 import * as delay from 'delay';
 import {perftools} from '../src/profile';
-import {WallProfiler} from '../src/profilers/wall-profiler';
+import {TimeProfiler} from '../src/profilers/time-profiler';
 import {getIndexOrAdd} from '../src/util';
 
 let assert = require('assert');
 
-describe('WallProfiler', function() {
+describe('TimeProfiler', function() {
   describe('profile', function() {
     it('should profile during duration and finish profiling after duration',
        function() {
          const duration = 500;
          const sampleInterval = 1000;
-         let profiler = new WallProfiler(sampleInterval);
+         let profiler = new TimeProfiler(sampleInterval);
          let profilePromise = profiler.profile(duration);
          return delay(2 * duration).then(() => {
            assert.equal(
@@ -20,11 +20,11 @@ describe('WallProfiler', function() {
        });
 
     it('should return a promise that resolves to a profile with sample types' +
-           ' of wall profile',
+           ' of time profile',
        function(done) {
          const duration = 500;
          const sampleInterval = 1000;
-         let profiler = new WallProfiler(sampleInterval);
+         let profiler = new TimeProfiler(sampleInterval);
          let profilePromise = profiler.profile(duration);
          profilePromise.then(function(profile) {
            if (profile.sampleType !== undefined) {
@@ -34,16 +34,16 @@ describe('WallProfiler', function() {
              if (profile.stringTable !== undefined) {
                assert.equal(
                    profile.stringTable[vt1.type as number], 'samples',
-                   'first sampleType has wrong type for wall profile');
+                   'first sampleType has wrong type for time profile');
                assert.equal(
                    profile.stringTable[vt1.unit as number], 'count',
-                   'first sampleType has wrong unit for wall profile');
+                   'first sampleType has wrong unit for time profile');
                assert.equal(
                    profile.stringTable[vt2.type as number], 'time',
-                   'second sampleType has wrong type for wall profile');
+                   'second sampleType has wrong type for time profile');
                assert.equal(
                    profile.stringTable[vt2.unit as number], 'microseconds',
-                   'second sampleType has wrong unit for wall profile');
+                   'second sampleType has wrong unit for time profile');
              } else {
                assert.fail('profile does not have string table');
              }
@@ -57,7 +57,7 @@ describe('WallProfiler', function() {
     it('should return a profile with samples', function(done) {
       const duration = 500;
       const sampleInterval = 1000;
-      let profiler = new WallProfiler(sampleInterval);
+      let profiler = new TimeProfiler(sampleInterval);
       let profilePromise = profiler.profile(duration);
       profilePromise.then(function(profile) {
         if (profile.sample !== undefined) {
@@ -71,7 +71,7 @@ describe('WallProfiler', function() {
 
     it('should return rejected promise when already profiling', function(done) {
       const sampleInterval = 1000;
-      const profiler = new WallProfiler(sampleInterval);
+      const profiler = new TimeProfiler(sampleInterval);
       profiler.profile(1000);
       let profilePromise = profiler.profile(500);
       profilePromise

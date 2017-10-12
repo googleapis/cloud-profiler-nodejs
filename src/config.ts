@@ -55,8 +55,8 @@ export interface Config extends AuthenticationConfig {
   // metadata server.
   zone?: string;
 
-  // When true, wall profiling will be disabled.
-  disableWall?: boolean;
+  // When true, time profiling will be disabled.
+  disableTime?: boolean;
 
   // When true, heap profiling will be disabled.
   disableHeap?: boolean;
@@ -70,5 +70,5 @@ export const defaultConfig: Config = {
     version: '',
   },
   disableHeap: false,
-  disableWall: false,
+  disableTime: false,
 };

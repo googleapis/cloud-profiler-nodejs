@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "wall_profiler",
-      "sources": [ "bindings/wall-profiler.cc" ],
+      "target_name": "time_profiler",
+      "sources": [ "bindings/time-profiler.cc" ],
       "include_dirs": [ "<!(node -e \"require('nan')\")" ]
     },
     {

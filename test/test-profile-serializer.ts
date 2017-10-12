@@ -1,12 +1,12 @@
 import {perftools} from '../src/profile';
-import {serializeWallProfile} from '../src/profilers/profile-serializer';
-import {WallProfile, WallProfileNode} from '../src/v8-types';
+import {serializeTimeProfile} from '../src/profilers/profile-serializer';
+import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
 let assert = require('assert');
 
-describe('serializeWallProfile', function() {
+describe('serializeTimeProfile', function() {
   it('should produce expected profile', function() {
-    const leaf1: WallProfileNode = {
+    const leaf1: TimeProfileNode = {
       callUid: 5,
       scriptResourceName: 'script3',
       functionName: 'function5',
@@ -51,7 +51,7 @@ describe('serializeWallProfile', function() {
       children: [node1, leaf3],
     };
 
-    const wallProfile: WallProfile = {
+    const timeProfile: TimeProfile = {
       startTime: 0,
       endTime: 100,
       topDownRoot: root,
@@ -101,7 +101,7 @@ describe('serializeWallProfile', function() {
       }),
     ];
 
-    const expWallProfileOut: perftools.profiles.IProfile = {
+    const expTimeProfileOut: perftools.profiles.IProfile = {
       sampleType: [
         new perftools.profiles.ValueType({type: 1, unit: 2}),
         new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -129,7 +129,7 @@ describe('serializeWallProfile', function() {
       period: 1000,
     };
 
-    const wallProfileOut = serializeWallProfile(wallProfile, 1000);
-    assert.deepEqual(wallProfileOut, expWallProfileOut);
+    const timeProfileOut = serializeTimeProfile(timeProfile, 1000);
+    assert.deepEqual(timeProfileOut, expTimeProfileOut);
   });
 });
