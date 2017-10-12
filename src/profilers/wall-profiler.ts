@@ -26,12 +26,9 @@ export class WallProfiler {
     }
     this.profiling = true;
     wallProfiler.startProfiling('', true);
-    return delay(profileDuration).then(() => {
-      let result = wallProfiler.stopProfiling('');
-      this.profiling = false;
-      let profile = serializeWallProfile(result, this.samplingInterval);
-      return profile;
-    });
+    await delay(profileDuration);
+    let result = wallProfiler.stopProfiling('');
+    return serializeWallProfile(result, this.samplingInterval);
   }
 
   // Returns true if the WallProfiler is currently profiling and false
