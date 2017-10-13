@@ -1,3 +1,19 @@
+/**
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import * as assert from 'assert';
 import * as nock from 'nock';
 import * as request from 'request';
@@ -6,14 +22,14 @@ import {initConfig} from '../src/index';
 nock.disableNetConnect();
 const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1';
 
-describe('initConfig', function() {
+describe('initConfig', () => {
   let processLogLevel: string|undefined;
   let processCloudProject: string|undefined;
   let processService: string|undefined;
   let processVersion: string|undefined;
   let processConfig: string|undefined;
 
-  before(function() {
+  before(() => {
     processLogLevel = process.env.GCLOUD_PROFILER_LOGLEVEL;
     processCloudProject = process.env.GCLOUD_PROJECT;
     processService = process.env.GAE_SERVICE;
@@ -21,18 +37,18 @@ describe('initConfig', function() {
     processConfig = process.env.GCLOUD_PROFILER_CONFIG;
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     delete process.env.GCLOUD_PROFILER_LOGLEVEL;
     delete process.env.GCLOUD_PROJECT;
     delete process.env.GAE_SERVICE;
     delete process.env.GAE_VERSION;
   });
 
-  afterEach(function() {
+  afterEach(() => {
     nock.cleanAll();
   });
 
-  after(function() {
+  after(() => {
     process.env.GCLOUD_PROFILER_LOGLEVEL = processLogLevel;
     process.env.GCLOUD_PROJECT = processCloudProject;
     process.env.GAE_SERVICE = processService;
@@ -40,7 +56,7 @@ describe('initConfig', function() {
     process.env.GCLOUD_PROFILER_CONFIG = processConfig;
   });
 
-  it('should not modify specified fields when not on GCE', function() {
+  it('should not modify specified fields when not on GCE', async () => {
     let metadata = nock(metadataAPI)
                        .get('/')
                        .reply(500)
@@ -59,16 +75,11 @@ describe('initConfig', function() {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
-    return initConfig(config)
-        .then(initializedConfig => {
-          assert.deepEqual(initializedConfig, config);
-        })
-        .catch((e) => {
-          assert.fail(e);
-        });
+    let initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, config);
   });
 
-  it('should not modify specified fields when on GCE', function() {
+  it('should not modify specified fields when on GCE', async () => {
     let metadata = nock(metadataAPI)
                        .get('/')
                        .reply(200)
@@ -87,16 +98,11 @@ describe('initConfig', function() {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
-    return initConfig(config)
-        .then(initializedConfig => {
-          assert.deepEqual(initializedConfig, config);
-        })
-        .catch((e) => {
-          assert.fail(e);
-        });
+    let initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, config);
   });
 
-  it('should get zone and instancefrom GCE', function() {
+  it('should get zone and instancefrom GCE', async () => {
     let metadata = nock(metadataAPI)
                        .get('/')
                        .reply(200)
@@ -122,18 +128,12 @@ describe('initConfig', function() {
       zone: 'gce-zone',
       projectId: 'projectId',
     };
-    return initConfig(config)
-        .then(initializedConfig => {
-          console.log(initializedConfig);
-          assert.deepEqual(initializedConfig, expConfig);
-        })
-        .catch((e) => {
-          assert.fail(e);
-        });
+    let initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should not reject when not on GCE and no zone and instance found',
-     function() {
+     async () => {
        let metadata = nock(metadataAPI);
        const config = {
          projectId: 'fake-projectId',
@@ -148,75 +148,29 @@ describe('initConfig', function() {
          zone: '',
          projectId: 'fake-projectId'
        };
-       return initConfig(config)
-           .then(initializedConfig => {
-             assert.deepEqual(initializedConfig, expConfig);
-           })
-           .catch((e) => {
-             assert.fail(e);
-           });
-     });
-  it('should reject when on GCE and no instance and no instance metadata',
-     function() {
-       let metadata = nock(metadataAPI)
-                          .get('/')
-                          .reply(200)
-                          .get('/instance/zone')
-                          .reply(200, 'projects/123456789012/zones/gce-zone')
-                          .get('/project/project-id')
-                          .reply(200, 'gce-projectId');
-       const config = {
-         logLevel: 2,
-         serviceContext: {version: '', service: 'fake-service'},
-         disableHeap: true,
-         disableCpu: true,
-       };
-       return initConfig(config)
-           .then(initializedConfig => {
-             console.log(initializedConfig);
-             assert.fail('expected error because no instance in metadata');
-           })
-           .catch((e: Error) => {
-             assert.ok(
-                 e.message.startsWith(
-                     'failed to get instance from Compute Engine: '),
-                 'expected error message to begin with ' +
-                     '\"failed to get instance from Compute Engine:\",' +
-                     ' actual error message: ' +
-                     '\"' + e.message + '\"');
-           });
+       let initializedConfig = await initConfig(config);
+       assert.deepEqual(initializedConfig, expConfig);
      });
 
-  it('should reject when on GCE and no zone and no zone metadata', function() {
-    let metadata = nock(metadataAPI)
-                       .get('/')
-                       .reply(200)
-                       .get('/instance/name')
-                       .reply(200, 'gce-instance')
-                       .get('/project/project-id')
-                       .reply(200, 'gce-projectId');
+  it('should reject when no service specified', () => {
+    let metadata = nock(metadataAPI);
     const config = {
       logLevel: 2,
-      serviceContext: {version: '', service: 'fake-service'},
+      serviceContext: {version: ''},
       disableHeap: true,
       disableCpu: true,
     };
     return initConfig(config)
         .then(initializedConfig => {
-          console.log(initializedConfig);
-          assert.fail('expected error because no zone in metadata');
+          assert.fail('expected error because no service in config');
         })
         .catch((e: Error) => {
-          assert.ok(
-              e.message.startsWith('failed to get zone from Compute Engine: '),
-              'expected error message to begin with ' +
-                  '\"failed to get zone from Compute Engine:\",' +
-                  ' actual error message: ' +
-                  '\"' + e.message + '\"');
+          assert.equal(
+              e.message, 'service must be specified in the configuration');
         });
   });
 
-  it('should get {{projectId}} when no projectId given', function() {
+  it('should get {{projectId}} when no projectId given', async () => {
     let metadata = nock(metadataAPI)
                        .get('/')
                        .reply(200)
@@ -243,13 +197,12 @@ describe('initConfig', function() {
       instance: 'instance',
       zone: 'zone'
     };
-    return initConfig(config).then(initializedConfig => {
-      assert.deepEqual(initializedConfig, expConfig);
-    });
+    let initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should get values from from environment variable when not specified in config or environment variables',
-     function() {
+     async () => {
        process.env.GCLOUD_PROJECT = 'process-projectId';
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
@@ -276,13 +229,12 @@ describe('initConfig', function() {
          instance: 'envConfig-instance',
          zone: 'envConfig-zone'
        };
-       return initConfig(config).then(initializedConfig => {
-         assert.deepEqual(initializedConfig, expConfig);
-       });
+       let initializedConfig = await initConfig(config);
+       assert.deepEqual(initializedConfig, expConfig);
      });
 
   it('should not get values from from environment variable when values specified in config',
-     function() {
+     async () => {
        process.env.GCLOUD_PROJECT = 'process-projectId';
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
@@ -307,13 +259,12 @@ describe('initConfig', function() {
          instance: 'instance',
          zone: 'zone'
        };
-       return initConfig(config).then(initializedConfig => {
-         assert.deepEqual(initializedConfig, config);
-       });
+       let initializedConfig = await initConfig(config);
+       assert.deepEqual(initializedConfig, config);
      });
 
   it('should get values from from environment config when not specified in config or other environment variables',
-     function() {
+     async () => {
        process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
 
        const expConfig = {
@@ -337,8 +288,7 @@ describe('initConfig', function() {
                           .get('/project/project-id')
                           .reply(200, 'gce-projectId');
        const config = {};
-       return initConfig(config).then(initializedConfig => {
-         assert.deepEqual(initializedConfig, expConfig);
-       });
+       let initializedConfig = await initConfig(config);
+       assert.deepEqual(initializedConfig, expConfig);
      });
 });

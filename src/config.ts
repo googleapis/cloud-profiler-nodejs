@@ -67,7 +67,6 @@ export const defaultConfig: Config = {
   logLevel: 1,
   projectId: '{{projectId}}',
   serviceContext: {
-    service: 'default',
     version: '',
   },
   disableHeap: false,

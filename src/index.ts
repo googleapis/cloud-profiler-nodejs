@@ -26,36 +26,31 @@ import {Profiler, ProfilerConfig} from './profiler';
 const common: Common = require('@google-cloud/common');
 const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1/';
 
-// Returns a promise which will resolve to true if running on GCE and false
-// otherwise.
-// It is assumed a program is running on GCE if the metadata API can be
-// accessed.
-function onGCE(): Promise<boolean> {
-  return new Promise<boolean>((resolve) => {
-    request.get(
-        {url: metadataAPI, headers: {'Metadata-Flavor': 'Google'}},
-        function(err: Error, response) {
-          err ? resolve(false) : resolve(true);
-        });
-  });
-}
-
-// Returns a promise that resolves to the value of metadata field.
-// Promise will be rejected if there is a problem accessing metadata API.
+// Returns value of metadata field.
+// Throws error if there is a problem accessing metadata API.
 function getField(field: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     request.get(
-        {url: metadataAPI + field, headers: {'Metadata-Flavor': 'Google'}},
-        function(err: Error, response: request.RequestResponse) {
-          err ? reject(err) : resolve(response.body);
+        {
+          url: metadataAPI + field,
+          headers: {'Metadata-Flavor': 'Google'},
+          timeout: 2000
+        },
+        (err: Error, response: request.RequestResponse) => {
+          if (err) {
+            reject(Error(
+                'failed to get ' + field + ' from Compute Engine: ' + err));
+          } else {
+            resolve(response.body);
+          }
         });
   });
 }
 
 // initConfig sets unset values in the configuration to the value retrieved from
-// environment variables, metadata, or the default value specified in
+// environment variables, metadata, or the default values specified in
 // defaultConfig.
-// Returns rejected promise if value that must be set cannot be initialized.
+// Throws error if value that must be set cannot be initialized.
 // Exported for testing purposes.
 export async function initConfig(config: Config): Promise<ProfilerConfig> {
   config = common.util.normalizeArguments(null, config);
@@ -84,23 +79,25 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
   let normalizedConfig =
       extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
-  // fetch instance and zone from metadata if not specified and on GCE
-  if (await onGCE()) {
-    if (!normalizedConfig.instance) {
-      normalizedConfig.instance = await getField('instance/name').catch((e) => {
-        throw Error('failed to get instance from Compute Engine: ' + e);
-      });
-    }
+  if (!normalizedConfig.zone || !normalizedConfig.instance) {
+    const [instance, zone] =
+        await Promise
+            .all([getField('instance/name'), getField('instance/zone')])
+            .catch(
+                (err: Error) => {
+                    // ignore errors, which will occur when not on GCE.
+                }) ||
+        ['', ''];
     if (!normalizedConfig.zone) {
-      let zone = await getField('instance/zone').catch((e) => {
-        throw Error('failed to get zone from Compute Engine: ' + e);
-      });
       normalizedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
+    }
+    if (!normalizedConfig.instance) {
+      normalizedConfig.instance = instance;
     }
   }
 
-  if (normalizedConfig.projectId === undefined) {
-    throw new Error('projectId must be specified in the configuration');
+  if (normalizedConfig.serviceContext.service === undefined) {
+    throw new Error('service must be specified in the configuration');
   }
 
   return normalizedConfig;

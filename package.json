@@ -8,7 +8,6 @@
     "test": "nyc mocha build/test/test-*.js",
     "check": "gts check",
     "clean": "gts clean",
-    "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
     "compile": "npm run proto && tsc -p .",
     "fix": "gts fix",
     "prepare": "npm run compile",
@@ -26,7 +25,8 @@
     "delay": "^2.0.0",
     "extend": "^3.0.1",
     "nan": "^2.1.0",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "retry-request": "^3.0.1"
   },
   "devDependencies": {
     "@types/delay": "^2.0.0",
