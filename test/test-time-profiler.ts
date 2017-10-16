@@ -53,9 +53,12 @@ describe('TimeProfiler', () => {
          const duration = 500;
          const sampleInterval = 1000;
          let profiler = new TimeProfiler(sampleInterval);
-         let profilePromise = profiler.profile(duration);
+         let isProfiling = true;
+         let profilePromise = profiler.profile(duration).then(() => {
+           isProfiling = false;
+         });
          await delay(2 * duration);
-         assert.equal(false, profiler.isRunning(), 'profiler is still running');
+         assert.equal(false, isProfiling, 'profiler is still running');
        });
 
     it('should return a promise that resolves to a profile with sample types' +
@@ -99,19 +102,6 @@ describe('TimeProfiler', () => {
         assert.ok(profile.sample.length > 0, 'there are no samples');
       } else {
         assert.fail('sample field of profile is undefined');
-      }
-    });
-
-    it('should return rejected promise when already profiling', async () => {
-      const sampleInterval = 1000;
-      const profiler = new TimeProfiler(sampleInterval);
-      profiler.profile(1000);
-      try {
-        await profiler.profile(500);
-        assert.fail(
-            'expected rejected promise, got promise which was not rejected');
-      } catch (err) {
-        assert.equal(err.message, 'already profiling with TimeProfiler');
       }
     });
   });

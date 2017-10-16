@@ -20,10 +20,15 @@ import {TimeProfile, TimeProfileNode} from '../v8-types';
 // A stack of function UIDs.
 type Stack = Array<number>;
 
-// Converts v8 Profile into profile with profile format used by Stackdriver
-// Profiler.
+/**
+ * Converts v8 Profile into profile with profile format used by Stackdriver
+ * Profiler.
+ *
+ * @param prof - profile to be converted.
+ * @param intervalMicros - average time (microseconds) between samples.
+ */
 export function serializeTimeProfile(
-    prof: TimeProfile, sampleInterval: number) {
+    prof: TimeProfile, intervalMicros: number) {
   let samples: Array<perftools.profiles.Sample> = [];
   let locations: Array<perftools.profiles.Location> = [];
   let functions: Array<perftools.profiles.Function> = [];
@@ -31,8 +36,8 @@ export function serializeTimeProfile(
   let functionMap: Map<number, perftools.profiles.Function> = new Map();
   let strings = [''];
 
-  let sampleValueType = getSampleValueType();
-  let timeValueType = getTimeValueType();
+  let sampleValueType = createSampleValueType();
+  let timeValueType = createTimeValueType();
 
   serializeNode(prof.topDownRoot, []);
 
@@ -48,14 +53,15 @@ export function serializeTimeProfile(
     durationNanos: 1000 * 1000 * (prof.endTime - prof.startTime),  // Nanos
 
     periodType: timeValueType,
-    period: sampleInterval
+    period: intervalMicros
   };
 
-  /* Adds samples from a node and it's children to the fields tracking
+  /**
+   * Adds samples from a node and it's children to the fields tracking
    * profile serialization.
    *
-   * node - the node which is serialized
-   * stack - the stack trace to the current node.
+   * @param node - the node which is serialized
+   * @param stack - the stack trace to the current node.
    */
   function serializeNode(node: TimeProfileNode, stack: Stack) {
     let location = getLocation(node);
@@ -64,7 +70,7 @@ export function serializeTimeProfile(
     if (node.hitCount > 0) {
       const sample = new perftools.profiles.Sample({
         locationId: stack.slice(0),
-        value: [node.hitCount, node.hitCount * sampleInterval]
+        value: [node.hitCount, node.hitCount * intervalMicros]
       });
       samples.push(sample);
     }
@@ -93,13 +99,12 @@ export function serializeTimeProfile(
 
   function getFunction(node: TimeProfileNode): perftools.profiles.Function {
     const id = node.callUid;
-    if (functionMap.has(id)) {
-      // Map.get returns possibly undefined, but we know it is defined.
-      // TODO: figure out how to avoid the cast.
-      return functionMap.get(id) as perftools.profiles.Function;
+    let f = functionMap.get(id);
+    if (f !== undefined) {
+      return f;
     }
     const name = getIndexOrAdd(node.functionName || '(anonymous)', strings);
-    const f = new perftools.profiles.Function({
+    f = new perftools.profiles.Function({
       id: id,
       name: name,
       systemName: name,
@@ -111,14 +116,14 @@ export function serializeTimeProfile(
     return f;
   }
 
-  function getSampleValueType(): perftools.profiles.ValueType {
+  function createSampleValueType(): perftools.profiles.ValueType {
     return new perftools.profiles.ValueType({
       type: getIndexOrAdd('samples', strings),
       unit: getIndexOrAdd('count', strings)
     });
   }
 
-  function getTimeValueType(): perftools.profiles.ValueType {
+  function createTimeValueType(): perftools.profiles.ValueType {
     return new perftools.profiles.ValueType({
       type: getIndexOrAdd('time', strings),
       unit: getIndexOrAdd('microseconds', strings)

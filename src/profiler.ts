@@ -21,7 +21,7 @@ import {Config} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
 
-const pjson = require('../../../package.json');
+const pjson = require('../../package.json');
 const common: Common = require('@google-cloud/common');
 
 export interface ProfilerConfig extends AuthenticationConfig {
