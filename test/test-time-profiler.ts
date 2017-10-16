@@ -19,7 +19,6 @@ import * as simple from 'simple-mock';
 
 import {perftools} from '../src/profile';
 import {TimeProfiler} from '../src/profilers/time-profiler';
-import {getIndexOrAdd} from '../src/util';
 
 let assert = require('assert');
 const v8TimeProfiler = require('bindings')('time_profiler');
