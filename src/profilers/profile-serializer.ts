@@ -82,11 +82,11 @@ export function serializeTimeProfile(
 
   function getLocation(node: TimeProfileNode): perftools.profiles.Location {
     const id = node.callUid;
-    if (locationMap.has(id)) {
-      return locationMap.get(id) as perftools.profiles.Location;
+    let location = locationMap.get(id);
+    if (location !== undefined) {
+      return location;
     }
-    const location =
-        new perftools.profiles.Location({id: id, line: [getLine(node)]});
+    location = new perftools.profiles.Location({id: id, line: [getLine(node)]});
     locations.push(location);
     locationMap.set(id, location);
     return location;

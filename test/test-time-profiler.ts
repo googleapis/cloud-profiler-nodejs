@@ -50,24 +50,24 @@ describe('TimeProfiler', () => {
 
     it('should profile during duration and finish profiling after duration',
        async () => {
-         const duration = 500;
-         const sampleInterval = 1000;
-         let profiler = new TimeProfiler(sampleInterval);
+         const durationMillis = 500;
+         const intervalMicros = 1000;
+         let profiler = new TimeProfiler(intervalMicros);
          let isProfiling = true;
-         let profilePromise = profiler.profile(duration).then(() => {
+         let profilePromise = profiler.profile(durationMillis).then(() => {
            isProfiling = false;
          });
-         await delay(2 * duration);
+         await delay(2 * durationMillis);
          assert.equal(false, isProfiling, 'profiler is still running');
        });
 
     it('should return a promise that resolves to a profile with sample types' +
            ' of time profile',
        async () => {
-         const duration = 500;
-         const sampleInterval = 1000;
-         let profiler = new TimeProfiler(sampleInterval);
-         let profile = await profiler.profile(duration);
+         const durationMillis = 500;
+         const intervalMicros = 1000;
+         let profiler = new TimeProfiler(intervalMicros);
+         let profile = await profiler.profile(durationMillis);
          if (profile.sampleType !== undefined) {
            const vt1: perftools.profiles.IValueType = profile.sampleType[0];
            const vt2: perftools.profiles.IValueType = profile.sampleType[1];
@@ -94,10 +94,10 @@ describe('TimeProfiler', () => {
        });
 
     it('should return a profile with samples', async () => {
-      const duration = 500;
-      const sampleInterval = 1000;
-      let profiler = new TimeProfiler(sampleInterval);
-      let profile = await profiler.profile(duration);
+      const durationMillis = 500;
+      const intervalMicros = 1000;
+      let profiler = new TimeProfiler(intervalMicros);
+      let profile = await profiler.profile(durationMillis);
       if (profile.sample !== undefined) {
         assert.ok(profile.sample.length > 0, 'there are no samples');
       } else {
