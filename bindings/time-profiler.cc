@@ -20,7 +20,6 @@
 using namespace v8;
 
 Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
-  // TODO: Implement unimplemented interface
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("functionName").ToLocalChecked(),
     node->GetFunctionName());
@@ -43,7 +42,6 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
 }
 
 Local<Value> TranslateTimeProfile(const CpuProfile* profile) {
-  // TODO: Implement unimplemented interface
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
     profile->GetTitle());
