@@ -85,13 +85,13 @@ describe('serializeTimeProfile', () => {
       new perftools.profiles.Function(
           {id: 1, name: 5, systemName: 5, filename: 6}),
       new perftools.profiles.Function(
-          {id: 2, name: 7, systemName: 7, filename: 8}),
+        {id: 3, name: 7, systemName: 7, filename: 8}),
       new perftools.profiles.Function(
-          {id: 5, name: 9, systemName: 9, filename: 10}),
+          {id: 2, name: 9, systemName: 9, filename: 10}),
       new perftools.profiles.Function(
-          {id: 4, name: 11, systemName: 11, filename: 10}),
+        {id: 4, name: 11, systemName: 11, filename: 8}),
       new perftools.profiles.Function(
-          {id: 3, name: 12, systemName: 12, filename: 10}),
+          {id: 5, name: 12, systemName: 12, filename: 8}),
     ];
 
     const locations = [
@@ -100,20 +100,20 @@ describe('serializeTimeProfile', () => {
         id: 1,
       }),
       new perftools.profiles.Location({
-        line: [lines[1]],
-        id: 2,
+        line: [lines[2]],
+        id: 3,
       }),
       new perftools.profiles.Location({
-        line: [lines[4]],
-        id: 5,
+        line: [lines[1]],
+        id: 2,
       }),
       new perftools.profiles.Location({
         line: [lines[3]],
         id: 4,
       }),
       new perftools.profiles.Location({
-        line: [lines[2]],
-        id: 3,
+        line: [lines[4]],
+        id: 5,
       }),
     ];
 
@@ -124,21 +124,20 @@ describe('serializeTimeProfile', () => {
       ],
       sample: [
         new perftools.profiles.Sample(
-            {locationId: [2, 1], value: [7, 7000], label: []}),
+            {locationId: [3, 1], value: [3, 3000], label: []}),
         new perftools.profiles.Sample(
-            {locationId: [5, 2, 1], value: [5, 5000], label: []}),
+            {locationId: [2, 1], value: [7, 7000], label: []}),
         new perftools.profiles.Sample(
             {locationId: [4, 2, 1], value: [2, 2000], label: []}),
         new perftools.profiles.Sample(
-            {locationId: [3, 1], value: [3, 3000], label: []}),
+            {locationId: [5, 2, 1], value: [5, 5000], label: []}),
 
       ],
       location: locations,
       function: functions,
-      stringTable: [
-        '', 'samples', 'count', 'time', 'microseconds', 'main', 'script1',
-        'function2', 'script2', 'function5', 'script3', 'function4', 'function3'
-      ],
+      stringTable: [ '', 'samples', 'count', 'time', 'microseconds', 'main',
+        'script1', 'function3', 'script3', 'function2', 'script2', 'function4',
+        'function5'],
       timeNanos: 100 * 1000 * 1000,
       durationNanos: 100 * 1000 * 1000,
       periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -146,6 +145,6 @@ describe('serializeTimeProfile', () => {
     };
 
     const timeProfileOut = serializeTimeProfile(timeProfile, 1000);
-    assert.deepEqual(timeProfileOut, expTimeProfileOut);
+    assert.deepEqual(expTimeProfileOut, timeProfileOut);
   });
 });

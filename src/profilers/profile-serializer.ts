@@ -39,7 +39,7 @@ export function serializeTimeProfile(
   let sampleValueType = createSampleValueType();
   let timeValueType = createTimeValueType();
 
-  serializeNode(prof.topDownRoot, []);
+  serializeNode(prof.topDownRoot);
 
   return {
     sampleType: [sampleValueType, timeValueType],
@@ -63,21 +63,28 @@ export function serializeTimeProfile(
    * @param node - the node which is serialized
    * @param stack - the stack trace to the current node.
    */
-  function serializeNode(node: TimeProfileNode, stack: Stack) {
-    let location = getLocation(node);
-    // TODO: deal with location.id being a Long.
-    stack.unshift(location.id as number);  // leaf is first in the stack
-    if (node.hitCount > 0) {
-      const sample = new perftools.profiles.Sample({
-        locationId: stack.slice(0),
-        value: [node.hitCount, node.hitCount * intervalMicros]
-      });
-      samples.push(sample);
+  function serializeNode(root: TimeProfileNode) {
+    let nodes = [root];
+    let stacks: number[][] = [[]];
+    while (nodes.length > 0) {
+      let node = nodes.pop();
+      let stack = stacks.pop();
+      if (node !== undefined && stack !== undefined) {
+        let location = getLocation(node);
+        stack.unshift(location.id as number);
+        if (node.hitCount > 0) {
+          const sample = new perftools.profiles.Sample({
+            locationId: stack,
+            value: [node.hitCount, node.hitCount * intervalMicros]
+          });
+          samples.push(sample);
+        }
+        for (let child of node.children) {
+          nodes.push(child);
+          stacks.push(stack.slice(0));
+        }
+      }
     }
-    for (let child of node.children) {
-      serializeNode(child, stack);
-    }
-    stack.shift();  // remove leaf from stack
   }
 
   function getLocation(node: TimeProfileNode): perftools.profiles.Location {
