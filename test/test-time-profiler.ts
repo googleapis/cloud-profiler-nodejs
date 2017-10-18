@@ -20,27 +20,16 @@ import * as simple from 'simple-mock';
 import {perftools} from '../src/profile';
 import {TimeProfiler} from '../src/profilers/time-profiler';
 
+import {timeProfile, timeProfileTree} from './profile-for-test';
+
 let assert = require('assert');
 const v8TimeProfiler = require('bindings')('time_profiler');
-
-const testProfile = {
-  startTime: 0,
-  endTime: 10 * 1000,
-  topDownRoot: {
-    callUid: 1,
-    scriptResourceName: 'script1',
-    functionName: 'main',
-    lineNumber: 1,
-    hitCount: 5,
-    children: []
-  }
-};
 
 describe('TimeProfiler', () => {
   describe('profile', () => {
     before(() => {
       simple.mock(v8TimeProfiler, 'startProfiling');
-      simple.mock(v8TimeProfiler, 'stopProfiling').returnWith(testProfile);
+      simple.mock(v8TimeProfiler, 'stopProfiling').returnWith(timeProfileTree);
       simple.mock(v8TimeProfiler, 'setSamplingInterval');
     });
 
@@ -61,48 +50,12 @@ describe('TimeProfiler', () => {
          assert.equal(false, isProfiling, 'profiler is still running');
        });
 
-    it('should return a promise that resolves to a profile with sample types' +
-           ' of time profile',
-       async () => {
-         const durationMillis = 500;
-         const intervalMicros = 1000;
-         let profiler = new TimeProfiler(intervalMicros);
-         let profile = await profiler.profile(durationMillis);
-         if (profile.sampleType !== undefined) {
-           const vt1: perftools.profiles.IValueType = profile.sampleType[0];
-           const vt2: perftools.profiles.IValueType = profile.sampleType[1];
-
-           if (profile.stringTable !== undefined) {
-             assert.equal(
-                 profile.stringTable[vt1.type as number], 'samples',
-                 'first sampleType has wrong type for time profile');
-             assert.equal(
-                 profile.stringTable[vt1.unit as number], 'count',
-                 'first sampleType has wrong unit for time profile');
-             assert.equal(
-                 profile.stringTable[vt2.type as number], 'time',
-                 'second sampleType has wrong type for time profile');
-             assert.equal(
-                 profile.stringTable[vt2.unit as number], 'microseconds',
-                 'second sampleType has wrong unit for time profile');
-           } else {
-             assert.fail('profile does not have string table');
-           }
-         } else {
-           assert.fail('profile sampleType is undefined');
-         }
-       });
-
-    it('should return a profile with samples', async () => {
+    it('should return a profile equal to the expected profile', async () => {
       const durationMillis = 500;
       const intervalMicros = 1000;
       let profiler = new TimeProfiler(intervalMicros);
       let profile = await profiler.profile(durationMillis);
-      if (profile.sample !== undefined) {
-        assert.ok(profile.sample.length > 0, 'there are no samples');
-      } else {
-        assert.fail('sample field of profile is undefined');
-      }
+      assert.deepEqual(timeProfile, profile);
     });
   });
 });

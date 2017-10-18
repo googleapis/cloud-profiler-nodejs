@@ -64,12 +64,16 @@ export function serializeTimeProfile(
    * @param stack - the stack trace to the current node.
    */
   function serializeNode(root: TimeProfileNode) {
-    let nodes = [root];
-    let stacks: number[][] = [[]];
-    while (nodes.length > 0) {
-      let node = nodes.pop();
-      let stack = stacks.pop();
-      if (node !== undefined && stack !== undefined) {
+    let entries: {node: TimeProfileNode, stack: number[]}[] = [];
+    // don't include root node in serialized profile, start with it's children.
+    for (let child of root.children) {
+      entries.push({node: child, stack: []});
+    }
+    while (entries.length > 0) {
+      let entry = entries.pop();
+      if (entry !== undefined) {
+        let node = entry.node;
+        let stack = entry.stack;
         let location = getLocation(node);
         stack.unshift(location.id as number);
         if (node.hitCount > 0) {
@@ -80,8 +84,7 @@ export function serializeTimeProfile(
           samples.push(sample);
         }
         for (let child of node.children) {
-          nodes.push(child);
-          stacks.push(stack.slice(0));
+          entries.push({node: child, stack: stack.slice(0)});
         }
       }
     }
