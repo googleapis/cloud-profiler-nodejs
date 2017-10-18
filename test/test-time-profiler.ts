@@ -15,7 +15,7 @@
  */
 
 import * as delay from 'delay';
-import * as simple from 'simple-mock';
+import * as sinon from 'sinon';
 
 import {perftools} from '../src/profile';
 import {TimeProfiler} from '../src/profilers/time-profiler';
@@ -28,13 +28,15 @@ const v8TimeProfiler = require('bindings')('time_profiler');
 describe('TimeProfiler', () => {
   describe('profile', () => {
     before(() => {
-      simple.mock(v8TimeProfiler, 'startProfiling');
-      simple.mock(v8TimeProfiler, 'stopProfiling').returnWith(timeProfileTree);
-      simple.mock(v8TimeProfiler, 'setSamplingInterval');
+      sinon.stub(v8TimeProfiler, 'startProfiling');
+      sinon.stub(v8TimeProfiler, 'stopProfiling').returns(timeProfileTree);
+      sinon.stub(v8TimeProfiler, 'setSamplingInterval');
     });
 
     after(() => {
-      simple.restore();
+      v8TimeProfiler.startProfiling.restore();
+      v8TimeProfiler.stopProfiling.restore();
+      v8TimeProfiler.setSamplingInterval.restore();
     });
 
     it('should profile during duration and finish profiling after duration',
