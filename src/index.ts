@@ -16,7 +16,7 @@
 
 import * as extend from 'extend';
 import * as path from 'path';
-import * as request from 'request';
+const gcpMetadata = require('gcp-metadata');
 
 import {AuthenticationConfig, Common, ServiceConfig, ServiceObject} from '../third_party/types/common-types';
 
@@ -30,19 +30,9 @@ const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1/';
 // Throws error if there is a problem accessing metadata API.
 function getField(field: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    request.get(
-        {
-          url: metadataAPI + field,
-          headers: {'Metadata-Flavor': 'Google'},
-          timeout: 2000
-        },
-        (err: Error, response: request.RequestResponse) => {
-          if (err) {
-            reject(Error(
-                'failed to get ' + field + ' from Compute Engine: ' + err));
-          } else {
-            resolve(response.body);
-          }
+    gcpMetadata.instance(
+        field, (err: Error, response: any, metadata: string) => {
+          err ? reject(err) : resolve(metadata);
         });
   });
 }
@@ -81,8 +71,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
 
   if (!normalizedConfig.zone || !normalizedConfig.instance) {
     const [instance, zone] =
-        await Promise
-            .all([getField('instance/name'), getField('instance/zone')])
+        await Promise.all([getField('name'), getField('zone')])
             .catch(
                 (err: Error) => {
                     // ignore errors, which will occur when not on GCE.

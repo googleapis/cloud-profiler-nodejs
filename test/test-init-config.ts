@@ -17,7 +17,12 @@
 import * as assert from 'assert';
 import * as nock from 'nock';
 import * as request from 'request';
+import * as sinon from 'sinon';
+
 import {initConfig} from '../src/index';
+
+const gcpMetadata = require('gcp-metadata');
+
 
 nock.disableNetConnect();
 const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1';
@@ -45,7 +50,7 @@ describe('initConfig', () => {
   });
 
   afterEach(() => {
-    nock.cleanAll();
+    gcpMetadata.instance.restore();
   });
 
   after(() => {
@@ -57,15 +62,9 @@ describe('initConfig', () => {
   });
 
   it('should not modify specified fields when not on GCE', async () => {
-    let metadata = nock(metadataAPI)
-                       .get('/')
-                       .reply(500)
-                       .get('/instance/name')
-                       .reply(500)
-                       .get('/instance/zone')
-                       .reply(500)
-                       .get('/project/project-id')
-                       .reply(500);
+    sinon.stub(gcpMetadata, 'instance')
+        .throwsException('cannot access metadata');
+
     const config = {
       logLevel: 2,
       serviceContext: {version: 'fake-version', service: 'fake-service'},
@@ -80,15 +79,13 @@ describe('initConfig', () => {
   });
 
   it('should not modify specified fields when on GCE', async () => {
-    let metadata = nock(metadataAPI)
-                       .get('/')
-                       .reply(200)
-                       .get('/instance/name')
-                       .reply(200, 'gce-instance')
-                       .get('/instance/zone')
-                       .reply(200, 'projects/123456789012/zones/gce-zone')
-                       .get('/project/project-id')
-                       .reply(200, 'gce-projectId');
+    sinon.stub(gcpMetadata, 'instance')
+        .withArgs('name')
+        .callsArgWith(1, null, undefined, 'gce-instance')
+        .withArgs('zone')
+        .callsArgWith(
+            1, null, undefined, 'projects/123456789012/zones/gce-zone');
+
     const config = {
       logLevel: 2,
       serviceContext: {version: 'fake-version', service: 'fake-service'},
@@ -102,16 +99,14 @@ describe('initConfig', () => {
     assert.deepEqual(initializedConfig, config);
   });
 
-  it('should get zone and instancefrom GCE', async () => {
-    let metadata = nock(metadataAPI)
-                       .get('/')
-                       .reply(200)
-                       .get('/instance/name')
-                       .reply(200, 'gce-instance')
-                       .get('/instance/zone')
-                       .reply(200, 'projects/123456789012/zones/gce-zone')
-                       .get('/project/project-id')
-                       .reply(200, 'gce-projectId');
+  it('should get zone and instance from GCE', async () => {
+    sinon.stub(gcpMetadata, 'instance')
+        .withArgs('name')
+        .callsArgWith(1, null, undefined, 'gce-instance')
+        .withArgs('zone')
+        .callsArgWith(
+            1, null, undefined, 'projects/123456789012/zones/gce-zone');
+
     const config = {
       projectId: 'projectId',
       logLevel: 2,
@@ -134,7 +129,8 @@ describe('initConfig', () => {
 
   it('should not reject when not on GCE and no zone and instance found',
      async () => {
-       let metadata = nock(metadataAPI);
+       sinon.stub(gcpMetadata, 'instance')
+           .throwsException('cannot access metadata');
        const config = {
          projectId: 'fake-projectId',
          serviceContext: {service: 'fake-service'}
@@ -153,7 +149,8 @@ describe('initConfig', () => {
      });
 
   it('should reject when no service specified', () => {
-    let metadata = nock(metadataAPI);
+    sinon.stub(gcpMetadata, 'instance')
+        .throwsException('cannot access metadata');
     const config = {
       logLevel: 2,
       serviceContext: {version: ''},
@@ -171,15 +168,9 @@ describe('initConfig', () => {
   });
 
   it('should get {{projectId}} when no projectId given', async () => {
-    let metadata = nock(metadataAPI)
-                       .get('/')
-                       .reply(200)
-                       .get('/instance/name')
-                       .reply(200, 'gce-instance')
-                       .get('/instance/zone')
-                       .reply(200, 'projects/123456789012/zones/gce-zone')
-                       .get('/project/project-id')
-                       .reply(200, 'gce-projectId');
+    sinon.stub(gcpMetadata, 'instance')
+        .throwsException('cannot access metadata');
+
     const config = {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
@@ -208,16 +199,12 @@ describe('initConfig', () => {
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
        process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
-
-       let metadata = nock(metadataAPI)
-                          .get('/')
-                          .reply(200)
-                          .get('/instance/name')
-                          .reply(200, 'gce-instance')
-                          .get('/instance/zone')
-                          .reply(200, 'projects/123456789012/zones/gce-zone')
-                          .get('/project/project-id')
-                          .reply(200, 'gce-projectId');
+       sinon.stub(gcpMetadata, 'instance')
+           .withArgs('name')
+           .callsArgWith(1, null, undefined, 'gce-instance')
+           .withArgs('zone')
+           .callsArgWith(
+               1, null, undefined, 'projects/123456789012/zones/gce-zone');
        const config = {};
        const expConfig = {
          projectId: 'process-projectId',
@@ -240,16 +227,13 @@ describe('initConfig', () => {
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
        process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
+       sinon.stub(gcpMetadata, 'instance')
+           .withArgs('name')
+           .callsArgWith(1, null, undefined, 'gce-instance')
+           .withArgs('zone')
+           .callsArgWith(
+               1, null, undefined, 'projects/123456789012/zones/gce-zone');
 
-       let metadata = nock(metadataAPI)
-                          .get('/')
-                          .reply(200)
-                          .get('/instance/name')
-                          .reply(200, 'gce-instance')
-                          .get('/instance/zone')
-                          .reply(200, 'projects/123456789012/zones/gce-zone')
-                          .get('/project/project-id')
-                          .reply(200, 'gce-projectId');
        const config = {
          projectId: 'config-projectId',
          logLevel: 1,
@@ -265,6 +249,8 @@ describe('initConfig', () => {
 
   it('should get values from from environment config when not specified in config or other environment variables',
      async () => {
+       sinon.stub(gcpMetadata, 'instance')
+           .throwsException('cannot access metadata');
        process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
 
        const expConfig = {
@@ -278,15 +264,6 @@ describe('initConfig', () => {
          projectId: 'envConfig-fake-projectId'
        };
 
-       let metadata = nock(metadataAPI)
-                          .get('/')
-                          .reply(200)
-                          .get('/instance/name')
-                          .reply(200, 'gce-instance')
-                          .get('/instance/zone')
-                          .reply(200, 'projects/123456789012/zones/gce-zone')
-                          .get('/project/project-id')
-                          .reply(200, 'gce-projectId');
        const config = {};
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
