@@ -19,6 +19,10 @@ import {getIndexOrAdd} from '../util';
 import {TimeProfile, TimeProfileNode} from '../v8-types';
 // A stack of function UIDs.
 type Stack = Array<number>;
+interface Entry {
+  node: TimeProfileNode;
+  stack: Stack;
+}
 
 /**
  * Converts v8 Profile into profile with profile format used by Stackdriver
@@ -64,7 +68,7 @@ export function serializeTimeProfile(
    * @param stack - the stack trace to the current node.
    */
   function serializeNode(root: TimeProfileNode) {
-    let entries: {node: TimeProfileNode, stack: number[]}[] = [];
+    let entries: Entry[] = [];
     // don't include root node in serialized profile, start with it's children.
     for (let child of root.children) {
       entries.push({node: child, stack: []});
