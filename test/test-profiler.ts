@@ -47,9 +47,14 @@ when(mockTimeProfiler.profile(10 * 1000)).thenReturn(new Promise((resolve) => {
   resolve(testProfile);
 }));
 
+nock.disableNetConnect();
 export function oauth2(): nock.Scope {
   return nock('https://accounts.google.com')
-      .post('/o/oauth2/token', (body: any)=>{return true})
+      .post(
+          '/o/oauth2/token',
+          (body: any) => {
+            return true;
+          })
       .once()
       .reply(200, {
         refresh_token: 'hello',
@@ -125,9 +130,6 @@ describe('Profiler', () => {
   });
   describe('profileAndUpload', () => {
     // TODO: verify authentication.
-    afterEach(() => {
-      nock.cleanAll();
-    });
     it('should send request to upload profile', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
@@ -137,7 +139,6 @@ describe('Profiler', () => {
       };
       const expProf =
           extend(true, {profileBytes: base64TestProfile}, testConfig);
-      
       oauth2();
       const uploadProfileMock =
           nock(API)
@@ -153,9 +154,6 @@ describe('Profiler', () => {
     });
   });
   describe('createProfile', () => {
-    afterEach(() => {
-      nock.cleanAll();
-    });
     it('should send request to create only wall profile when heap disabled',
        async () => {
          const config = extend(true, {}, testConfig);
@@ -166,7 +164,7 @@ describe('Profiler', () => {
            duration: '10s',
            labels: {instance: config.instance, zone: config.zone}
          };
-        oauth2();
+         oauth2();
          const createProfileMock =
              nock(API)
                  .post('/projects/' + testConfig.projectId + '/profiles')

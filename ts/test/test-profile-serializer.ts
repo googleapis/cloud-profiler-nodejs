@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import * as sinon from 'sinon';
 import {perftools} from '../../proto/profile';
 import {serializeHeapProfile, serializeTimeProfile} from '../src/profilers/profile-serializer';
 import {TimeProfile, TimeProfileNode} from '../src/v8-types';
