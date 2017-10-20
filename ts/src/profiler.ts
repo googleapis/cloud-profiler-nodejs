@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import * as delay from 'delay';
 import * as http from 'http';
 import * as path from 'path';
+import * as pify from 'pify';
 import * as zlib from 'zlib';
 
 import {perftools} from '../src/profile';
@@ -26,9 +26,10 @@ import {ProfilerConfig} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
 
-const common: Common = require('@google-cloud/common');
+export const common: Common = require('@google-cloud/common');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
+const gzip = pify(zlib.gzip);
 
 export interface ProfilerConfig extends AuthenticationConfig {
   logLevel: number;
@@ -42,6 +43,17 @@ export interface ProfilerConfig extends AuthenticationConfig {
 // profile and used as body of request to Stackdriver Profiler API when
 // uploading a profile.
 // Public for testing.
+const WALL_TYPE = 'WALL';
+const HEAP_TYPE = 'HEAP';
+const SAMPLING_INTERVAL_MICROS = 1000;
+
+/**
+ * Interface for body of response from Stackdriver Profiler API when creating
+ * profile and used as body of request to Stackdriver Profiler API when
+ * uploading a profile.
+ *
+ * Public for testing.
+ */
 export interface RequestProfile {
   name?: string;
   profileType?: string;
@@ -50,37 +62,25 @@ export interface RequestProfile {
   labels?: {instance?: string; zone?: string};
 }
 
-// Converts a profile to a compressed, base64 encoded string.
-function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
-  let time = new Date((p.timeNanos as number) / 1000000);
-  let pwriter = perftools.profiles.Profile.encode(p);
-  let buffer = new Buffer(pwriter.finish());
-  return new Promise<string>((resolve, reject) => {
-    zlib.gzip(buffer, (err: Error, gzBuf: Buffer) => {
-      err ? reject(err) : resolve(gzBuf.toString('base64'));
-    });
-  });
+/**
+ * Converts a profile to a compressed, base64 encoded string.
+ *
+ * @param p - profile to be converted to string.
+ */
+async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
+  const pwriter = perftools.profiles.Profile.encode(p);
+  const buffer = new Buffer(pwriter.finish());
+  const gzBuf = await gzip(buffer);
+  return gzBuf.toString('base64');
 }
 
-// Service object for communicating with Stackdriver Profiler API.
-class ProfilerServiceObject extends common.ServiceObject {
-  constructor(options: AuthenticationConfig) {
-    options = common.util.normalizeArguments(null, options);
-    const config = {
-      baseUrl: API,
-      scopes: ['https://www.googleapis.com/auth/monitoring.write'],
-      packageJson: pjson,
-    };
-    super({parent: new common.Service(config, options), baseUrl: '/'});
-  }
-}
-
-// Polls Stackdriver Profiler server for instructions on behalf of a task and
-// collects and uploads profiles as requested.
-export class Profiler {
+/**
+ * Polls Stackdriver Profiler server for instructions on behalf of a task and
+ * collects and uploads profiles as requested
+ */
+export class Profiler extends common.ServiceObject {
   private config: ProfilerConfig;
   private logger: Logger;
-  private serviceObject: ServiceObject;
   private profileTypes: string[];
   private continueProfiling: boolean;
 
@@ -88,8 +88,16 @@ export class Profiler {
   timeProfiler: TimeProfiler|undefined;
 
   constructor(config: ProfilerConfig) {
+    config = common.util.normalizeArguments(null, config);
+    const serviceConfig = {
+      baseUrl: API,
+      scopes: ['https://www.googleapis.com/auth/monitoring.write'],
+      packageJson: pjson,
+    };
+    super({parent: new common.Service(serviceConfig, config), baseUrl: '/'});
+
     this.config = config;
-    this.serviceObject = new ProfilerServiceObject(config);
+
     this.logger = new common.logger({
       level: common.logger.LEVELS[config.logLevel as number],
       tag: pjson.name
@@ -98,20 +106,22 @@ export class Profiler {
     // TODO: enable heap profiling once heap-profiler implemented.
     this.profileTypes = [];
     if (!this.config.disableTime) {
-      this.profileTypes.push('WALL');
-      this.timeProfiler = new TimeProfiler(1000);
+      this.profileTypes.push(WALL_TYPE);
+      this.timeProfiler = new TimeProfiler(SAMPLING_INTERVAL_MICROS);
     }
   }
 
-  // Starts and endless loop to poll Stackdriver Profiler server for
-  // instructions, and collects and uploads profiles as requested.
-  // If there is a problem when collecting a profile or uploading a profile to
-  // Stackdriver Profiler, this problem will be logged at the debug level.
-  // If there is a problem polling Stackdriver Profiler for instructions
-  // on the type of profile created, an error will be thrown.
+  /**
+   * Starts and endless loop to poll Stackdriver Profiler server for
+   * instructions, and collects and uploads profiles as requested.
+   * If there is a problem when collecting a profile or uploading a profile to
+   * Stackdriver Profiler, this problem will be logged at the debug level.
+   * If there is a problem polling Stackdriver Profiler for instructions
+   * on the type of profile created, an error will be thrown.
+   */
   async start(): Promise<void> {
     while (true) {
-      let prof = await this.createProfile();
+      const prof = await this.createProfile();
       try {
         await this.profileAndUpload(prof);
       } catch (err) {
@@ -120,12 +130,15 @@ export class Profiler {
     }
   }
 
-  // Talks to Stackdriver Profiler server to create profile.
-  // If any problem is encountered, an error will be thrown.
-  // TODO: retry rather than fail when createProfile() throws error.
-  // Public to allow for testing.
+  /**
+   * Talks to Stackdriver Profiler server to create profile.
+   * If any problem is encountered, an error will be thrown.
+   * TODO: retry rather than fail when createProfile() throws error.
+   *
+   * Public to allow for testing.
+   */
   async createProfile(): Promise<RequestProfile> {
-    let reqBody = {
+    const reqBody = {
       deployment: {
         projectId: this.config.projectId,
         target: this.config.serviceContext.service,
@@ -133,15 +146,14 @@ export class Profiler {
       },
       profileType: this.profileTypes,
     };
-    let options = {
+    const options = {
       method: 'POST',
       uri: API + '/projects/' + this.config.projectId + '/profiles',
       body: reqBody,
       json: true,
     };
-    let serviceObject = this.serviceObject;
     return new Promise<any>((resolve, reject) => {
-      serviceObject.request(
+      this.request(
           options,
           function(
               err: Error, body: RequestProfile, response: http.ServerResponse) {
@@ -150,45 +162,51 @@ export class Profiler {
     });
   }
 
-  // Collects a profile of the type specified by the profileType field of prof.
-  // If any problem is encountered, like a problem collecting or uploading the
-  // profile, an error will be thrown.
-  // Public to allow for testing.
+  /**
+   * Collects a profile of the type specified by the profileType field of prof.
+   * If any problem is encountered, like a problem collecting or uploading the
+   * profile, an error will be thrown.
+   *
+   * Public to allow for testing.
+   *
+   * @param prof
+   */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     prof = await this.writeTimeProfile(prof);
-    let options = {
+    const options = {
       method: 'PATCH',
       uri: API + '/' + prof.name,
       body: prof,
       json: true,
     };
-    let serviceObject = this.serviceObject;
-    let statusCode: number|undefined;
-
     return new Promise<any>((resolve, reject) => {
-      serviceObject.request(
+      this.request(
           options,
           function(err: Error, body: any, response: http.ServerResponse) {
-            statusCode = response.statusCode;
             err ? reject(new Error('failed to upload profile: ' + err)) :
                   resolve();
           });
     });
   }
 
-  // Collects a profile of the type specified by the profileType field of prof.
-  // If any problem is encountered, for example the profileType is not
-  // recognized or profiling is disabled for the specified profileType, an
-  // error will be thrown.
-  // Public to allow for testing.
+  /**
+   * Collects a profile of the type specified by the profileType field of prof.
+   * If any problem is encountered, for example the profileType is not
+   * recognized or profiling is disabled for the specified profileType, an
+   * error will be thrown.
+   *
+   * Public to allow for testing.
+   *
+   * @param prof
+   */
   async profile(prof: RequestProfile): Promise<RequestProfile> {
     switch (prof.profileType) {
-      case 'WALL':
+      case WALL_TYPE:
         if (this.config.disableTime) {
           throw new Error('time profiling is not enabled');
         }
         return this.writeTimeProfile(prof);
-      case 'HEAP':
+      case HEAP_TYPE:
         if (this.config.disableHeap) {
           throw new Error('heap profiling is not enabled');
         }
@@ -198,14 +216,19 @@ export class Profiler {
     }
   }
 
-  // Collects a time profile, converts profile to compressed, base64 encoded
-  // string, and adds profileBytes field to prof with this string.
-  // Public to allow for testing.
+  /**
+   * Collects a time profile, converts profile to compressed, base64 encoded
+   * string, and adds profileBytes field to prof with this string.
+   *
+   * Public to allow for testing.
+   *
+   * @param prof
+   */
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
       // TODO: determine time from request profile.
-      let duration = 10 * 1000;  // 10 seconds
-      let p = await this.timeProfiler.profile(duration);
+      const duration = 10 * 1000;  // 10 seconds
+      const p = await this.timeProfiler.profile(duration);
       prof.profileBytes = await profileBytes(p);
       return prof;
     } else {
@@ -213,10 +236,16 @@ export class Profiler {
     }
   }
 
-  // Collects a time profile, converts profile to compressed, base64 encoded
-  // string, and adds profileBytes field to prof with this string.
-  // Public to allow for testing.
-  // Unimplemented
+  /**
+   * Collects a time profile, converts profile to compressed, base64 encoded
+   * string, and adds profileBytes field to prof with this string.
+   *
+   * Public to allow for testing.
+   *
+   * Unimplemented
+   *
+   * @param prof
+   */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
     throw new Error('heap profile collection unimplemented.');
   }

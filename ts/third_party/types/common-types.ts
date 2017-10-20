@@ -84,11 +84,18 @@ export interface Service {
   new(config: ServiceConfig, options: AuthenticationConfig): Service;
 }
 
+export interface RequestOptions {
+  uri: string;
+  json: boolean;
+  method?: string;
+  body?: any;
+}
+
 export interface ServiceObject {
   new(config: ServiceObjectConfig): ServiceObject;
   // TODO: Determine if this signature is correct.
   request:
-      (reqOpts: {uri: string, json: boolean},
+      (reqOpts: RequestOptions,
        callback: (err: Error, body: any, response: http.ServerResponse) =>
            void) => void;
 }

@@ -41,6 +41,7 @@
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.30",
     "@types/request": "^2.0.4",
+    "@types/pify": "^3.0.0",
     "@types/sinon": "^2.3.6",
     "clang-format": "^1.0.33",
     "codecov": "^2.3.1",
