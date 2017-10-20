@@ -24,16 +24,27 @@ export interface TimeProfile {
   startTime: number;
 }
 
-export interface TimeProfileNode {
-  callUid: number;
-  scriptResourceName?: string;
-  functionName?: string;
+export interface ProfileNode {
+  // name is the function name.
+  name: string;
+  scriptName: string;
+  scriptId: number;
   lineNumber: number;
+  columnNumber: number;
+  children: Array<ProfileNode>;
+}
+
+export interface TimeProfileNode extends ProfileNode {
+  name: string;
+  scriptName: string;
+  scriptId: number;
+  lineNumber: number;
+  columnNumber: number;
   hitCount: number;
   children: Array<TimeProfileNode>;
 }
 
-export interface AllocationProfileNode {
+export interface AllocationProfileNode extends ProfileNode {
   name: string;
   scriptName: string;
   scriptId: number;
@@ -44,6 +55,6 @@ export interface AllocationProfileNode {
 }
 
 export interface Allocation {
-  size: number;
+  sizeBytes: number;
   count: number;
 }
