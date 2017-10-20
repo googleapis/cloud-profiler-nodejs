@@ -18,11 +18,9 @@ import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as pify from 'pify';
-
-import {AuthenticationConfig, Common, ServiceConfig, ServiceObject} from '../third_party/types/common-types';
-
-import {Config, defaultConfig} from './config';
-import {Profiler, ProfilerConfig} from './profiler';
+import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
+import {Config, defaultConfig, ProfilerConfig} from './config';
+import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
 
@@ -108,7 +106,7 @@ let profiler: Profiler|undefined = undefined;
  *
  */
 export async function start(config: Config = {}): Promise<void> {
-  const normalizedConfig = await initConfig(config);
+  const  normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
   return profiler.start();
 }

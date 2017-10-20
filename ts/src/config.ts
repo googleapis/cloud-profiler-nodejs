@@ -15,7 +15,6 @@
  */
 
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
-import {ProfilerConfig} from './profiler';
 
 const common: Common = require('@google-cloud/common');
 const extend = require('extend');
@@ -60,6 +59,17 @@ export interface Config extends AuthenticationConfig {
 
   // When true, heap profiling will be disabled.
   disableHeap?: boolean;
+}
+
+// Interface for an initialized config.
+export interface ProfilerConfig extends AuthenticationConfig {
+  projectId: string;
+  logLevel: number;
+  serviceContext: {service: string; version?: string;};
+  instance: string;
+  zone: string;
+  disableTime: boolean;
+  disableHeap: boolean;
 }
 
 // Default values for configuration for a profiler.

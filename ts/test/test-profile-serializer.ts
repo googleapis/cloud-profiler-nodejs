@@ -22,6 +22,12 @@ import {heapProfile, timeProfile, v8HeapProfile, v8TimeProfile} from './profiles
 let assert = require('assert');
 
 describe('serializeTimeProfile', () => {
+  beforeEach(() => {
+    sinon.stub(Date, 'now').returns(0);
+  });
+  afterEach(() => {
+    (Date.now as any).restore();
+  });
   it('should produce expected profile', () => {
     const timeProfileOut = serializeTimeProfile(v8TimeProfile, 1000);
     assert.deepEqual(timeProfileOut, timeProfile);
