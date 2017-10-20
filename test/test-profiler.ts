@@ -26,10 +26,11 @@ import {ProfilerConfig} from '../src/config';
 import {perftools} from '../src/profile';
 import {Profiler} from '../src/profiler';
 import {TimeProfiler} from '../src/profilers/time-profiler';
-
 import {base64TestProfile, decodedTestProfile, testProfile} from './profiles-for-tests';
 
 const v8TimeProfiler = require('bindings')('time_profiler');
+
+const fakeCredentials = require('../../test/testdata/gcloud-credentials.json');
 
 const testConfig: ProfilerConfig = {
   projectId: 'test-projectId',
@@ -38,8 +39,10 @@ const testConfig: ProfilerConfig = {
   instance: 'test-instance',
   zone: 'test-zone',
   disableTime: false,
-  disableHeap: false
+  disableHeap: false,
+  credentials: fakeCredentials
 };
+
 const API = 'https://cloudprofiler.googleapis.com/v2';
 
 const mockTimeProfiler = mock(TimeProfiler);

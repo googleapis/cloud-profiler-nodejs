@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
- /*
 import * as delay from 'delay';
 import * as sinon from 'sinon';
 
@@ -64,4 +63,3 @@ describe('TimeProfiler', () => {
     });
   });
 });
-*/
