@@ -15,9 +15,9 @@
  */
 
 import {perftools} from '../profile';
-import {getIndexOrAdd} from '../util';
 import {TimeProfile, TimeProfileNode} from '../v8-types';
-// A stack of function UIDs.
+
+// A stack of function IDs.
 type Stack = Array<number>;
 interface Entry {
   node: TimeProfileNode;
@@ -25,23 +25,24 @@ interface Entry {
 }
 
 /**
- * Converts v8 Profile into profile with profile format used by Stackdriver
- * Profiler.
+ * Converts v8 Profile into into a profile proto
+ * (https://github.com/google/pprof/blob/master/proto/profile.proto).
  *
  * @param prof - profile to be converted.
  * @param intervalMicros - average time (microseconds) between samples.
  */
 export function serializeTimeProfile(
     prof: TimeProfile, intervalMicros: number) {
-  let samples: Array<perftools.profiles.Sample> = [];
-  let locations: Array<perftools.profiles.Location> = [];
-  let functions: Array<perftools.profiles.Function> = [];
-  let locationMap: Map<number, perftools.profiles.Location> = new Map();
-  let functionMap: Map<number, perftools.profiles.Function> = new Map();
-  let strings = [''];
+  const samples: Array<perftools.profiles.Sample> = [];
+  const locations: Array<perftools.profiles.Location> = [];
+  const functions: Array<perftools.profiles.Function> = [];
+  const locationMap: Map<number, perftools.profiles.Location> = new Map();
+  const functionMap: Map<number, perftools.profiles.Function> = new Map();
+  const strings = [''];
+  const stringsMap = new Map<string, number>();
 
-  let sampleValueType = createSampleValueType();
-  let timeValueType = createTimeValueType();
+  const sampleValueType = createSampleValueType();
+  const timeValueType = createTimeValueType();
 
   serializeNode(prof.topDownRoot);
 
@@ -51,11 +52,8 @@ export function serializeTimeProfile(
     location: locations,
     function: functions,
     stringTable: strings,
-    // opt drop_frames
-    // opt keep_frames
-    timeNanos: 1000 * 1000 * prof.endTime,                         // Nanos
-    durationNanos: 1000 * 1000 * (prof.endTime - prof.startTime),  // Nanos
-
+    timeNanos: 1000 * 1000 * prof.endTime,
+    durationNanos: 1000 * 1000 * (prof.endTime - prof.startTime),
     periodType: timeValueType,
     period: intervalMicros
   };
@@ -68,17 +66,14 @@ export function serializeTimeProfile(
    * @param stack - the stack trace to the current node.
    */
   function serializeNode(root: TimeProfileNode) {
-    let entries: Entry[] = [];
-    // don't include root node in serialized profile, start with it's children.
-    for (let child of root.children) {
-      entries.push({node: child, stack: []});
-    }
+    // Skip root node in serialized profile, start with it's children.
+    const entries: Entry[] = root.children.map((n) => ({node: n, stack: []}));
     while (entries.length > 0) {
       let entry = entries.pop();
       if (entry !== undefined) {
-        let node = entry.node;
-        let stack = entry.stack;
-        let location = getLocation(node);
+        const node = entry.node;
+        const stack = entry.stack;
+        const location = getLocation(node);
         stack.unshift(location.id as number);
         if (node.hitCount > 0) {
           const sample = new perftools.profiles.Sample({
@@ -117,13 +112,12 @@ export function serializeTimeProfile(
     if (f !== undefined) {
       return f;
     }
-    const name = getIndexOrAdd(node.functionName || '(anonymous)', strings);
+    const name = getIndexOrAdd(node.functionName || '(anonymous)');
     f = new perftools.profiles.Function({
       id: id,
       name: name,
       systemName: name,
-      filename: getIndexOrAdd(node.scriptResourceName || '(unknown)', strings)
-      // start_line
+      filename: getIndexOrAdd(node.scriptResourceName || '(unknown)')
     });
     functions.push(f);
     functionMap.set(id, f);
@@ -131,16 +125,23 @@ export function serializeTimeProfile(
   }
 
   function createSampleValueType(): perftools.profiles.ValueType {
-    return new perftools.profiles.ValueType({
-      type: getIndexOrAdd('samples', strings),
-      unit: getIndexOrAdd('count', strings)
-    });
+    return new perftools.profiles.ValueType(
+        {type: getIndexOrAdd('samples'), unit: getIndexOrAdd('count')});
   }
 
   function createTimeValueType(): perftools.profiles.ValueType {
-    return new perftools.profiles.ValueType({
-      type: getIndexOrAdd('time', strings),
-      unit: getIndexOrAdd('microseconds', strings)
-    });
+    return new perftools.profiles.ValueType(
+        {type: getIndexOrAdd('time'), unit: getIndexOrAdd('microseconds')});
+  }
+
+  function getIndexOrAdd(str: string): number {
+    let loc = stringsMap.get(str);
+    if (loc !== undefined) {
+      return loc;
+    }
+    loc = strings.length;
+    stringsMap.set(str, loc);
+    strings.push(str);
+    return loc;
   }
 }
