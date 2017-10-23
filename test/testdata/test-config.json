@@ -5,7 +5,7 @@
     "service": "envConfig-service"
   },
   "disableHeap": true,
-  "disableCpu": true,
+  "disableTime": true,
   "instance": "envConfig-instance",
   "zone": "envConfig-zone",
   "projectId": "envConfig-fake-projectId"

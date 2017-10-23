@@ -69,7 +69,7 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: 'fake-version', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
       instance: 'instance',
       zone: 'zone',
       projectId: 'fake-projectId'
@@ -90,7 +90,7 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: 'fake-version', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
       instance: 'instance',
       zone: 'zone',
       projectId: 'fake-projectId'
@@ -112,13 +112,13 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
     };
     const expConfig = {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
       instance: 'gce-instance',
       zone: 'gce-zone',
       projectId: 'projectId',
@@ -139,7 +139,7 @@ describe('initConfig', () => {
          logLevel: 1,
          serviceContext: {version: '', service: 'fake-service'},
          disableHeap: false,
-         disableCpu: false,
+         disableTime: false,
          instance: '',
          zone: '',
          projectId: 'fake-projectId'
@@ -155,7 +155,7 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: ''},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
     };
     return initConfig(config)
         .then(initializedConfig => {
@@ -175,7 +175,7 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
       instance: 'instance',
       zone: 'zone'
     };
@@ -184,7 +184,7 @@ describe('initConfig', () => {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
-      disableCpu: true,
+      disableTime: true,
       instance: 'instance',
       zone: 'zone'
     };
@@ -212,7 +212,7 @@ describe('initConfig', () => {
          serviceContext:
              {version: 'process-version', service: 'process-service'},
          disableHeap: true,
-         disableCpu: true,
+         disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone'
        };
@@ -239,7 +239,7 @@ describe('initConfig', () => {
          logLevel: 1,
          serviceContext: {version: 'config-version', service: 'config-service'},
          disableHeap: false,
-         disableCpu: false,
+         disableTime: false,
          instance: 'instance',
          zone: 'zone'
        };
@@ -258,7 +258,7 @@ describe('initConfig', () => {
          serviceContext:
              {version: 'envConfig-version', service: 'envConfig-service'},
          disableHeap: true,
-         disableCpu: true,
+         disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
          projectId: 'envConfig-fake-projectId'
