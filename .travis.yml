@@ -18,7 +18,4 @@ addons:
 
 script:
   - npm run test
-<<<<<<< HEAD
   - npm run codecov
-=======
->>>>>>> get instance and zone from metadata
