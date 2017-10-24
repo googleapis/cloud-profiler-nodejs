@@ -40,7 +40,8 @@ const testConfig: ProfilerConfig = {
   zone: 'test-zone',
   disableTime: false,
   disableHeap: false,
-  credentials: fakeCredentials
+  credentials: fakeCredentials,
+  timeSamplingIntervalMicros: 1000
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';
@@ -74,6 +75,7 @@ describe('Profiler', () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         profileType: 'WALL',
+        duration: '10s',
         labels: {instance: 'test-instance', zone: 'test-zone'}
       };
       const prof = await profiler.profile(requestProf);
@@ -90,6 +92,7 @@ describe('Profiler', () => {
          const requestProf = {
            name: 'projects/12345678901/test-projectId',
            profileType: 'WALL',
+           duration: '10s',
            labels: {instance: 'test-instance', zone: 'test-zone'}
          };
 
@@ -119,6 +122,7 @@ describe('Profiler', () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         profileType: 'WALL',
+        duration: '10s',
         labels: {instance: 'test-instance', zone: 'test-zone'}
       };
       try {

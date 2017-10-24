@@ -70,6 +70,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   zone: string;
   disableTime: boolean;
   disableHeap: boolean;
+  timeSamplingIntervalMicros: number;
 }
 
 // Default values for configuration for a profiler.
@@ -82,4 +83,9 @@ export const defaultConfig: Config = {
   disableTime: false,
   instance: '',
   zone: ''
+};
+
+// Configuration parameters set internally, not by users.
+export const internalConfig = {
+  timeSamplingIntervalMicros: 1000,
 };

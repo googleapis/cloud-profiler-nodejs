@@ -45,7 +45,6 @@ export interface ProfilerConfig extends AuthenticationConfig {
 // Public for testing.
 const WALL_TYPE = 'WALL';
 const HEAP_TYPE = 'HEAP';
-const SAMPLING_INTERVAL_MICROS = 1000;
 
 /**
  * Interface for body of response from Stackdriver Profiler API when creating
@@ -107,7 +106,8 @@ export class Profiler extends common.ServiceObject {
     this.profileTypes = [];
     if (!this.config.disableTime) {
       this.profileTypes.push(WALL_TYPE);
-      this.timeProfiler = new TimeProfiler(SAMPLING_INTERVAL_MICROS);
+      this.timeProfiler =
+          new TimeProfiler(this.config.timeSamplingIntervalMicros);
     }
   }
 
@@ -148,7 +148,7 @@ export class Profiler extends common.ServiceObject {
     };
     const options = {
       method: 'POST',
-      uri: API + '/projects/' + this.config.projectId + '/profiles',
+      uri: '/profiles',
       body: reqBody,
       json: true,
     };
@@ -202,14 +202,8 @@ export class Profiler extends common.ServiceObject {
   async profile(prof: RequestProfile): Promise<RequestProfile> {
     switch (prof.profileType) {
       case WALL_TYPE:
-        if (this.config.disableTime) {
-          throw new Error('time profiling is not enabled');
-        }
         return this.writeTimeProfile(prof);
       case HEAP_TYPE:
-        if (this.config.disableHeap) {
-          throw new Error('heap profiling is not enabled');
-        }
         return this.writeHeapProfile(prof);
       default:
         throw new Error('unexpected profile type ' + prof.profileType);
@@ -227,8 +221,8 @@ export class Profiler extends common.ServiceObject {
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
       // TODO: determine time from request profile.
-      const duration = 10 * 1000;  // 10 seconds
-      const p = await this.timeProfiler.profile(duration);
+      const durationMillis = 10 * 1000;  // 10 seconds
+      const p = await this.timeProfiler.profile(durationMillis);
       prof.profileBytes = await profileBytes(p);
       return prof;
     } else {

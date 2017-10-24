@@ -19,7 +19,7 @@ import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as pify from 'pify';
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
-import {Config, defaultConfig, ProfilerConfig} from './config';
+import {Config, defaultConfig, internalConfig, ProfilerConfig} from './config';
 import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
