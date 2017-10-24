@@ -65,7 +65,6 @@ export interface Config extends AuthenticationConfig {
 // Default values for configuration for a profiler.
 export const defaultConfig: Config = {
   logLevel: 1,
-  projectId: '{{projectId}}',
   serviceContext: {
     version: '',
   },
@@ -73,4 +72,9 @@ export const defaultConfig: Config = {
   disableTime: false,
   instance: '',
   zone: ''
+};
+
+// Configuration parameters set internally, not by users.
+export const internalConfig = {
+  projectIdRequired: true,
 };

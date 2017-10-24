@@ -20,7 +20,7 @@ const gcpMetadata = require('gcp-metadata');
 
 import {AuthenticationConfig, Common, ServiceConfig, ServiceObject} from '../third_party/types/common-types';
 
-import {Config, defaultConfig} from './config';
+import {Config, defaultConfig, internalConfig} from './config';
 import {Profiler, ProfilerConfig} from './profiler';
 
 const common: Common = require('@google-cloud/common');
@@ -66,8 +66,8 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
         require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG)) as Config;
   }
 
-  let normalizedConfig =
-      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
+  let normalizedConfig = extend(
+      true, {}, defaultConfig, envSetConfig, envConfig, config, internalConfig);
 
   if (!normalizedConfig.zone || !normalizedConfig.instance) {
     const [instance, zone] =

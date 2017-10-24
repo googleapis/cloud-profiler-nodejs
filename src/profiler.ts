@@ -25,7 +25,6 @@ const pjson = require('../../package.json');
 const common: Common = require('@google-cloud/common');
 
 export interface ProfilerConfig extends AuthenticationConfig {
-  projectId: string;
   logLevel: number;
   serviceContext: {service: string; version?: string;};
   instance: string;

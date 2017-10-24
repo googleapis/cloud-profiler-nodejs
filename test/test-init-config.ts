@@ -72,10 +72,20 @@ describe('initConfig', () => {
       disableTime: true,
       instance: 'instance',
       zone: 'zone',
-      projectId: 'fake-projectId'
+      projectId: 'fake-projectId',
+    };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      projectId: 'fake-projectId',
+      projectIdRequired: true
     };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should not modify specified fields when on GCE', async () => {
@@ -95,8 +105,18 @@ describe('initConfig', () => {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      projectId: 'fake-projectId',
+      projectIdRequired: true
+    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should get zone and instance from GCE', async () => {
@@ -122,6 +142,7 @@ describe('initConfig', () => {
       instance: 'gce-instance',
       zone: 'gce-zone',
       projectId: 'projectId',
+      projectIdRequired: true
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -142,7 +163,8 @@ describe('initConfig', () => {
          disableTime: false,
          instance: '',
          zone: '',
-         projectId: 'fake-projectId'
+         projectId: 'fake-projectId',
+         projectIdRequired: true
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -167,7 +189,7 @@ describe('initConfig', () => {
         });
   });
 
-  it('should get {{projectId}} when no projectId given', async () => {
+  it('should get have no projectId when no projectId given', async () => {
     sinon.stub(gcpMetadata, 'instance')
         .throwsException('cannot access metadata');
 
@@ -180,13 +202,13 @@ describe('initConfig', () => {
       zone: 'zone'
     };
     const expConfig = {
-      projectId: '{{projectId}}',
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
       disableTime: true,
       instance: 'instance',
-      zone: 'zone'
+      zone: 'zone',
+      projectIdRequired: true
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -214,7 +236,8 @@ describe('initConfig', () => {
          disableHeap: true,
          disableTime: true,
          instance: 'envConfig-instance',
-         zone: 'envConfig-zone'
+         zone: 'envConfig-zone',
+         projectIdRequired: true
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -243,8 +266,18 @@ describe('initConfig', () => {
          instance: 'instance',
          zone: 'zone'
        };
+       const expConfig = {
+         projectId: 'config-projectId',
+         logLevel: 1,
+         serviceContext: {version: 'config-version', service: 'config-service'},
+         disableHeap: false,
+         disableTime: false,
+         instance: 'instance',
+         zone: 'zone',
+         projectIdRequired: true
+       };
        let initializedConfig = await initConfig(config);
-       assert.deepEqual(initializedConfig, config);
+       assert.deepEqual(initializedConfig, expConfig);
      });
 
   it('should get values from from environment config when not specified in config or other environment variables',
@@ -261,11 +294,43 @@ describe('initConfig', () => {
          disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
-         projectId: 'envConfig-fake-projectId'
+         projectId: 'envConfig-fake-projectId',
+         projectIdRequired: true
        };
 
        const config = {};
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
      });
+  it('should not modify properties of internal config', async () => {
+    sinon.stub(gcpMetadata, 'instance')
+        .withArgs('name')
+        .callsArgWith(1, null, undefined, 'gce-instance')
+        .withArgs('zone')
+        .callsArgWith(
+            1, null, undefined, 'projects/123456789012/zones/gce-zone');
+
+    const config = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      projectId: 'fake-projectId',
+      projectIdRequired: false
+    };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      projectId: 'fake-projectId',
+      projectIdRequired: true
+    };
+    let initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, expConfig);
+  });
 });
