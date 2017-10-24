@@ -73,8 +73,3 @@ export const defaultConfig: Config = {
   instance: '',
   zone: ''
 };
-
-// Configuration parameters set internally, not by users.
-export const internalConfig = {
-  projectIdRequired: true,
-};

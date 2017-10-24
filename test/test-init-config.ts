@@ -15,50 +15,29 @@
  */
 
 import * as assert from 'assert';
-import * as nock from 'nock';
+import * as gcpMetadata from 'gcp-metadata';
 import * as request from 'request';
 import * as sinon from 'sinon';
 
 import {initConfig} from '../src/index';
 
-const gcpMetadata = require('gcp-metadata');
-
-
-nock.disableNetConnect();
-const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1';
-
 describe('initConfig', () => {
-  let processLogLevel: string|undefined;
-  let processCloudProject: string|undefined;
-  let processService: string|undefined;
-  let processVersion: string|undefined;
-  let processConfig: string|undefined;
+  let savedEnv: NodeJS.ProcessEnv;
 
   before(() => {
-    processLogLevel = process.env.GCLOUD_PROFILER_LOGLEVEL;
-    processCloudProject = process.env.GCLOUD_PROJECT;
-    processService = process.env.GAE_SERVICE;
-    processVersion = process.env.GAE_VERSION;
-    processConfig = process.env.GCLOUD_PROFILER_CONFIG;
+    savedEnv = process.env;
   });
 
   beforeEach(() => {
-    delete process.env.GCLOUD_PROFILER_LOGLEVEL;
-    delete process.env.GCLOUD_PROJECT;
-    delete process.env.GAE_SERVICE;
-    delete process.env.GAE_VERSION;
+    process.env = {};
   });
 
   afterEach(() => {
-    gcpMetadata.instance.restore();
+    (gcpMetadata.instance as any).restore();
   });
 
   after(() => {
-    process.env.GCLOUD_PROFILER_LOGLEVEL = processLogLevel;
-    process.env.GCLOUD_PROJECT = processCloudProject;
-    process.env.GAE_SERVICE = processService;
-    process.env.GAE_VERSION = processVersion;
-    process.env.GCLOUD_PROFILER_CONFIG = processConfig;
+    process.env = savedEnv;
   });
 
   it('should not modify specified fields when not on GCE', async () => {
@@ -74,18 +53,8 @@ describe('initConfig', () => {
       zone: 'zone',
       projectId: 'fake-projectId',
     };
-    const expConfig = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId',
-      projectIdRequired: true
-    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, expConfig);
+    assert.deepEqual(initializedConfig, config);
   });
 
   it('should not modify specified fields when on GCE', async () => {
@@ -105,18 +74,8 @@ describe('initConfig', () => {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
-    const expConfig = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId',
-      projectIdRequired: true
-    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, expConfig);
+    assert.deepEqual(initializedConfig, config);
   });
 
   it('should get zone and instance from GCE', async () => {
@@ -142,7 +101,6 @@ describe('initConfig', () => {
       instance: 'gce-instance',
       zone: 'gce-zone',
       projectId: 'projectId',
-      projectIdRequired: true
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -164,7 +122,6 @@ describe('initConfig', () => {
          instance: '',
          zone: '',
          projectId: 'fake-projectId',
-         projectIdRequired: true
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -201,17 +158,8 @@ describe('initConfig', () => {
       instance: 'instance',
       zone: 'zone'
     };
-    const expConfig = {
-      logLevel: 2,
-      serviceContext: {version: '', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectIdRequired: true
-    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, expConfig);
+    assert.deepEqual(initializedConfig, config);
   });
 
   it('should get values from from environment variable when not specified in config or environment variables',
@@ -220,7 +168,7 @@ describe('initConfig', () => {
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
-       process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
+       process.env.GCLOUD_PROFILER_CONFIG = './test/fixtures/test-config.json';
        sinon.stub(gcpMetadata, 'instance')
            .withArgs('name')
            .callsArgWith(1, null, undefined, 'gce-instance')
@@ -237,7 +185,6 @@ describe('initConfig', () => {
          disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
-         projectIdRequired: true
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -249,7 +196,7 @@ describe('initConfig', () => {
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
-       process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
+       process.env.GCLOUD_PROFILER_CONFIG = './test/fixtures/test-config.json';
        sinon.stub(gcpMetadata, 'instance')
            .withArgs('name')
            .callsArgWith(1, null, undefined, 'gce-instance')
@@ -266,25 +213,15 @@ describe('initConfig', () => {
          instance: 'instance',
          zone: 'zone'
        };
-       const expConfig = {
-         projectId: 'config-projectId',
-         logLevel: 1,
-         serviceContext: {version: 'config-version', service: 'config-service'},
-         disableHeap: false,
-         disableTime: false,
-         instance: 'instance',
-         zone: 'zone',
-         projectIdRequired: true
-       };
        let initializedConfig = await initConfig(config);
-       assert.deepEqual(initializedConfig, expConfig);
+       assert.deepEqual(initializedConfig, config);
      });
 
   it('should get values from from environment config when not specified in config or other environment variables',
      async () => {
        sinon.stub(gcpMetadata, 'instance')
            .throwsException('cannot access metadata');
-       process.env.GCLOUD_PROFILER_CONFIG = './test/testdata/test-config.json';
+       process.env.GCLOUD_PROFILER_CONFIG = './test/fixtures/test-config.json';
 
        const expConfig = {
          logLevel: 3,
@@ -295,42 +232,10 @@ describe('initConfig', () => {
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
          projectId: 'envConfig-fake-projectId',
-         projectIdRequired: true
        };
 
        const config = {};
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
      });
-  it('should not modify properties of internal config', async () => {
-    sinon.stub(gcpMetadata, 'instance')
-        .withArgs('name')
-        .callsArgWith(1, null, undefined, 'gce-instance')
-        .withArgs('zone')
-        .callsArgWith(
-            1, null, undefined, 'projects/123456789012/zones/gce-zone');
-
-    const config = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId',
-      projectIdRequired: false
-    };
-    const expConfig = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId',
-      projectIdRequired: true
-    };
-    let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, expConfig);
-  });
 });

@@ -15,26 +15,25 @@
  */
 
 import * as extend from 'extend';
+import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
-const gcpMetadata = require('gcp-metadata');
+import * as pify from 'pify';
 
 import {AuthenticationConfig, Common, ServiceConfig, ServiceObject} from '../third_party/types/common-types';
 
-import {Config, defaultConfig, internalConfig} from './config';
+import {Config, defaultConfig} from './config';
 import {Profiler, ProfilerConfig} from './profiler';
 
 const common: Common = require('@google-cloud/common');
-const metadataAPI = 'http://metadata.google.internal/computeMetadata/v1/';
 
 // Returns value of metadata field.
 // Throws error if there is a problem accessing metadata API.
 function getField(field: string): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    gcpMetadata.instance(
-        field, (err: Error, response: any, metadata: string) => {
-          err ? reject(err) : resolve(metadata);
-        });
-  });
+  return pify(gcpMetadata.instance, {multiArgs: true})(field).then(
+      (result: any[]) => {
+        const [response, metadata] = result;
+        return metadata;
+      });
 }
 
 // initConfig sets unset values in the configuration to the value retrieved from
@@ -45,7 +44,7 @@ function getField(field: string): Promise<string> {
 export async function initConfig(config: Config): Promise<ProfilerConfig> {
   config = common.util.normalizeArguments(null, config);
 
-  const envConfig: any = {
+  const envConfig: Config = {
     projectId: process.env.GCLOUD_PROJECT,
     serviceContext: {
       service: process.env.GAE_SERVICE,
@@ -66,8 +65,8 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
         require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG)) as Config;
   }
 
-  let normalizedConfig = extend(
-      true, {}, defaultConfig, envSetConfig, envConfig, config, internalConfig);
+  let normalizedConfig =
+      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
   if (!normalizedConfig.zone || !normalizedConfig.instance) {
     const [instance, zone] =
