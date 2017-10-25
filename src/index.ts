@@ -28,7 +28,7 @@ const common: Common = require('@google-cloud/common');
 
 // Returns value of metadata field.
 // Throws error if there is a problem accessing metadata API.
-function getField(field: string): Promise<string> {
+function getMetadataInstanceField(field: string): Promise<string> {
   return pify(gcpMetadata.instance, {multiArgs: true})(field).then(
       (result: any[]) => {
         const [response, metadata] = result;
@@ -70,7 +70,10 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
 
   if (!normalizedConfig.zone || !normalizedConfig.instance) {
     const [instance, zone] =
-        await Promise.all([getField('name'), getField('zone')])
+        await Promise
+            .all([
+              getMetadataInstanceField('name'), getMetadataInstanceField('zone')
+            ])
             .catch(
                 (err: Error) => {
                     // ignore errors, which will occur when not on GCE.
