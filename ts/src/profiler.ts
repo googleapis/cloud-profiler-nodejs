@@ -80,7 +80,6 @@ export class Profiler extends common.ServiceObject {
   private config: ProfilerConfig;
   private logger: Logger;
   private profileTypes: string[];
-  private profilingTimeoutId: undefined|NodeJS.Timer;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -119,7 +118,7 @@ export class Profiler extends common.ServiceObject {
    * on the type of profile created, an error will be thrown.
    */
   async start(): Promise<void> {
-    return this.createAndUploadProfile(0);
+    return this.coordinateProfiling();
   }
 
 
@@ -130,17 +129,19 @@ export class Profiler extends common.ServiceObject {
    * @param delayMillis - milliseconds to wait before polling Stackdriver
    * Profiler server to see if it's time to create a profile and profile.
    */
-  async createAndUploadProfile(delayMillis: number): Promise<void> {
-    this.profilingTimeoutId = setTimeout(async () => {
-      const startCreateMillis = Date.now();
-      const prof = await this.createProfile();
-      await this.profileAndUpload(prof);
-      const endCreateMillis = Date.now();
-      this.createAndUploadProfile(
-          this.config.minTimeBetweenProfilesMillis -
-          (endCreateMillis - startCreateMillis));
-    }, delayMillis);
-    this.profilingTimeoutId.unref();
+  async coordinateProfiling(delayMillis = 0): Promise<void> {
+    const startCreateMillis = Date.now();
+    const prof = await this.createProfile();
+    await this.profileAndUpload(prof);
+    const endCreateMillis = Date.now();
+
+    // Schedule the next profile.
+    let delay = this.config.minTimeBetweenProfilesMillis -
+        (endCreateMillis - startCreateMillis);
+    if (delay < 0) {
+      delay = 0;
+    }
+    setTimeout(this.coordinateProfiling.bind(this), delay).unref();
   }
 
   /**
@@ -171,10 +172,8 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
 
-    return this.request(options).then((result) => {
-      const [body, response] = result;
-      return body;
-    });
+    const [body, response] = await this.request(options);
+    return body;
   }
 
   /**
@@ -195,9 +194,7 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
 
-    return this.request(options).then((result) => {
-      return;
-    });
+    await this.request(options);
   }
 
   /**

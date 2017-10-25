@@ -53,7 +53,7 @@ when(mockTimeProfiler.profile(10 * 1000)).thenReturn(new Promise((resolve) => {
 }));
 
 nock.disableNetConnect();
-export function oauth2(): nock.Scope {
+function nockOauth2(): nock.Scope {
   return nock('https://accounts.google.com')
       .post(
           '/o/oauth2/token',
@@ -147,7 +147,7 @@ describe('Profiler', () => {
       };
       const expProf =
           extend(true, {profileBytes: base64TestProfile}, testConfig);
-      oauth2();
+      nockOauth2();
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
@@ -172,7 +172,7 @@ describe('Profiler', () => {
            duration: '10s',
            labels: {instance: config.instance, zone: config.zone}
          };
-         oauth2();
+         nockOauth2();
          const createProfileMock =
              nock(API)
                  .post('/projects/' + testConfig.projectId + '/profiles')
