@@ -39,12 +39,11 @@ export interface ProfilerConfig extends AuthenticationConfig {
   disableTime: boolean;
   disableHeap: boolean;
 }
-// Interface for body of response from Stackdriver Profiler API when creating
-// profile and used as body of request to Stackdriver Profiler API when
-// uploading a profile.
-// Public for testing.
-const WALL_TYPE = 'WALL';
-const HEAP_TYPE = 'HEAP';
+
+enum ProfileTypes {
+  Wall = 'WALL',
+  Heap = 'HEAP'
+}
 
 /**
  * Interface for body of response from Stackdriver Profiler API when creating
@@ -81,7 +80,7 @@ export class Profiler extends common.ServiceObject {
   private config: ProfilerConfig;
   private logger: Logger;
   private profileTypes: string[];
-  private continueProfiling: boolean;
+  private profilingTimeoutId: undefined|NodeJS.Timer;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -105,7 +104,7 @@ export class Profiler extends common.ServiceObject {
     // TODO: enable heap profiling once heap-profiler implemented.
     this.profileTypes = [];
     if (!this.config.disableTime) {
-      this.profileTypes.push(WALL_TYPE);
+      this.profileTypes.push(ProfileTypes.Wall);
       this.timeProfiler =
           new TimeProfiler(this.config.timeSamplingIntervalMicros);
     }
@@ -120,20 +119,39 @@ export class Profiler extends common.ServiceObject {
    * on the type of profile created, an error will be thrown.
    */
   async start(): Promise<void> {
-    while (true) {
+    return this.createAndUploadProfile(0);
+  }
+
+
+  /**
+   * Talks to Stackdriver Profiler server to create profile when instructed
+   * and then upload that profile.
+   *
+   * @param delayMillis - milliseconds to wait before polling Stackdriver
+   * Profiler server to see if it's time to create a profile and profile.
+   */
+  async createAndUploadProfile(delayMillis: number): Promise<void> {
+    this.profilingTimeoutId = setTimeout(async () => {
+      const startCreateMillis = Date.now();
       const prof = await this.createProfile();
-      try {
-        await this.profileAndUpload(prof);
-      } catch (err) {
-        this.logger.debug(err);
-      }
-    }
+      await this.profileAndUpload(prof);
+      const endCreateMillis = Date.now();
+      this.createAndUploadProfile(
+          this.config.minTimeBetweenProfilesMillis -
+          (endCreateMillis - startCreateMillis));
+    }, delayMillis);
+    this.profilingTimeoutId.unref();
   }
 
   /**
-   * Talks to Stackdriver Profiler server to create profile.
+   * Talks to Stackdriver Profiler server, which hangs until server indicates
+   * job should be profiled.
+   *
    * If any problem is encountered, an error will be thrown.
-   * TODO: retry rather than fail when createProfile() throws error.
+   * TODO: implement backoff and retry when error encountered. createProfile()
+   * should be retried when response indicates this request should be retried
+   * or with exponential backoff (up to one hour) if the response does not
+   * indicate when to retry this request.
    *
    * Public to allow for testing.
    */
@@ -152,13 +170,10 @@ export class Profiler extends common.ServiceObject {
       body: reqBody,
       json: true,
     };
-    return new Promise<any>((resolve, reject) => {
-      this.request(
-          options,
-          function(
-              err: Error, body: RequestProfile, response: http.ServerResponse) {
-            err ? reject(err) : resolve(body);
-          });
+
+    return this.request(options).then((result) => {
+      const [body, response] = result;
+      return body;
     });
   }
 
@@ -179,13 +194,9 @@ export class Profiler extends common.ServiceObject {
       body: prof,
       json: true,
     };
-    return new Promise<any>((resolve, reject) => {
-      this.request(
-          options,
-          function(err: Error, body: any, response: http.ServerResponse) {
-            err ? reject(new Error('failed to upload profile: ' + err)) :
-                  resolve();
-          });
+
+    return this.request(options).then((result) => {
+      return;
     });
   }
 
@@ -201,9 +212,9 @@ export class Profiler extends common.ServiceObject {
    */
   async profile(prof: RequestProfile): Promise<RequestProfile> {
     switch (prof.profileType) {
-      case WALL_TYPE:
+      case ProfileTypes.Wall:
         return this.writeTimeProfile(prof);
-      case HEAP_TYPE:
+      case ProfileTypes.Heap:
         return this.writeHeapProfile(prof);
       default:
         throw new Error('unexpected profile type ' + prof.profileType);

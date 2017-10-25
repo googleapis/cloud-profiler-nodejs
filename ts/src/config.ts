@@ -71,6 +71,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   disableTime: boolean;
   disableHeap: boolean;
   timeSamplingIntervalMicros: number;
+  minTimeBetweenProfilesMillis: number;
 }
 
 // Default values for configuration for a profiler.
@@ -87,5 +88,6 @@ export const defaultConfig: Config = {
 
 // Configuration parameters set internally, not by users.
 export const internalConfig = {
+  minProfilingIntervalMillis: 60 * 1000,
   timeSamplingIntervalMicros: 1000,
 };

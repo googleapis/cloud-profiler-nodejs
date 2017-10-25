@@ -41,7 +41,8 @@ const testConfig: ProfilerConfig = {
   disableTime: false,
   disableHeap: false,
   credentials: fakeCredentials,
-  timeSamplingIntervalMicros: 1000
+  timeSamplingIntervalMicros: 1000,
+  minTimeBetweenProfilesMillis: 1000 * 60
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';

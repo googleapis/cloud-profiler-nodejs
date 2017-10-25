@@ -94,10 +94,7 @@ export interface RequestOptions {
 export interface ServiceObject {
   new(config: ServiceObjectConfig): ServiceObject;
   // TODO: Determine if this signature is correct.
-  request:
-      (reqOpts: RequestOptions,
-       callback: (err: Error, body: any, response: http.ServerResponse) =>
-           void) => void;
+  request: (reqOpts: RequestOptions) => Promise<any[]>;
 }
 
 export interface Common {
