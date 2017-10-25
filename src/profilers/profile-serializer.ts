@@ -107,16 +107,14 @@ function serialize(
 
   const entries: Entry[] = root.children.map((n) => ({node: n, stack: []}));
   while (entries.length > 0) {
-    const entry = entries.pop();
-    if (entry !== undefined) {
-      const node = entry.node;
-      const stack = entry.stack;
-      const location = getLocation(node);
-      stack.unshift(location.id as number);
-      appendToSamples(entry, samples);
-      for (let child of node.children) {
-        entries.push({node: child, stack: stack.slice()});
-      }
+    const entry = entries.pop()!;
+    const node = entry.node;
+    const stack = entry.stack;
+    const location = getLocation(node);
+    stack.unshift(location.id as number);
+    appendToSamples(entry, samples);
+    for (let child of node.children) {
+      entries.push({node: child, stack: stack.slice()});
     }
   }
 
