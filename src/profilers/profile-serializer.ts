@@ -17,27 +17,37 @@
 import {perftools} from '../profile';
 import {AllocationProfileNode, ProfileNode, TimeProfile, TimeProfileNode} from '../v8-types';
 
-// A stack of function IDs.
+/**
+ * A stack of function IDs.
+ */
 type Stack = Array<number>;
 
-// A function which converts entry into one or more samples, then
-// appends those sample(s) to samples.
+/**
+ * A function which converts entry into one or more samples, then
+ * appends those sample(s) to samples.
+ */
 type AppendEntryToSamples =
     (entry: Entry, samples: perftools.profiles.Sample[]) => void;
 
-// Profile node and stack trace to that node.
+/**
+ * Profile node and stack trace to that node.
+ */
 interface Entry {
   node: ProfileNode;
   stack: Stack;
 }
 
-// Heap profile node and stack trace to that node.
+/**
+ * Heap profile node and stack trace to that node.
+ */
 interface AllocationEntry {
   node: AllocationProfileNode;
   stack: Stack;
 }
 
-// Time profile node and stack trace to that node.
+/**
+ * Time profile node and stack trace to that node.
+ */
 interface TimeEntry {
   node: TimeProfileNode;
   stack: Stack;
