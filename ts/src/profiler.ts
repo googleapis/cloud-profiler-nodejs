@@ -46,6 +46,29 @@ enum ProfileTypes {
 }
 
 /**
+ * Returns true if http status code indicates an error.
+ */
+function isErrorResponseCode(code: number) {
+  return code < 200 || code >= 300;
+}
+
+/**
+ * Returns true if http status code indicates request should be retried.
+ */
+function isRetriableResponseCode(code: number) {
+  // TODO: determine which codes one should not retry on.
+  return true;
+}
+
+/**
+ * Returns true if error indicates that request should be retried.
+ */
+function isRetriableError(err: Error) {
+  // TODO: determine which errors one should not retry on.
+  return true;
+}
+
+/**
  * Interface for body of response from Stackdriver Profiler API when creating
  * profile and used as body of request to Stackdriver Profiler API when
  * uploading a profile.
@@ -175,16 +198,30 @@ export class Profiler extends common.ServiceObject {
       body: reqBody,
       json: true,
     };
+
+    let requestError: Error|undefined = undefined;
+    let retryRequest = true;
     try {
       const [body, response] = await this.request(options);
+      if (isErrorResponseCode(response.statusCode)) {
+        retryRequest = isRetriableResponseCode(response.statusCode);
+        requestError =
+            new Error('error uploading profile: ' + response.statusMessage);
+        this.logger.debug(requestError);
+      }
       return body;
     } catch (err) {
-      // TODO: implement backing-off for retries, as described above, rather
-      // than delaying for minTimeBetweenProfilesMillis
-      this.logger.debug('error creating profile: ' + err);
-      await delay(this.config.minTimeBetweenProfilesMillis);
-      return this.createProfile();
+      retryRequest = isRetriableError(err);
+      requestError = new Error('error uploading profile: ' + err);
+      this.logger.debug(requestError);
     }
+    if (retryRequest) {
+      // TODO: check response to see if response specifies a backoff.
+      // TODO: implement exponential backoff.
+      await delay(this.config.minTimeBetweenProfilesMillis);
+      this.createProfile();
+    }
+    throw requestError;
   }
 
   /**
@@ -201,6 +238,7 @@ export class Profiler extends common.ServiceObject {
       prof = await this.writeTimeProfile(prof);
     } catch (err) {
       this.logger.debug('error collecting profile: ' + err);
+      return;
     }
     const options = {
       method: 'PATCH',
@@ -209,7 +247,10 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
     try {
-      await this.request(options);
+      const [body, response] = await this.request(options);
+      if (isErrorResponseCode(response.statusCode)) {
+        this.logger.debug('error uploading profile: ' + response.statusMessage);
+      }
     } catch (err) {
       this.logger.debug('error uploading profile: ' + err);
     }

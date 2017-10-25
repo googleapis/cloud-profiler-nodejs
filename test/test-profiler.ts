@@ -30,7 +30,7 @@ import {base64TestProfile, decodedTestProfile, testProfile} from './profiles-for
 
 const v8TimeProfiler = require('bindings')('time_profiler');
 
-const fakeCredentials = require('../../test/testdata/gcloud-credentials.json');
+const fakeCredentials = require('../../test/fixtures/gcloud-credentials.json');
 
 const testConfig: ProfilerConfig = {
   projectId: 'test-projectId',
@@ -42,7 +42,11 @@ const testConfig: ProfilerConfig = {
   disableHeap: false,
   credentials: fakeCredentials,
   timeSamplingIntervalMicros: 1000,
-  minTimeBetweenProfilesMillis: 1000 * 60
+  minTimeBetweenProfilesMillis: 1000 * 60,
+  initialBackoffMillis: 1000,        // 1 second
+  maxBackoffMillis: 60 * 60 * 1000,  // 1 hour
+  backoffMultiplier:
+      1.3,  // Backoff envelope increase by this factor on each retry
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';
@@ -137,7 +141,6 @@ describe('Profiler', () => {
     });
   });
   describe('profileAndUpload', () => {
-    // TODO: verify authentication.
     it('should send request to upload profile', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
