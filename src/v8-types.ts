@@ -34,24 +34,10 @@ export interface ProfileNode {
   children: Array<ProfileNode>;
 }
 
-export interface TimeProfileNode extends ProfileNode {
-  name: string;
-  scriptName: string;
-  scriptId: number;
-  lineNumber: number;
-  columnNumber: number;
-  hitCount: number;
-  children: Array<TimeProfileNode>;
-}
+export interface TimeProfileNode extends ProfileNode { hitCount: number; }
 
 export interface AllocationProfileNode extends ProfileNode {
-  name: string;
-  scriptName: string;
-  scriptId: number;
-  lineNumber: number;
-  columnNumber: number;
   allocations: Array<Allocation>;
-  children: Array<AllocationProfileNode>;
 }
 
 export interface Allocation {

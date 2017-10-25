@@ -43,19 +43,6 @@ interface TimeEntry {
   stack: Stack;
 }
 
-// Fields which uniquely describe a function.
-interface FunctionKey {
-  name: string;
-  scriptId: number;
-}
-
-// Fields which uniquely describe a location.
-interface LocationKey {
-  function: FunctionKey;
-  lineNumber: number;
-  columnNumber: number;
-}
-
 /**
  * Used to build string table and access strings and their ids within the table
  * when serializing a profile.
@@ -79,9 +66,8 @@ class StringTable {
     if (loc !== undefined) {
       return loc;
     }
-    loc = this.strings.length;
+    loc = this.strings.push(str) - 1;
     this.stringsMap.set(str, loc);
-    this.strings.push(str);
     return loc;
   }
 }
@@ -94,13 +80,13 @@ class StringTable {
  * fields.
  * @param root - root of v8 profile tree describing samples to be appended
  * to profile.
- * @param appendToSample - function which converts entry to sample(s)  and
+ * @param appendToSamples - function which converts entry to sample(s)  and
  * appends these to end of an array of samples.
  * @param stringTable - string table for the existing profile.
  */
 function serialize(
     profile: perftools.profiles.IProfile, root: ProfileNode,
-    appendToSample: AppendEntryToSamples, stringTable: StringTable) {
+    appendToSamples: AppendEntryToSamples, stringTable: StringTable) {
   const samples: Array<perftools.profiles.Sample> = [];
   const locations: Array<perftools.profiles.Location> = [];
   const functions: Array<perftools.profiles.Function> = [];
@@ -117,7 +103,7 @@ function serialize(
       const stack = entry.stack;
       const location = getLocation(node);
       stack.unshift(location.id as number);
-      appendToSample(entry, samples);
+      appendToSamples(entry, samples);
       for (let child of node.children) {
         entries.push({node: child, stack: stack.slice()});
       }
@@ -130,12 +116,8 @@ function serialize(
   profile.stringTable = stringTable.strings;
 
   function getLocation(node: ProfileNode): perftools.profiles.Location {
-    const key: LocationKey = {
-      function: {name: node.name, scriptId: node.scriptId},
-      lineNumber: node.lineNumber,
-      columnNumber: node.columnNumber
-    };
-    const keyStr = JSON.stringify(key);
+    const keyStr =
+        `${node.scriptId}:${node.lineNumber}:${node.columnNumber}:${node.name}`;
     let id = locationIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
@@ -157,8 +139,7 @@ function serialize(
   }
 
   function getFunction(node: ProfileNode): perftools.profiles.Function {
-    const key: FunctionKey = {name: node.name, scriptId: node.scriptId};
-    const keyStr = JSON.stringify(key);
+    const keyStr = `${node.scriptId}:${node.name}`;
     let id = functionIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
@@ -220,7 +201,7 @@ function createAllocationValueType(table: StringTable):
  */
 export function serializeTimeProfile(
     prof: TimeProfile, intervalMicros: number): perftools.profiles.IProfile {
-  const appendTimeEntryToSample: AppendEntryToSamples =
+  const appendTimeEntryToSamples: AppendEntryToSamples =
       (entry: TimeEntry, samples: perftools.profiles.Sample[]) => {
         if (entry.node.hitCount > 0) {
           const sample = new perftools.profiles.Sample({
@@ -244,7 +225,7 @@ export function serializeTimeProfile(
     period: intervalMicros,
   };
 
-  serialize(profile, prof.topDownRoot, appendTimeEntryToSample, stringTable);
+  serialize(profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable);
 
   return profile;
 }
@@ -262,7 +243,7 @@ export function serializeTimeProfile(
 export function serializeHeapProfile(
     prof: AllocationProfileNode, startTimeNanos: number, durationNanos: number,
     intervalBytes: number): perftools.profiles.IProfile {
-  const appendHeapEntryToSample: AppendEntryToSamples =
+  const appendHeapEntryToSamples: AppendEntryToSamples =
       (entry: AllocationEntry, samples: perftools.profiles.Sample[]) => {
         if (entry.node.allocations.length > 0) {
           for (const alloc of entry.node.allocations) {
@@ -288,6 +269,6 @@ export function serializeHeapProfile(
     period: intervalBytes,
   };
 
-  serialize(profile, prof, appendHeapEntryToSample, stringTable);
+  serialize(profile, prof, appendHeapEntryToSamples, stringTable);
   return profile;
 }
