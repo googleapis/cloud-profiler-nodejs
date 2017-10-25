@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import * as delay from 'delay';
 import * as http from 'http';
 import * as path from 'path';
 import * as pify from 'pify';
@@ -118,41 +118,45 @@ export class Profiler extends common.ServiceObject {
    * on the type of profile created, an error will be thrown.
    */
   async start(): Promise<void> {
-    return this.coordinateProfiling();
+    return this.pollProfilerService();
   }
 
 
   /**
-   * Talks to Stackdriver Profiler server to create profile when instructed
-   * and then upload that profile.
+   * Endlessly polls the profiler server for instructions, and collects and
+   * uploads profiles as requested.
    *
-   * @param delayMillis - milliseconds to wait before polling Stackdriver
-   * Profiler server to see if it's time to create a profile and profile.
+   * The profiler server will be polled for instructions at most once every
+   * minTimeBetweenProfilesMillis.
    */
-  async coordinateProfiling(delayMillis = 0): Promise<void> {
+  async pollProfilerService(): Promise<void> {
     const startCreateMillis = Date.now();
     const prof = await this.createProfile();
     await this.profileAndUpload(prof);
     const endCreateMillis = Date.now();
 
     // Schedule the next profile.
-    let delay = this.config.minTimeBetweenProfilesMillis -
-        (endCreateMillis - startCreateMillis);
-    if (delay < 0) {
-      delay = 0;
-    }
-    setTimeout(this.coordinateProfiling.bind(this), delay).unref();
+    const delayMillis = Math.max(
+        0,
+        this.config.minTimeBetweenProfilesMillis -
+            (endCreateMillis - startCreateMillis));
+
+    setTimeout(this.pollProfilerService.bind(this), delayMillis).unref();
   }
 
   /**
    * Talks to Stackdriver Profiler server, which hangs until server indicates
    * job should be profiled.
    *
-   * If any problem is encountered, an error will be thrown.
+   * If any problem is encountered, the problem will be logged and
+   * createProfile() will be retried.
+   *
    * TODO: implement backoff and retry when error encountered. createProfile()
-   * should be retried when response indicates this request should be retried
+   * should be retried at time response indicates this request should be retried
    * or with exponential backoff (up to one hour) if the response does not
-   * indicate when to retry this request.
+   * indicate when to retry this request. Once this is implemented, an error
+   * will be thrown only if the error indicates one definitely should not
+   * retry createProfile.
    *
    * Public to allow for testing.
    */
@@ -171,30 +175,44 @@ export class Profiler extends common.ServiceObject {
       body: reqBody,
       json: true,
     };
-
-    const [body, response] = await this.request(options);
-    return body;
+    try {
+      const [body, response] = await this.request(options);
+      return body;
+    } catch (err) {
+      // TODO: implement backing-off for retries, as described above, rather
+      // than delaying for minTimeBetweenProfilesMillis
+      this.logger.debug('error creating profile: ' + err);
+      await delay(this.config.minTimeBetweenProfilesMillis);
+      return this.createProfile();
+    }
   }
 
   /**
    * Collects a profile of the type specified by the profileType field of prof.
    * If any problem is encountered, like a problem collecting or uploading the
-   * profile, an error will be thrown.
+   * profile, an error will be logged at the debug level, but otherwise ignored.
    *
    * Public to allow for testing.
    *
    * @param prof
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
-    prof = await this.writeTimeProfile(prof);
+    try {
+      prof = await this.writeTimeProfile(prof);
+    } catch (err) {
+      this.logger.debug('error collecting profile: ' + err);
+    }
     const options = {
       method: 'PATCH',
       uri: API + '/' + prof.name,
       body: prof,
       json: true,
     };
-
-    await this.request(options);
+    try {
+      await this.request(options);
+    } catch (err) {
+      this.logger.debug('error uploading profile: ' + err);
+    }
   }
 
   /**

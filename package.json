@@ -24,7 +24,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@google-cloud/common": "^0.13.6",
-    "@types/pify": "^3.0.0",
     "bindings": "^1.2.1",
     "delay": "^2.0.0",
     "extend": "^3.0.1",
