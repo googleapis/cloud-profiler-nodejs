@@ -72,13 +72,13 @@ class StringTable {
    * str is not in the table already.
    */
   getIndexOrAdd(str: string): number {
-    let loc = this.stringsMap.get(str);
-    if (loc !== undefined) {
-      return loc;
+    let idx = this.stringsMap.get(str);
+    if (idx !== undefined) {
+      return idx;
     }
-    loc = this.strings.push(str) - 1;
-    this.stringsMap.set(str, loc);
-    return loc;
+    idx = this.strings.push(str) - 1;
+    this.stringsMap.set(str, idx);
+    return idx;
   }
 }
 
