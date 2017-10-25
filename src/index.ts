@@ -28,12 +28,10 @@ const common: Common = require('@google-cloud/common');
 
 // Returns value of metadata field.
 // Throws error if there is a problem accessing metadata API.
-function getMetadataInstanceField(field: string): Promise<string> {
-  return pify(gcpMetadata.instance, {multiArgs: true})(field).then(
-      (result: any[]) => {
-        const [response, metadata] = result;
-        return metadata;
-      });
+async function getMetadataInstanceField(field: string): Promise<string> {
+  const [response, metadata] =
+      await pify(gcpMetadata.instance, {multiArgs: true})(field);
+  return metadata;
 }
 
 // initConfig sets unset values in the configuration to the value retrieved from
