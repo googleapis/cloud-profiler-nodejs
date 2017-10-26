@@ -136,7 +136,7 @@ describe('Profiler', () => {
       } catch (err) {
         assert.equal(
             err.message,
-            'cannot collect time profile, time profiler not enabled');
+            'Cannot collect time profile, time profiler not enabled.');
       }
     });
   });

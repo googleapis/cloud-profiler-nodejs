@@ -123,7 +123,7 @@ export class Profiler extends common.ServiceObject {
       tag: pjson.name
     });
 
-    // TODO: enable heap profiling once heap-profiler implemented.
+    // TODO: enable heap profiling once heap profiler implemented.
     this.profileTypes = [];
     if (!this.config.disableTime) {
       this.profileTypes.push(ProfileTypes.Wall);
@@ -138,12 +138,13 @@ export class Profiler extends common.ServiceObject {
    * If there is a problem when collecting a profile or uploading a profile to
    * Stackdriver Profiler, this problem will be logged at the debug level.
    * If there is a problem polling Stackdriver Profiler for instructions
-   * on the type of profile created, an error will be thrown.
+   * on the type of profile created, this problem will be logged. If the problem
+   * indicates one definitely will not be able to profile, an error will be
+   * thrown.
    */
   async start(): Promise<void> {
     return this.pollProfilerService();
   }
-
 
   /**
    * Endlessly polls the profiler server for instructions, and collects and
@@ -206,13 +207,13 @@ export class Profiler extends common.ServiceObject {
       if (isErrorResponseCode(response.statusCode)) {
         retryRequest = isRetriableResponseCode(response.statusCode);
         requestError =
-            new Error('error uploading profile: ' + response.statusMessage);
+            new Error('Error creating profile: ' + response.statusMessage);
         this.logger.debug(requestError);
       }
       return body;
     } catch (err) {
       retryRequest = isRetriableError(err);
-      requestError = new Error('error uploading profile: ' + err);
+      requestError = new Error('Error creating profile: ' + err);
       this.logger.debug(requestError);
     }
     if (retryRequest) {
@@ -237,7 +238,7 @@ export class Profiler extends common.ServiceObject {
     try {
       prof = await this.writeTimeProfile(prof);
     } catch (err) {
-      this.logger.debug('error collecting profile: ' + err);
+      this.logger.debug('Error collecting profile: ' + err);
       return;
     }
     const options = {
@@ -249,10 +250,10 @@ export class Profiler extends common.ServiceObject {
     try {
       const [body, response] = await this.request(options);
       if (isErrorResponseCode(response.statusCode)) {
-        this.logger.debug('error uploading profile: ' + response.statusMessage);
+        this.logger.debug('Error uploading profile: ' + response.statusMessage);
       }
     } catch (err) {
-      this.logger.debug('error uploading profile: ' + err);
+      this.logger.debug('Error uploading profile: ' + err);
     }
   }
 
@@ -273,7 +274,7 @@ export class Profiler extends common.ServiceObject {
       case ProfileTypes.Heap:
         return this.writeHeapProfile(prof);
       default:
-        throw new Error('unexpected profile type ' + prof.profileType);
+        throw new Error('Unexpected profile type ' + prof.profileType + '.');
     }
   }
 
@@ -293,7 +294,7 @@ export class Profiler extends common.ServiceObject {
       prof.profileBytes = await profileBytes(p);
       return prof;
     } else {
-      throw Error('cannot collect time profile, time profiler not enabled');
+      throw Error('Cannot collect time profile, time profiler not enabled.');
     }
   }
 
@@ -308,6 +309,6 @@ export class Profiler extends common.ServiceObject {
    * @param prof
    */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
-    throw new Error('heap profile collection unimplemented.');
+    throw new Error('Heap profile collection unimplemented.');
   }
 }
