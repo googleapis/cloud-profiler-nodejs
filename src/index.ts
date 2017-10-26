@@ -63,10 +63,10 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
         require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG)) as Config;
   }
 
-  let normalizedConfig =
+  let mergedConfig =
       extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
-  if (!normalizedConfig.zone || !normalizedConfig.instance) {
+  if (!mergedConfig.zone || !mergedConfig.instance) {
     const [instance, zone] =
         await Promise
             .all([
@@ -77,19 +77,19 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
                     // ignore errors, which will occur when not on GCE.
                 }) ||
         ['', ''];
-    if (!normalizedConfig.zone) {
-      normalizedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
+    if (!mergedConfig.zone) {
+      mergedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
-    if (!normalizedConfig.instance) {
-      normalizedConfig.instance = instance;
+    if (!mergedConfig.instance) {
+      mergedConfig.instance = instance;
     }
   }
 
-  if (normalizedConfig.serviceContext.service === undefined) {
-    throw new Error('service must be specified in the configuration');
+  if (mergedConfig.serviceContext.service === undefined) {
+    throw new Error('Service must be specified in the configuration.');
   }
 
-  return normalizedConfig;
+  return mergedConfig;
 }
 
 let profiler: Profiler|undefined = undefined;

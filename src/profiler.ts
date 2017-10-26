@@ -63,6 +63,6 @@ export class Profiler {
   // TODO: explain failure situations.
   async start(): Promise<void> {
     return Promise.reject(
-        new Error('start() is unimplemented for ProfileAgent'));
+        new Error('start() is unimplemented for ProfileAgent.'));
   }
 }

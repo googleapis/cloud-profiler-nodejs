@@ -142,7 +142,7 @@ describe('initConfig', () => {
         })
         .catch((e: Error) => {
           assert.equal(
-              e.message, 'service must be specified in the configuration');
+              e.message, 'Service must be specified in the configuration.');
         });
   });
 
