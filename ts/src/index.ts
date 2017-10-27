@@ -106,7 +106,7 @@ let profiler: Profiler|undefined = undefined;
  *
  */
 export async function start(config: Config = {}): Promise<void> {
-  const  normalizedConfig = await initConfig(config);
+  const normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
   return profiler.start();
 }
