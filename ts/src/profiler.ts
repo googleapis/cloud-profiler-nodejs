@@ -149,9 +149,6 @@ export class Profiler extends common.ServiceObject {
   /**
    * Endlessly polls the profiler server for instructions, and collects and
    * uploads profiles as requested.
-   *
-   * The profiler server will be polled for instructions at most once every
-   * minTimeBetweenProfilesMillis.
    */
   async pollProfilerService(): Promise<void> {
     const startCreateMillis = Date.now();
@@ -160,12 +157,7 @@ export class Profiler extends common.ServiceObject {
     const endCreateMillis = Date.now();
 
     // Schedule the next profile.
-    const delayMillis = Math.max(
-        0,
-        this.config.minTimeBetweenProfilesMillis -
-            (endCreateMillis - startCreateMillis));
-
-    setTimeout(this.pollProfilerService.bind(this), delayMillis).unref();
+    setTimeout(this.pollProfilerService.bind(this), 0).unref();
   }
 
   /**
@@ -219,7 +211,7 @@ export class Profiler extends common.ServiceObject {
     if (retryRequest) {
       // TODO: check response to see if response specifies a backoff.
       // TODO: implement exponential backoff.
-      await delay(this.config.minTimeBetweenProfilesMillis);
+      await delay(this.config.backoffMillis);
       this.createProfile();
     }
     throw requestError;

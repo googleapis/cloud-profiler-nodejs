@@ -42,11 +42,7 @@ const testConfig: ProfilerConfig = {
   disableHeap: false,
   credentials: fakeCredentials,
   timeSamplingIntervalMicros: 1000,
-  minTimeBetweenProfilesMillis: 1000 * 60,
-  initialBackoffMillis: 1000,        // 1 second
-  maxBackoffMillis: 60 * 60 * 1000,  // 1 hour
-  backoffMultiplier:
-      1.3,  // Backoff envelope increase by this factor on each retry
+  backoffMillis: 1000,  // 1 second
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';

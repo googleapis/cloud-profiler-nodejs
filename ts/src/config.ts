@@ -71,10 +71,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   disableTime: boolean;
   disableHeap: boolean;
   timeSamplingIntervalMicros: number;
-  minTimeBetweenProfilesMillis: number;
-  initialBackoffMillis: number;
-  maxBackoffMillis: number;
-  backoffMultiplier: number;
+  backoffMillis: number;
 }
 
 // Default values for configuration for a profiler.
@@ -93,8 +90,5 @@ export const defaultConfig: Config = {
 export const internalConfig = {
   minProfilingIntervalMillis: 60 * 1000,
   timeSamplingIntervalMicros: 1000,
-  initialBackoffMillis: 1000,        // 1 second
-  maxBackoffMillis: 60 * 60 * 1000,  // 1 hour
-  backoffMultiplier:
-      1.3,  // Backoff envelope increase by this factor on each retry
+  backoff: 1000,  // 1 second
 };
