@@ -18,6 +18,7 @@ import * as assert from 'assert';
 import * as delay from 'delay';
 import * as extend from 'extend';
 import * as nock from 'nock';
+import * as pify from 'pify';
 import * as sinon from 'sinon';
 import {instance, mock, when} from 'ts-mockito';
 import * as zlib from 'zlib';
@@ -105,11 +106,7 @@ describe('Profiler', () => {
          }
 
          const decodedBytes = Buffer.from(encodedBytes as string, 'base64');
-         const unzippedBytes = await new Promise<Buffer>((resolve, reject) => {
-           zlib.gunzip(decodedBytes, (err: Error, result: Buffer) => {
-             resolve(result);
-           });
-         });
+         const unzippedBytes = await pify(zlib.gunzip)(decodedBytes);
          const outProfile = perftools.profiles.Profile.decode(unzippedBytes);
 
          // compare to decodedTestProfile, which is equivalent to testProfile,
