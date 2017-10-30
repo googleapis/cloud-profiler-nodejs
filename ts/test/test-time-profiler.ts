@@ -59,7 +59,7 @@ describe('TimeProfiler', () => {
       const intervalMicros = 1000;
       let profiler = new TimeProfiler(intervalMicros);
       let profile = await profiler.profile(durationMillis);
-      assert.deepEqual(testProfile, profile);
+      assert.deepEqual(timeProfile, profile);
     });
   });
 });
