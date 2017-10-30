@@ -192,18 +192,20 @@ export class Profiler extends common.ServiceObject {
         requestError =
             new Error('Error creating profile: ' + response.statusMessage);
         this.logger.debug(requestError);
+      } else {
+        return body;
       }
-      return body;
     } catch (err) {
-      retryRequest = isRetriableError(err);
-      requestError = new Error('Error creating profile: ' + err);
+      retryRequest =
+          isRetriableError(err) || isRetriableResponseCode(err.statusCode);
+      requestError = new Error('Error creating profile: ' + err.toString());
       this.logger.debug(requestError);
     }
     if (retryRequest) {
       // TODO: check response to see if response specifies a backoff.
       // TODO: implement exponential backoff.
       await delay(this.config.backoffMillis);
-      this.createProfile();
+      return this.createProfile();
     }
     throw requestError;
   }

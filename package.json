@@ -49,6 +49,7 @@
     "nock": "^9.0.22",
     "nyc": "^11.2.1",
     "protobufjs": "~6.8.0",
+    "request": "^2.83.0",
     "sinon": "^4.0.1",
     "ts-mockito": "^2.2.5",
     "typescript": "^2.4.1"
