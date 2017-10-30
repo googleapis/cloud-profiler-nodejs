@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as pify from 'pify';
 import * as zlib from 'zlib';
 
-import {perftools} from '../../src/profile';
+import {perftools} from '../../proto/profile';
 import {AuthenticationConfig, Common, Logger, Service, ServiceConfig, ServiceObject, ServiceObjectConfig} from '../third_party/types/common-types';
 
 import {ProfilerConfig} from './config';
@@ -157,7 +157,7 @@ export class Profiler extends common.ServiceObject {
     const endCreateMillis = Date.now();
 
     // Schedule the next profile.
-    setTimeout(this.pollProfilerService.bind(this), 0).unref();
+    setImmediate(this.pollProfilerService.bind(this)).unref();
   }
 
   /**
