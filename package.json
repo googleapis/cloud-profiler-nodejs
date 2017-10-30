@@ -40,7 +40,6 @@
     "@types/nock": "^8.2.1",
     "@types/node": "^8.0.30",
     "@types/pify": "^3.0.0",
-    "@types/request": "^2.0.4",
     "@types/sinon": "^2.3.6",
     "clang-format": "^1.0.33",
     "codecov": "^2.3.1",
@@ -49,7 +48,6 @@
     "nock": "^9.0.22",
     "nyc": "^11.2.1",
     "protobufjs": "~6.8.0",
-    "request": "^2.83.0",
     "sinon": "^4.0.1",
     "ts-mockito": "^2.2.5",
     "typescript": "^2.4.1"

@@ -223,7 +223,7 @@ export class Profiler extends common.ServiceObject {
     try {
       prof = await this.writeTimeProfile(prof);
     } catch (err) {
-      this.logger.debug('Error collecting profile: ' + err);
+      this.logger.debug('Error collecting profile: ' + err.toString());
       return;
     }
     const options = {
@@ -238,7 +238,7 @@ export class Profiler extends common.ServiceObject {
         this.logger.debug('Error uploading profile: ' + response.statusMessage);
       }
     } catch (err) {
-      this.logger.debug('Error uploading profile: ' + err);
+      this.logger.debug('Error uploading profile: ' + err.toString());
     }
   }
 

@@ -30,7 +30,6 @@ import {Common} from '../third_party/types/common-types';
 
 import {base64TimeProfile, decodedTimeProfile, timeProfile} from './profiles-for-tests';
 
-
 const common: Common = require('@google-cloud/common');
 const v8TimeProfiler = require('bindings')('time_profiler');
 
