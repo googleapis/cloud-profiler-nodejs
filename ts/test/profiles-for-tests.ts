@@ -150,6 +150,18 @@ export const timeProfile: perftools.profiles.IProfile = {
   period: 1000,
 };
 
+// timeProfile is encoded then decoded to convert numbers to longs, in
+// decodedTimeProfile
+const encodedProfile = perftools.profiles.Profile.encode(timeProfile).finish();
+export const decodedTimeProfile =
+    perftools.profiles.Profile.decode(encodedProfile);
+
+export const base64TimeProfile = 'H4sIAAAAAAAAA0XPMQrCMBQGYPOSNGkQGrrYsRRc3J' +
+    'pTODo7KbFCwKalTXeP4g1cPYKjx+gxfCmI28f//vfgKSaJBsUk1SxPFQDJKZlFLhWBnNLXJ' +
+    'oYUCZ8sksEyr6QkVVwlKECB5ihaxUMZii2Z2mFP84KXCQq0KEQpUXRRYlZGjOe2vzWj4bab' +
+    'fDAsuLYx69bZoRsb2/nLaNLr5G1wnTdYt4Prg/ln9S+r96vD/f18bI/LM6dZfAGLaAVw3AA' +
+    'AAA==';
+
 
 const heapLeaf1 = {
   name: 'function2',

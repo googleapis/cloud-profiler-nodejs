@@ -7,4 +7,4 @@ Description:
        applications.
 Local Modifications:
        All code except common-types.ts and gcp-metadata-types.ts has been 
-       removed. RequestOptions interface added. 
+       removed.

@@ -31,15 +31,6 @@ const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
 const gzip = pify(zlib.gzip);
 
-export interface ProfilerConfig extends AuthenticationConfig {
-  logLevel: number;
-  serviceContext: {service: string; version?: string;};
-  instance: string;
-  zone: string;
-  disableTime: boolean;
-  disableHeap: boolean;
-}
-
 enum ProfileTypes {
   Wall = 'WALL',
   Heap = 'HEAP'
