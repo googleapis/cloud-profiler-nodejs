@@ -16,7 +16,6 @@
 
 import * as assert from 'assert';
 import * as gcpMetadata from 'gcp-metadata';
-import * as request from 'request';
 import * as sinon from 'sinon';
 
 import {initConfig} from '../src/index';

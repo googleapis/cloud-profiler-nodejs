@@ -78,18 +78,36 @@ afterEach(() => {
 
 describe('Profiler', () => {
   describe('profile', () => {
-    it('should return expected profile when profile type is WALL', async () => {
-      const profiler = new Profiler(testConfig);
-      profiler.timeProfiler = instance(mockTimeProfiler);
-      const requestProf = {
-        name: 'projects/12345678901/test-projectId',
-        profileType: 'WALL',
-        duration: '10s',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
-      };
-      const prof = await profiler.profile(requestProf);
-      assert.deepEqual(prof.profileBytes, base64TimeProfile);
-    });
+    it('should return expected profile when profile type is WALL.',
+       async () => {
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: 'test-instance', zone: 'test-zone'}
+         };
+         const prof = await profiler.profile(requestProf);
+         assert.deepEqual(prof.profileBytes, base64TimeProfile);
+       });
+    it('should throw error when unexpected profile type is requested.',
+       async () => {
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'UNKNOWN',
+           duration: '10s',
+           labels: {instance: 'test-instance', zone: 'test-zone'}
+         };
+         try {
+           await profiler.profile(requestProf);
+           assert.fail('Expected an error to be thrown,');
+         } catch (err) {
+           assert.equal(err.message, 'Unexpected profile type UNKNOWN.');
+         }
+       });
   });
   describe('writeTimeProfile', () => {
     it('should return request with base64-encoded profile when time profiling' +
@@ -120,7 +138,7 @@ describe('Profiler', () => {
          // but numbers are replaced with longs.
          assert.deepEqual(decodedTimeProfile, outProfile);
        });
-    it('should throw error when time profiling is not enabled', async () => {
+    it('should throw error when time profiling is not enabled.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableTime = true;
       const profiler = new Profiler(config);
@@ -141,7 +159,7 @@ describe('Profiler', () => {
     });
   });
   describe('profileAndUpload', () => {
-    it('should send request to upload profile', async () => {
+    it('should send request to upload profile.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
@@ -163,7 +181,7 @@ describe('Profiler', () => {
       await profiler.profileAndUpload(requestProf);
       assert.ok(uploadProfileMock.isDone(), 'expected call to upload profile');
     });
-    it('should not retry when error thrown by http request', async () => {
+    it('should not retry when error thrown by http request.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
@@ -198,7 +216,7 @@ describe('Profiler', () => {
     });
   });
   describe('createProfile', () => {
-    it('should send request to create only wall profile when heap disabled',
+    it('should send request to create only wall profile when heap disabled.',
        async () => {
          const config = extend(true, {}, testConfig);
          config.disableHeap = true;
@@ -220,7 +238,7 @@ describe('Profiler', () => {
          assert.ok(
              createProfileMock.isDone(), 'expected call to create profile');
        });
-    it('should retry when error thrown by http request', async () => {
+    it('should retry when error thrown by http request.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableHeap = true;
       const response = {
