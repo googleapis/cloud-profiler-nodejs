@@ -21,6 +21,7 @@ const profiler = require('bindings')('sampling_heap_profiler');
 
 export class HeapProfiler {
   private enabled: boolean;
+
   /**
    * @param intervalBytes - average bytes between samples.
    * @param stackDepth - upper limit on number of frames in stack for sample.
@@ -32,18 +33,14 @@ export class HeapProfiler {
   /**
    * Collects a heap profile when heapProfiler is enabled. Otherwise throws
    * an error.
-   *
-   * @param durationMillis - recorded duration of the profile.
    */
-  profile(durationMillis: number): perftools.profiles.IProfile {
+  profile(): perftools.profiles.IProfile {
     if (!this.enabled) {
-      throw new Error('Heap profiler not enabled.');
+      throw new Error('Heap profiler is not enabled.');
     }
     const result = profiler.getAllocationProfile();
     const startTimeNanos = Date.now() * 1000 * 1000;
-    return serializeHeapProfile(
-        result, startTimeNanos, durationMillis * 1000 * 1000,
-        this.intervalBytes);
+    return serializeHeapProfile(result, startTimeNanos, this.intervalBytes);
   }
 
   enable() {

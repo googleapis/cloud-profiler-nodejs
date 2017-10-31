@@ -38,6 +38,7 @@ describe('HeapProfiler', () => {
       v8HeapProfiler.startSamplingHeapProfiler.restore();
       v8HeapProfiler.stopSamplingHeapProfiler.restore();
       v8HeapProfiler.getAllocationProfile.restore();
+      (Date.now as any).restore();
     });
 
     it('should return a profile equal to the expected profile', async () => {
@@ -45,7 +46,7 @@ describe('HeapProfiler', () => {
       const intervalBytes = 1024 * 512;
       const stackDepth = 32;
       let profiler = new HeapProfiler(intervalBytes, stackDepth);
-      let profile = profiler.profile(durationMillis);
+      let profile = profiler.profile();
       assert.deepEqual(heapProfile, profile);
     });
 
@@ -56,10 +57,10 @@ describe('HeapProfiler', () => {
       const profiler = new HeapProfiler(intervalBytes, stackDepth);
       profiler.disable();
       try {
-        const profile = await profiler.profile(durationMillis);
+        const profile = await profiler.profile();
         assert.fail('Expected error to be thrown.');
       } catch (err) {
-        assert.equal(err.message, 'Heap profiler not enabled.');
+        assert.equal(err.message, 'Heap profiler is not enabled.');
       }
     });
   });
