@@ -171,7 +171,7 @@ function serialize(
  * Returns value type for samples counts (type:samples, units:count), and
  * adds strings used in this value type to the table.
  */
-function createSampleValueType(table: StringTable):
+function createTimeCountValueType(table: StringTable):
     perftools.profiles.ValueType {
   return new perftools.profiles.ValueType({
     type: table.getIndexOrAdd('samples'),
@@ -187,6 +187,18 @@ function createTimeValueType(table: StringTable): perftools.profiles.ValueType {
   return new perftools.profiles.ValueType({
     type: table.getIndexOrAdd('time'),
     unit: table.getIndexOrAdd('microseconds')
+  });
+}
+
+/**
+ * Returns value type for object counts (type:objects, units:count), and
+ * adds strings used in this value type to the table.
+ */
+function createAllocationCountValueType(table: StringTable):
+    perftools.profiles.ValueType {
+  return new perftools.profiles.ValueType({
+    type: table.getIndexOrAdd('objects'),
+    unit: table.getIndexOrAdd('count')
   });
 }
 
@@ -222,7 +234,7 @@ export function serializeTimeProfile(
       };
 
   const stringTable = new StringTable();
-  const sampleValueType = createSampleValueType(stringTable);
+  const sampleValueType = createTimeCountValueType(stringTable);
   const timeValueType = createTimeValueType(stringTable);
 
   const profile = {
@@ -266,7 +278,7 @@ export function serializeHeapProfile(
       };
 
   const stringTable = new StringTable();
-  const sampleValueType = createSampleValueType(stringTable);
+  const sampleValueType = createAllocationCountValueType(stringTable);
   const allocationValueType = createAllocationValueType(stringTable);
 
   const profile = {
