@@ -171,7 +171,7 @@ function serialize(
  * Returns value type for samples counts (type:samples, units:count), and
  * adds strings used in this value type to the table.
  */
-function createTimeCountValueType(table: StringTable):
+function createSampleCountValueType(table: StringTable):
     perftools.profiles.ValueType {
   return new perftools.profiles.ValueType({
     type: table.getIndexOrAdd('samples'),
@@ -234,7 +234,7 @@ export function serializeTimeProfile(
       };
 
   const stringTable = new StringTable();
-  const sampleValueType = createTimeCountValueType(stringTable);
+  const sampleValueType = createSampleCountValueType(stringTable);
   const timeValueType = createTimeValueType(stringTable);
 
   const profile = {
