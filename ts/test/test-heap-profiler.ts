@@ -42,7 +42,6 @@ describe('HeapProfiler', () => {
     });
 
     it('should return a profile equal to the expected profile', async () => {
-      const durationMillis = 10 * 1000;
       const intervalBytes = 1024 * 512;
       const stackDepth = 32;
       let profiler = new HeapProfiler(intervalBytes, stackDepth);
@@ -51,7 +50,6 @@ describe('HeapProfiler', () => {
     });
 
     it('should throw error when disabled', async () => {
-      const durationMillis = 10 * 1000;
       const intervalBytes = 1024 * 512;
       const stackDepth = 32;
       const profiler = new HeapProfiler(intervalBytes, stackDepth);
