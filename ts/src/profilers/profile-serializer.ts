@@ -194,7 +194,7 @@ function createTimeValueType(table: StringTable): perftools.profiles.ValueType {
  * Returns value type for object counts (type:objects, units:count), and
  * adds strings used in this value type to the table.
  */
-function createAllocationCountValueType(table: StringTable):
+function createObjectCountValueType(table: StringTable):
     perftools.profiles.ValueType {
   return new perftools.profiles.ValueType({
     type: table.getIndexOrAdd('objects'),
@@ -278,7 +278,7 @@ export function serializeHeapProfile(
       };
 
   const stringTable = new StringTable();
-  const sampleValueType = createAllocationCountValueType(stringTable);
+  const sampleValueType = createObjectCountValueType(stringTable);
   const allocationValueType = createAllocationValueType(stringTable);
 
   const profile = {
