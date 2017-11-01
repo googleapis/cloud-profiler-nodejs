@@ -49,17 +49,18 @@ describe('HeapProfiler', () => {
       assert.deepEqual(heapProfile, profile);
     });
 
-    it('should throw error when disabled', async () => {
+    it('should throw error when disabled', () => {
       const intervalBytes = 1024 * 512;
       const stackDepth = 32;
       const profiler = new HeapProfiler(intervalBytes, stackDepth);
       profiler.disable();
-      try {
-        const profile = await profiler.profile();
-        assert.fail('Expected error to be thrown.');
-      } catch (err) {
-        assert.equal(err.message, 'Heap profiler is not enabled.');
-      }
+      assert.throws(
+          () => {
+            profiler.profile();
+          },
+          (err: Error) => {
+            return err.message === 'Heap profiler is not enabled.';
+          });
     });
   });
 });
