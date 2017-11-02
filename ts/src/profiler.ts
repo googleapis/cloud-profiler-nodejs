@@ -221,7 +221,7 @@ export class Profiler extends common.ServiceObject {
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     try {
-      prof = await this.writeTimeProfile(prof);
+      prof = await this.profile(prof);
     } catch (err) {
       this.logger.debug('Error collecting profile: ' + err.toString());
       return;

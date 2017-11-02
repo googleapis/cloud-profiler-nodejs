@@ -50,10 +50,22 @@ describe('initConfig', () => {
       disableTime: true,
       instance: 'instance',
       zone: 'zone',
+      projectId: 'fake-projectId'
+    };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
       projectId: 'fake-projectId',
+      minProfilingIntervalMillis: 60 * 1000,
+      timeSamplingIntervalMicros: 1000,
+      backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should not modify specified fields when on GCE', async () => {
@@ -73,8 +85,20 @@ describe('initConfig', () => {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: 'fake-version', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      projectId: 'fake-projectId',
+      minProfilingIntervalMillis: 60 * 1000,
+      timeSamplingIntervalMicros: 1000,
+      backoffMillis: 1000
+    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should get zone and instance from GCE', async () => {
@@ -100,6 +124,9 @@ describe('initConfig', () => {
       instance: 'gce-instance',
       zone: 'gce-zone',
       projectId: 'projectId',
+      minProfilingIntervalMillis: 60 * 1000,
+      timeSamplingIntervalMicros: 1000,
+      backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -121,6 +148,9 @@ describe('initConfig', () => {
          instance: '',
          zone: '',
          projectId: 'fake-projectId',
+         minProfilingIntervalMillis: 60 * 1000,
+         timeSamplingIntervalMicros: 1000,
+         backoffMillis: 1000
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -157,8 +187,19 @@ describe('initConfig', () => {
       instance: 'instance',
       zone: 'zone'
     };
+    const expConfig = {
+      logLevel: 2,
+      serviceContext: {version: '', service: 'fake-service'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+      minProfilingIntervalMillis: 60 * 1000,
+      timeSamplingIntervalMicros: 1000,
+      backoffMillis: 1000
+    };
     let initializedConfig = await initConfig(config);
-    assert.deepEqual(initializedConfig, config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should get values from from environment variable when not specified in config or environment variables',
@@ -185,6 +226,9 @@ describe('initConfig', () => {
          disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
+         minProfilingIntervalMillis: 60 * 1000,
+         timeSamplingIntervalMicros: 1000,
+         backoffMillis: 1000
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -214,8 +258,20 @@ describe('initConfig', () => {
          instance: 'instance',
          zone: 'zone'
        };
+       const expConfig = {
+         projectId: 'config-projectId',
+         logLevel: 1,
+         serviceContext: {version: 'config-version', service: 'config-service'},
+         disableHeap: false,
+         disableTime: false,
+         instance: 'instance',
+         zone: 'zone',
+         minProfilingIntervalMillis: 60 * 1000,
+         timeSamplingIntervalMicros: 1000,
+         backoffMillis: 1000
+       };
        let initializedConfig = await initConfig(config);
-       assert.deepEqual(initializedConfig, config);
+       assert.deepEqual(initializedConfig, expConfig);
      });
 
   it('should get values from from environment config when not specified in config or other environment variables',
@@ -234,6 +290,9 @@ describe('initConfig', () => {
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
          projectId: 'envConfig-fake-projectId',
+         minProfilingIntervalMillis: 60 * 1000,
+         timeSamplingIntervalMicros: 1000,
+         backoffMillis: 1000
        };
 
        const config = {};

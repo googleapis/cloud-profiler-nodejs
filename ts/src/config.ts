@@ -88,5 +88,5 @@ export const defaultConfig = {
 export const internalConfig = {
   minProfilingIntervalMillis: 60 * 1000,
   timeSamplingIntervalMicros: 1000,
-  backoff: 1000,  // 1 second
+  backoffMillis: 1000,  // 1 second
 };

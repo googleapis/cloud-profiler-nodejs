@@ -188,9 +188,8 @@ describe('Profiler', () => {
         profileType: 'WALL',
         labels: {instance: 'test-instance', zone: 'test-zone'}
       };
-      const requestStub =
-          sinon.stub(common.ServiceObject.prototype, 'request')
-              .returns(Promise.reject(new Error('Network error')));
+      const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                              .rejects(new Error('Network error'));
       const profiler = new Profiler(testConfig);
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
@@ -206,7 +205,7 @@ describe('Profiler', () => {
       };
       const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
                               .returns(new Promise(resolve => {
-                                resolve([{}, {statusCode: 500}]);
+                                resolve([undefined, {statusCode: 500}]);
                               }));
       const profiler = new Profiler(testConfig);
       profiler.timeProfiler = instance(mockTimeProfiler);
