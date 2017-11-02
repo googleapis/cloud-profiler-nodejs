@@ -25,10 +25,11 @@ import * as zlib from 'zlib';
 import {perftools} from '../../proto/profile';
 import {ProfilerConfig} from '../src/config';
 import {Profiler} from '../src/profiler';
+import {HeapProfiler} from '../src/profilers/heap-profiler';
 import {TimeProfiler} from '../src/profilers/time-profiler';
 import {Common} from '../third_party/types/common-types';
 
-import {base64TimeProfile, decodedTimeProfile, timeProfile} from './profiles-for-tests';
+import {base64HeapProfile, base64TimeProfile, decodedHeapProfile, decodedTimeProfile, heapProfile, timeProfile} from './profiles-for-tests';
 
 const common: Common = require('@google-cloud/common');
 const v8TimeProfiler = require('bindings')('time_profiler');
@@ -45,8 +46,10 @@ const testConfig: ProfilerConfig = {
   disableTime: false,
   disableHeap: false,
   credentials: fakeCredentials,
-  timeSamplingIntervalMicros: 1000,
-  backoffMillis: 1000,  // 1 second
+  timeIntervalMicros: 1000,
+  heapIntervalBytes: 512 * 1024,
+  heapMaxStackDepth: 64,
+  backoffMillis: 1000
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';
@@ -55,6 +58,9 @@ const mockTimeProfiler = mock(TimeProfiler);
 when(mockTimeProfiler.profile(10 * 1000)).thenReturn(new Promise((resolve) => {
   resolve(timeProfile);
 }));
+
+const mockHeapProfiler = mock(HeapProfiler);
+when(mockHeapProfiler.profile()).thenReturn(heapProfile);
 
 nock.disableNetConnect();
 function nockOauth2(): nock.Scope {
@@ -90,6 +96,19 @@ describe('Profiler', () => {
          };
          const prof = await profiler.profile(requestProf);
          assert.deepEqual(prof.profileBytes, base64TimeProfile);
+       });
+    it('should return expected profile when profile type is HEAP.',
+       async () => {
+         const profiler = new Profiler(testConfig);
+         profiler.heapProfiler = instance(mockHeapProfiler);
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'HEAP',
+           duration: '10s',
+           labels: {instance: 'test-instance', zone: 'test-zone'}
+         };
+         const prof = await profiler.profile(requestProf);
+         assert.deepEqual(prof.profileBytes, base64HeapProfile);
        });
     it('should throw error when unexpected profile type is requested.',
        async () => {
@@ -158,8 +177,57 @@ describe('Profiler', () => {
       }
     });
   });
+  describe('writeHeapProfile', () => {
+    it('should return request with base64-encoded profile when time profiling' +
+           ' enabled',
+       async () => {
+         const profiler = new Profiler(testConfig);
+         profiler.heapProfiler = instance(mockHeapProfiler);
+
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'HEAP',
+           duration: '10s',
+           labels: {instance: 'test-instance', zone: 'test-zone'}
+         };
+
+         const outRequestProfile = await profiler.writeHeapProfile(requestProf);
+         const encodedBytes = outRequestProfile.profileBytes;
+
+         if (encodedBytes === undefined) {
+           assert.fail('profile bytes are undefined.');
+         }
+
+         const decodedBytes = Buffer.from(encodedBytes as string, 'base64');
+         const unzippedBytes = await pify(zlib.gunzip)(decodedBytes);
+         const outProfile = perftools.profiles.Profile.decode(unzippedBytes);
+
+         // compare to decodedTimeProfile, which is equivalent to timeProfile,
+         // but numbers are replaced with longs.
+         assert.deepEqual(decodedHeapProfile, outProfile);
+       });
+    it('should throw error when heap profiling is not enabled.', async () => {
+      const config = extend(true, {}, testConfig);
+      config.disableHeap = true;
+      const profiler = new Profiler(config);
+      const requestProf = {
+        name: 'projects/12345678901/test-projectId',
+        profileType: 'HEAP',
+        duration: '10s',
+        labels: {instance: 'test-instance', zone: 'test-zone'}
+      };
+      try {
+        await profiler.writeHeapProfile(requestProf);
+        assert.fail('expected error, no error thrown');
+      } catch (err) {
+        assert.equal(
+            err.message,
+            'Cannot collect heap profile, heap profiler not enabled.');
+      }
+    });
+  });
   describe('profileAndUpload', () => {
-    it('should send request to upload profile.', async () => {
+    it('should send request to upload time profile.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
@@ -180,6 +248,50 @@ describe('Profiler', () => {
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
       assert.ok(uploadProfileMock.isDone(), 'expected call to upload profile');
+    });
+    it('should send request to upload heap profile.', async () => {
+      const requestProf = {
+        name: 'projects/12345678901/test-projectId',
+        duration: '10s',
+        profileType: 'HEAP',
+        labels: {instance: 'test-instance', zone: 'test-zone'}
+      };
+      const expProf =
+          extend(true, {profileBytes: base64TimeProfile}, testConfig);
+      nockOauth2();
+      const uploadProfileMock =
+          nock(API)
+              .patch('/' + requestProf.name)
+              .reply(200, (uri: string, requestBody: any) => {
+                assert.deepEqual(requestProf, requestBody);
+              });
+
+      const profiler = new Profiler(testConfig);
+      profiler.heapProfiler = instance(mockHeapProfiler);
+      await profiler.profileAndUpload(requestProf);
+      assert.ok(uploadProfileMock.isDone(), 'expected call to upload profile');
+    });
+    it('should not send request to upload unknown profile.', async () => {
+      const requestProf = {
+        name: 'projects/12345678901/test-projectId',
+        duration: '10s',
+        profileType: 'UNKNOWN_PROFILE_TYPE',
+        labels: {instance: 'test-instance', zone: 'test-zone'}
+      };
+      const expProf =
+          extend(true, {profileBytes: base64TimeProfile}, testConfig);
+      nockOauth2();
+      const uploadProfileMock =
+          nock(API)
+              .patch('/' + requestProf.name)
+              .reply(200, (uri: string, requestBody: any) => {
+                assert.deepEqual(requestProf, requestBody);
+              });
+
+      const profiler = new Profiler(testConfig);
+      await profiler.profileAndUpload(requestProf);
+      assert.ok(
+          !uploadProfileMock.isDone(), 'expected no call to upload profile');
     });
     it('should not retry when error thrown by http request.', async () => {
       const requestProf = {

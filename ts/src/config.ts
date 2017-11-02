@@ -70,7 +70,9 @@ export interface ProfilerConfig extends AuthenticationConfig {
   zone: string;
   disableTime: boolean;
   disableHeap: boolean;
-  timeSamplingIntervalMicros: number;
+  timeIntervalMicros: number;
+  heapIntervalBytes: number;
+  heapMaxStackDepth: number;
   backoffMillis: number;
 }
 
@@ -86,7 +88,8 @@ export const defaultConfig = {
 
 // Configuration parameters set internally, not by users.
 export const internalConfig = {
-  minProfilingIntervalMillis: 60 * 1000,
-  timeSamplingIntervalMicros: 1000,
+  timeIntervalMicros: 1000,
+  heapIntervalBytes: 512 * 1024,
+  heapMaxStackDepth: 64,
   backoffMillis: 1000,  // 1 second
 };

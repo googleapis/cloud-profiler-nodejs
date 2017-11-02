@@ -60,8 +60,9 @@ describe('initConfig', () => {
       instance: 'instance',
       zone: 'zone',
       projectId: 'fake-projectId',
-      minProfilingIntervalMillis: 60 * 1000,
-      timeSamplingIntervalMicros: 1000,
+      timeIntervalMicros: 1000,
+      heapIntervalBytes: 512 * 1024,
+      heapMaxStackDepth: 64,
       backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
@@ -93,8 +94,9 @@ describe('initConfig', () => {
       instance: 'instance',
       zone: 'zone',
       projectId: 'fake-projectId',
-      minProfilingIntervalMillis: 60 * 1000,
-      timeSamplingIntervalMicros: 1000,
+      timeIntervalMicros: 1000,
+      heapIntervalBytes: 512 * 1024,
+      heapMaxStackDepth: 64,
       backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
@@ -124,8 +126,9 @@ describe('initConfig', () => {
       instance: 'gce-instance',
       zone: 'gce-zone',
       projectId: 'projectId',
-      minProfilingIntervalMillis: 60 * 1000,
-      timeSamplingIntervalMicros: 1000,
+      timeIntervalMicros: 1000,
+      heapIntervalBytes: 512 * 1024,
+      heapMaxStackDepth: 64,
       backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
@@ -148,8 +151,9 @@ describe('initConfig', () => {
          instance: '',
          zone: '',
          projectId: 'fake-projectId',
-         minProfilingIntervalMillis: 60 * 1000,
-         timeSamplingIntervalMicros: 1000,
+         timeIntervalMicros: 1000,
+         heapIntervalBytes: 512 * 1024,
+         heapMaxStackDepth: 64,
          backoffMillis: 1000
        };
        let initializedConfig = await initConfig(config);
@@ -194,8 +198,9 @@ describe('initConfig', () => {
       disableTime: true,
       instance: 'instance',
       zone: 'zone',
-      minProfilingIntervalMillis: 60 * 1000,
-      timeSamplingIntervalMicros: 1000,
+      timeIntervalMicros: 1000,
+      heapIntervalBytes: 512 * 1024,
+      heapMaxStackDepth: 64,
       backoffMillis: 1000
     };
     let initializedConfig = await initConfig(config);
@@ -226,8 +231,9 @@ describe('initConfig', () => {
          disableTime: true,
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
-         minProfilingIntervalMillis: 60 * 1000,
-         timeSamplingIntervalMicros: 1000,
+         timeIntervalMicros: 1000,
+         heapIntervalBytes: 512 * 1024,
+         heapMaxStackDepth: 64,
          backoffMillis: 1000
        };
        let initializedConfig = await initConfig(config);
@@ -266,8 +272,9 @@ describe('initConfig', () => {
          disableTime: false,
          instance: 'instance',
          zone: 'zone',
-         minProfilingIntervalMillis: 60 * 1000,
-         timeSamplingIntervalMicros: 1000,
+         timeIntervalMicros: 1000,
+         heapIntervalBytes: 512 * 1024,
+         heapMaxStackDepth: 64,
          backoffMillis: 1000
        };
        let initializedConfig = await initConfig(config);
@@ -290,8 +297,9 @@ describe('initConfig', () => {
          instance: 'envConfig-instance',
          zone: 'envConfig-zone',
          projectId: 'envConfig-fake-projectId',
-         minProfilingIntervalMillis: 60 * 1000,
-         timeSamplingIntervalMicros: 1000,
+         timeIntervalMicros: 1000,
+         heapIntervalBytes: 512 * 1024,
+         heapMaxStackDepth: 64,
          backoffMillis: 1000
        };
 

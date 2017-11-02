@@ -152,9 +152,10 @@ export const timeProfile: perftools.profiles.IProfile = {
 
 // timeProfile is encoded then decoded to convert numbers to longs, in
 // decodedTimeProfile
-const encodedProfile = perftools.profiles.Profile.encode(timeProfile).finish();
+const encodedTimeProfile =
+    perftools.profiles.Profile.encode(timeProfile).finish();
 export const decodedTimeProfile =
-    perftools.profiles.Profile.decode(encodedProfile);
+    perftools.profiles.Profile.decode(encodedTimeProfile);
 
 export const base64TimeProfile = 'H4sIAAAAAAAAA0XPMQrCMBQGYPOSNGkQGrrYsRRc3J' +
     'pTODo7KbFCwKalTXeP4g1cPYKjx+gxfCmI28f//vfgKSaJBsUk1SxPFQDJKZlFLhWBnNLXJ' +
@@ -266,3 +267,15 @@ export const heapProfile: perftools.profiles.IProfile = {
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
   period: 524288
 };
+
+// heapProfile is encoded then decoded to convert numbers to longs, in
+// decodedHeapProfile
+const encodedHeapProfile =
+    perftools.profiles.Profile.encode(heapProfile).finish();
+export const decodedHeapProfile =
+    perftools.profiles.Profile.decode(encodedHeapProfile);
+
+export const base64HeapProfile = 'H4sIAAAAAAAAA0XPvQqDQBAEYO9nvfWaHELAUqxCOjc' +
+    'vkTJ1quhhwEBU4lmk87HyeFlNwO5jGAbGahROWo3K6dRYIVIp4A+1TxOrlGTiJbU/qt0HF+v' +
+    'FMB8KRFEsI4IlWdIBSxXLpGVplnZ45J6DDHJgSRdncW5YymGGq7RLsiQ3FJHp60fjw0jg+6k' +
+    'LBONQ+YagfodmJP2s2o6S+9T50PZdSWb0r3YI5ZadNtI5uq7nbvOcfwHxB6/r7QAAAA==';

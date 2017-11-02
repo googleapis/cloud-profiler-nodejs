@@ -97,6 +97,7 @@ export class Profiler extends common.ServiceObject {
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
+  heapProfiler: HeapProfiler|undefined;
 
   constructor(config: ProfilerConfig) {
     config = common.util.normalizeArguments(null, config);
@@ -118,8 +119,12 @@ export class Profiler extends common.ServiceObject {
     this.profileTypes = [];
     if (!this.config.disableTime) {
       this.profileTypes.push(ProfileTypes.Wall);
-      this.timeProfiler =
-          new TimeProfiler(this.config.timeSamplingIntervalMicros);
+      this.timeProfiler = new TimeProfiler(this.config.timeIntervalMicros);
+    }
+    if (!this.config.disableHeap) {
+      this.profileTypes.push(ProfileTypes.Heap);
+      this.heapProfiler = new HeapProfiler(
+          this.config.heapIntervalBytes, this.config.heapMaxStackDepth);
     }
   }
 
@@ -255,7 +260,7 @@ export class Profiler extends common.ServiceObject {
   async profile(prof: RequestProfile): Promise<RequestProfile> {
     switch (prof.profileType) {
       case ProfileTypes.Wall:
-        return this.writeTimeProfile(prof);
+        return await this.writeTimeProfile(prof);
       case ProfileTypes.Heap:
         return this.writeHeapProfile(prof);
       default:
@@ -278,9 +283,8 @@ export class Profiler extends common.ServiceObject {
       const p = await this.timeProfiler.profile(durationMillis);
       prof.profileBytes = await profileBytes(p);
       return prof;
-    } else {
-      throw Error('Cannot collect time profile, time profiler not enabled.');
     }
+    throw Error('Cannot collect time profile, time profiler not enabled.');
   }
 
   /**
@@ -289,11 +293,14 @@ export class Profiler extends common.ServiceObject {
    *
    * Public to allow for testing.
    *
-   * Unimplemented
-   *
    * @param prof
    */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
-    throw new Error('Heap profile collection unimplemented.');
+    if (this.heapProfiler) {
+      const p = this.heapProfiler.profile();
+      prof.profileBytes = await profileBytes(p);
+      return prof;
+    }
+    throw Error('Cannot collect heap profile, heap profiler not enabled.');
   }
 }
