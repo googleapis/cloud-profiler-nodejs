@@ -299,7 +299,7 @@ export const anonymousFunctionHeapProfile: perftools.profiles.IProfile = {
   function: anonymousFunctionHeapFunctions,
   stringTable: [
     '',
-    'samples',
+    'objects',
     'count',
     'space',
     'bytes',
@@ -307,7 +307,6 @@ export const anonymousFunctionHeapProfile: perftools.profiles.IProfile = {
     'main',
   ],
   timeNanos: 0,
-  durationNanos: 10 * 1000 * 1000 * 1000,
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
   period: 524288
 };
