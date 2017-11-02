@@ -62,7 +62,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
   }
 
   let mergedConfig =
-      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
+      extend(true, {}, defaultConfig, envSetConfig, envConfig, config, internalConfig);
 
   if (!mergedConfig.zone || !mergedConfig.instance) {
     const [instance, zone] =

@@ -63,7 +63,7 @@ export interface Config extends AuthenticationConfig {
 
 // Interface for an initialized config.
 export interface ProfilerConfig extends AuthenticationConfig {
-  projectId: string;
+  projectId?: string;
   logLevel: number;
   serviceContext: {service: string; version?: string;};
   instance: string;
@@ -75,11 +75,9 @@ export interface ProfilerConfig extends AuthenticationConfig {
 }
 
 // Default values for configuration for a profiler.
-export const defaultConfig: Config = {
+export const defaultConfig = {
   logLevel: 1,
-  serviceContext: {
-    version: '',
-  },
+  serviceContext: {},
   disableHeap: false,
   disableTime: false,
   instance: '',
