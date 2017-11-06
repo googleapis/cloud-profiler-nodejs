@@ -28,6 +28,10 @@ import {TimeProfiler} from './profilers/time-profiler';
 export const common: Common = require('@google-cloud/common');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
+const zoneNameLabel = 'zone';
+const versionLabel = 'version';
+const instanceLabelName = 'instance';
+const scope = 'https://www.googleapis.com/auth/monitoring.write';
 const gzip = pify(zlib.gzip);
 
 enum ProfileTypes {
@@ -59,6 +63,19 @@ function isRetriableError(err: Error) {
 }
 
 /**
+ * Interface for deployment field of RequestProfile. Profiles with matching
+ * deployments will be grouped together.
+ * Used as body of request when creating profile using the profiler API.
+ *
+ * Public for testing.
+ */
+export interface Deployment {
+  projectId?: string;
+  target?: string;
+  labels?: Map<string, string>;
+}
+
+/**
  * Interface for body of response from profiler API when creating
  * profile and used as body of request to profiler API when
  * uploading a profile.
@@ -70,6 +87,7 @@ export interface RequestProfile {
   profileType?: string;
   duration?: any;
   profileBytes?: string;
+  deployment?: Deployment;
   labels?: {instance?: string; zone?: string};
 }
 
@@ -92,6 +110,8 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
 export class Profiler extends common.ServiceObject {
   private config: ProfilerConfig;
   private logger: Logger;
+  private profileLabels: Map<string, string>;
+  private deployment: Deployment;
   private profileTypes: string[];
 
   // Public for testing.
@@ -102,7 +122,7 @@ export class Profiler extends common.ServiceObject {
     config = common.util.normalizeArguments(null, config);
     const serviceConfig = {
       baseUrl: API,
-      scopes: ['https://www.googleapis.com/auth/monitoring.write'],
+      scopes: [scope],
       packageJson: pjson,
     };
     super({parent: new common.Service(serviceConfig, config), baseUrl: '/'});
@@ -113,6 +133,24 @@ export class Profiler extends common.ServiceObject {
       level: common.logger.LEVELS[config.logLevel as number],
       tag: pjson.name
     });
+
+    const labels = new Map<string, string>();
+    if (this.config.zone) {
+      labels.set(zoneNameLabel, this.config.zone);
+    }
+    if (this.config.serviceContext.version) {
+      labels.set(versionLabel, this.config.serviceContext.version);
+    }
+    this.deployment = {
+      projectId: this.config.projectId,
+      target: this.config.serviceContext.service,
+      labels: labels
+    };
+
+    this.profileLabels = new Map<string, string>();
+    if (this.config.instance) {
+      this.profileLabels.set(instanceLabelName, this.config.instance);
+    }
 
     this.profileTypes = [];
     if (!this.config.disableTime) {
@@ -177,11 +215,7 @@ export class Profiler extends common.ServiceObject {
    */
   async createProfile(): Promise<RequestProfile> {
     const reqBody = {
-      deployment: {
-        projectId: this.config.projectId,
-        target: this.config.serviceContext.service,
-        labels: {zone: this.config.zone, instance: this.config.instance},
-      },
+      deployment: this.deployment,
       profileType: this.profileTypes,
     };
     const options = {
@@ -227,6 +261,7 @@ export class Profiler extends common.ServiceObject {
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     try {
       prof = await this.profile(prof);
+      prof.labels = {zone: this.config.zone, instance: this.config.instance};
     } catch (err) {
       this.logger.debug('Error collecting profile: ' + err.toString());
       return;
