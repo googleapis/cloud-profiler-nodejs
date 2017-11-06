@@ -191,23 +191,22 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
 
-    let requestError: Error|undefined = undefined;
+    let reqErr: Error|undefined = undefined;
     let retryRequest = true;
     try {
       const [body, response] = await this.request(options);
       if (isErrorResponseStatusCode(response.statusCode)) {
         retryRequest = isRetriableResponseStatusCode(response.statusCode);
-        requestError =
-            new Error('Error creating profile: ' + response.statusMessage);
-        this.logger.debug(requestError);
+        reqErr = new Error('Error creating profile: ' + response.statusMessage);
+        this.logger.debug(reqErr);
       } else {
         return body;
       }
     } catch (err) {
       retryRequest = isRetriableError(err) ||
           isRetriableResponseStatusCode(err.statusCode);
-      requestError = new Error('Error creating profile: ' + err.toString());
-      this.logger.debug(requestError);
+      reqErr = new Error('Error creating profile: ' + err.toString());
+      this.logger.debug(reqErr);
     }
     if (retryRequest) {
       // TODO: check response to see if response specifies a backoff.
@@ -215,7 +214,7 @@ export class Profiler extends common.ServiceObject {
       await delay(this.config.backoffMillis);
       return this.createProfile();
     }
-    throw requestError;
+    throw reqErr;
   }
 
   /**
