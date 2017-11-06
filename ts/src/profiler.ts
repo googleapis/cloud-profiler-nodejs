@@ -59,8 +59,8 @@ function isRetriableError(err: Error) {
 }
 
 /**
- * Interface for body of response from Stackdriver Profiler API when creating
- * profile and used as body of request to Stackdriver Profiler API when
+ * Interface for body of response from profiler API when creating
+ * profile and used as body of request to profiler API when
  * uploading a profile.
  *
  * Public for testing.
@@ -86,7 +86,7 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
 }
 
 /**
- * Polls Stackdriver Profiler server for instructions on behalf of a task and
+ * Polls profiler server for instructions on behalf of a task and
  * collects and uploads profiles as requested
  */
 export class Profiler extends common.ServiceObject {
@@ -127,11 +127,11 @@ export class Profiler extends common.ServiceObject {
   }
 
   /**
-   * Starts and endless loop to poll Stackdriver Profiler server for
+   * Starts and endless loop to poll profiler server for
    * instructions, and collects and uploads profiles as requested.
    * If there is a problem when collecting a profile or uploading a profile to
-   * Stackdriver Profiler, this problem will be logged at the debug level.
-   * If there is a problem polling Stackdriver Profiler for instructions
+   * profiler server, this problem will be logged at the debug level.
+   * If there is a problem polling profiler server for instructions
    * on the type of profile created, this problem will be logged. If the problem
    * indicates one definitely will not be able to profile, an error will be
    * thrown.
@@ -155,7 +155,7 @@ export class Profiler extends common.ServiceObject {
   }
 
   /**
-   * Talks to Stackdriver Profiler server, which hangs until server indicates
+   * Talks to profiler server, which hangs until server indicates
    * job should be profiled.
    *
    * If any problem is encountered, the problem will be logged and
@@ -168,10 +168,10 @@ export class Profiler extends common.ServiceObject {
    * will be thrown only if the error indicates one definitely should not
    * retry createProfile.
    *
-   * TODO (issue #28): right now, this call could hang for up to an hour when this method
-   * is the only thing on the event loop, keeping the program open even when
-   * all work is done. Should expose the ability to cancel the http request
-   * made here, and then determine when to cancel this request.
+   * TODO (issue #28): right now, this call could hang for up to an hour when
+   * this method is the only thing on the event loop, keeping the program open
+   * even when all work is done. Should expose the ability to cancel the http
+   * request made here, and then determine when to cancel this request.
    *
    * Public to allow for testing.
    */
