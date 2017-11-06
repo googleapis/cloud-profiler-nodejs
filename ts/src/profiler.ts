@@ -168,6 +168,11 @@ export class Profiler extends common.ServiceObject {
    * will be thrown only if the error indicates one definitely should not
    * retry createProfile.
    *
+   * TODO (issue #28): right now, this call could hang for up to an hour when this method
+   * is the only thing on the event loop, keeping the program open even when
+   * all work is done. Should expose the ability to cancel the http request
+   * made here, and then determine when to cancel this request.
+   *
    * Public to allow for testing.
    */
   async createProfile(): Promise<RequestProfile> {
