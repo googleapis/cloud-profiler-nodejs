@@ -223,8 +223,6 @@ export class Profiler extends common.ServiceObject {
    * profile, an error will be logged at the debug level, but otherwise ignored.
    *
    * Public to allow for testing.
-   *
-   * @param prof
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     try {
@@ -256,8 +254,6 @@ export class Profiler extends common.ServiceObject {
    * error will be thrown.
    *
    * Public to allow for testing.
-   *
-   * @param prof
    */
   async profile(prof: RequestProfile): Promise<RequestProfile> {
     switch (prof.profileType) {
@@ -275,8 +271,6 @@ export class Profiler extends common.ServiceObject {
    * string, and adds profileBytes field to prof with this string.
    *
    * Public to allow for testing.
-   *
-   * @param prof
    */
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
@@ -295,7 +289,6 @@ export class Profiler extends common.ServiceObject {
    *
    * Public to allow for testing.
    *
-   * @param prof
    */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.heapProfiler) {
