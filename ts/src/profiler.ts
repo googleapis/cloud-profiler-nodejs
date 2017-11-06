@@ -38,14 +38,14 @@ enum ProfileTypes {
 /**
  * Returns true if http status code indicates an error.
  */
-function isErrorResponseCode(code: number) {
+function isErrorResponseStatusCode(code: number) {
   return code < 200 || code >= 300;
 }
 
 /**
  * Returns true if http status code indicates request should be retried.
  */
-function isRetriableResponseCode(code: number) {
+function isRetriableResponseStatusCode(code: number) {
   // TODO: determine which codes one should not retry on.
   return true;
 }
@@ -190,8 +190,8 @@ export class Profiler extends common.ServiceObject {
     let retryRequest = true;
     try {
       const [body, response] = await this.request(options);
-      if (isErrorResponseCode(response.statusCode)) {
-        retryRequest = isRetriableResponseCode(response.statusCode);
+      if (isErrorResponseStatusCode(response.statusCode)) {
+        retryRequest = isRetriableResponseStatusCode(response.statusCode);
         requestError =
             new Error('Error creating profile: ' + response.statusMessage);
         this.logger.debug(requestError);
@@ -199,8 +199,8 @@ export class Profiler extends common.ServiceObject {
         return body;
       }
     } catch (err) {
-      retryRequest =
-          isRetriableError(err) || isRetriableResponseCode(err.statusCode);
+      retryRequest = isRetriableError(err) ||
+          isRetriableResponseStatusCode(err.statusCode);
       requestError = new Error('Error creating profile: ' + err.toString());
       this.logger.debug(requestError);
     }
@@ -237,7 +237,7 @@ export class Profiler extends common.ServiceObject {
     };
     try {
       const [body, response] = await this.request(options);
-      if (isErrorResponseCode(response.statusCode)) {
+      if (isErrorResponseStatusCode(response.statusCode)) {
         this.logger.debug('Error uploading profile: ' + response.statusMessage);
       }
     } catch (err) {

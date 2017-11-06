@@ -91,5 +91,5 @@ export const internalConfig = {
   timeIntervalMicros: 1000,
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
-  backoffMillis: 5 * 60 * 1000, // 5 minutes
+  backoffMillis: 5 * 60 * 1000,  // 5 minutes
 };
