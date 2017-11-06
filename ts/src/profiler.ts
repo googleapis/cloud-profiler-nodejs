@@ -198,7 +198,7 @@ export class Profiler extends common.ServiceObject {
       if (isErrorResponseStatusCode(response.statusCode)) {
         retry = isRetriableResponseStatusCode(response.statusCode);
         reqErr = new Error('Error creating profile: ' + response.statusMessage);
-        this.logger.debug(reqErr);
+        this.logger.error(reqErr);
       } else {
         return body;
       }
@@ -206,7 +206,7 @@ export class Profiler extends common.ServiceObject {
       retry = isRetriableError(err) ||
           isRetriableResponseStatusCode(err.statusCode);
       reqErr = new Error('Error creating profile: ' + err.toString());
-      this.logger.debug(reqErr);
+      this.logger.error(reqErr);
     }
     if (retry) {
       // TODO: check response to see if response specifies a backoff.
