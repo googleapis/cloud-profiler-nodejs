@@ -63,7 +63,7 @@ describe('initConfig', () => {
       timeIntervalMicros: 1000,
       heapIntervalBytes: 512 * 1024,
       heapMaxStackDepth: 64,
-      backoffMillis: 1000
+      backoffMillis: 300000
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -97,7 +97,7 @@ describe('initConfig', () => {
       timeIntervalMicros: 1000,
       heapIntervalBytes: 512 * 1024,
       heapMaxStackDepth: 64,
-      backoffMillis: 1000
+      backoffMillis: 300000
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -129,7 +129,7 @@ describe('initConfig', () => {
       timeIntervalMicros: 1000,
       heapIntervalBytes: 512 * 1024,
       heapMaxStackDepth: 64,
-      backoffMillis: 1000
+      backoffMillis: 300000
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -154,7 +154,7 @@ describe('initConfig', () => {
          timeIntervalMicros: 1000,
          heapIntervalBytes: 512 * 1024,
          heapMaxStackDepth: 64,
-         backoffMillis: 1000
+         backoffMillis: 300000
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -201,7 +201,7 @@ describe('initConfig', () => {
       timeIntervalMicros: 1000,
       heapIntervalBytes: 512 * 1024,
       heapMaxStackDepth: 64,
-      backoffMillis: 1000
+      backoffMillis: 300000
     };
     let initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
@@ -234,7 +234,7 @@ describe('initConfig', () => {
          timeIntervalMicros: 1000,
          heapIntervalBytes: 512 * 1024,
          heapMaxStackDepth: 64,
-         backoffMillis: 1000
+         backoffMillis: 300000
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -275,7 +275,7 @@ describe('initConfig', () => {
          timeIntervalMicros: 1000,
          heapIntervalBytes: 512 * 1024,
          heapMaxStackDepth: 64,
-         backoffMillis: 1000
+         backoffMillis: 300000
        };
        let initializedConfig = await initConfig(config);
        assert.deepEqual(initializedConfig, expConfig);
@@ -300,7 +300,7 @@ describe('initConfig', () => {
          timeIntervalMicros: 1000,
          heapIntervalBytes: 512 * 1024,
          heapMaxStackDepth: 64,
-         backoffMillis: 1000
+         backoffMillis: 300000
        };
 
        const config = {};
