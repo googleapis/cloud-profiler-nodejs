@@ -24,11 +24,19 @@ import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
 
-// Returns value of metadata field.
+// Returns value of metadata instance field.
 // Throws error if there is a problem accessing metadata API.
 async function getMetadataInstanceField(field: string): Promise<string> {
   const [response, metadata] =
       await pify(gcpMetadata.instance, {multiArgs: true})(field);
+  return metadata;
+}
+
+// Returns value of metadata project field.
+// Throws error if there is a problem accessing metadata API.
+async function getMetadataProjectField(field: string): Promise<string> {
+  const [response, metadata] =
+      await pify(gcpMetadata.project, {multiArgs: true})(field);
   return metadata;
 }
 
@@ -65,26 +73,36 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
       true, {}, defaultConfig, envSetConfig, envConfig, config, internalConfig);
 
   if (!mergedConfig.zone || !mergedConfig.instance) {
-    const [instance, zone] =
+    const [instance, zone, projectId] =
         await Promise
             .all([
-              getMetadataInstanceField('name'), getMetadataInstanceField('zone')
+              getMetadataInstanceField('name'),
+              getMetadataInstanceField('zone'),
+              getMetadataProjectField('projectId')
             ])
             .catch(
                 (err: Error) => {
                     // ignore errors, which will occur when not on GCE.
                 }) ||
-        ['', ''];
+        ['', '', undefined];
     if (!mergedConfig.zone) {
       mergedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
     if (!mergedConfig.instance) {
       mergedConfig.instance = instance;
     }
+    if (!mergedConfig.projectId) {
+      mergedConfig.projectId = projectId;
+    }
   }
 
   if (mergedConfig.serviceContext.service === undefined) {
     throw new Error('Service must be specified in the configuration.');
+  }
+
+  if (mergedConfig.projectId === undefined) {
+    throw new Error(
+        'ProjectId must be specified in the configuration when running outside of GCP.');
   }
 
   return mergedConfig;
