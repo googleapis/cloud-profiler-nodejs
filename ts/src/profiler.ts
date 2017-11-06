@@ -21,7 +21,6 @@ import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
 import {AuthenticationConfig, Common, Logger, Service, ServiceConfig, ServiceObject, ServiceObjectConfig} from '../third_party/types/common-types';
-
 import {ProfilerConfig} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
@@ -115,7 +114,6 @@ export class Profiler extends common.ServiceObject {
       tag: pjson.name
     });
 
-    // TODO: enable heap profiling once heap profiler implemented.
     this.profileTypes = [];
     if (!this.config.disableTime) {
       this.profileTypes.push(ProfileTypes.Wall);
