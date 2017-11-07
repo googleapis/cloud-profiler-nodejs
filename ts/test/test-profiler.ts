@@ -92,7 +92,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'WALL',
            duration: '10s',
-           labels: {instance: 'test-instance', zone: 'test-zone'}
+           labels: {instance: 'test-instance'}
          };
          const prof = await profiler.profile(requestProf);
          assert.deepEqual(prof.profileBytes, base64TimeProfile);
@@ -105,7 +105,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'HEAP',
            duration: '10s',
-           labels: {instance: 'test-instance', zone: 'test-zone'}
+           labels: {instance: 'test-instance'}
          };
          const prof = await profiler.profile(requestProf);
          assert.deepEqual(prof.profileBytes, base64HeapProfile);
@@ -118,7 +118,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'UNKNOWN',
            duration: '10s',
-           labels: {instance: 'test-instance', zone: 'test-zone'}
+           labels: {instance: 'test-instance'}
          };
          try {
            await profiler.profile(requestProf);
@@ -139,7 +139,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'WALL',
            duration: '10s',
-           labels: {instance: 'test-instance', zone: 'test-zone'}
+           labels: {'instance': 'test-instance'}
          };
 
          const outRequestProfile = await profiler.writeTimeProfile(requestProf);
@@ -165,7 +165,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         profileType: 'WALL',
         duration: '10s',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       try {
         await profiler.writeTimeProfile(requestProf);
@@ -188,7 +188,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'HEAP',
            duration: '10s',
-           labels: {instance: 'test-instance', zone: 'test-zone'}
+           labels: {instance: 'test-instance'}
          };
 
          const outRequestProfile = await profiler.writeHeapProfile(requestProf);
@@ -214,7 +214,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         profileType: 'HEAP',
         duration: '10s',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       try {
         await profiler.writeHeapProfile(requestProf);
@@ -232,7 +232,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'WALL',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       const expProf =
           extend(true, {profileBytes: base64TimeProfile}, testConfig);
@@ -254,7 +254,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'HEAP',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       const expProf =
           extend(true, {profileBytes: base64TimeProfile}, testConfig);
@@ -276,7 +276,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'UNKNOWN_PROFILE_TYPE',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       const expProf =
           extend(true, {profileBytes: base64TimeProfile}, testConfig);
@@ -298,7 +298,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'WALL',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
                               .rejects(new Error('Network error'));
@@ -313,7 +313,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'WALL',
-        labels: {instance: 'test-instance', zone: 'test-zone'}
+        labels: {instance: 'test-instance'}
       };
       const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
                               .returns(new Promise(resolve => {
@@ -335,7 +335,7 @@ describe('Profiler', () => {
            name: 'projects/12345678901/test-projectId',
            profileType: 'WALL',
            duration: '10s',
-           labels: {instance: config.instance, zone: config.zone}
+           labels: {instance: config.instance}
          };
          nockOauth2();
          const createProfileMock =
@@ -356,7 +356,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         profileType: 'WALL',
         duration: '10s',
-        labels: {instance: config.instance, zone: config.zone}
+        labels: {instance: config.instance}
       };
       const requestStub =
           sinon.stub(common.ServiceObject.prototype, 'request')
@@ -379,7 +379,7 @@ describe('Profiler', () => {
         name: 'projects/12345678901/test-projectId',
         profileType: 'WALL',
         duration: '10s',
-        labels: {instance: config.instance, zone: config.zone}
+        labels: {instance: config.instance}
       };
       const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
                               .onCall(0)

@@ -88,7 +88,7 @@ export interface RequestProfile {
   duration?: any;
   profileBytes?: string;
   deployment?: Deployment;
-  labels?: {instance?: string; zone?: string};
+  labels?: {instance: string};
 }
 
 /**
@@ -110,7 +110,7 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
 export class Profiler extends common.ServiceObject {
   private config: ProfilerConfig;
   private logger: Logger;
-  private profileLabels: Map<string, string>;
+  private profileLabels: {instance: string};
   private deployment: Deployment;
   private profileTypes: string[];
 
@@ -147,10 +147,7 @@ export class Profiler extends common.ServiceObject {
       labels: labels
     };
 
-    this.profileLabels = new Map<string, string>();
-    if (this.config.instance) {
-      this.profileLabels.set(instanceLabelName, this.config.instance);
-    }
+    this.profileLabels = {instance: this.config.instance};
 
     this.profileTypes = [];
     if (!this.config.disableTime) {
@@ -261,7 +258,7 @@ export class Profiler extends common.ServiceObject {
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     try {
       prof = await this.profile(prof);
-      prof.labels = {zone: this.config.zone, instance: this.config.instance};
+      prof.labels = this.profileLabels;
     } catch (err) {
       this.logger.debug('Error collecting profile: ' + err.toString());
       return;
