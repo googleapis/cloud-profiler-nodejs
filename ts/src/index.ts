@@ -52,7 +52,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
 
   if (process.env.GCLOUD_PROFILER_LOGLEVEL !== undefined) {
     const envLogLevel = Number(process.env.GCLOUD_PROFILER_LOGLEVEL);
-    if (isNaN(envLogLevel)) {
+    if (!isNaN(envLogLevel)) {
       envConfig.logLevel = envLogLevel;
     }
   }
