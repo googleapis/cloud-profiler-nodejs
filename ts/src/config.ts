@@ -86,7 +86,8 @@ export const defaultConfig = {
   zone: ''
 };
 
-// Configuration parameters set internally, not by users.
+// Configuration parameters set internally.
+// One must be very careful when modifying these parameters.
 export const internalConfig = {
   timeIntervalMicros: 1000,
   heapIntervalBytes: 512 * 1024,
