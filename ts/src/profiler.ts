@@ -186,7 +186,7 @@ export class Profiler extends common.ServiceObject {
     const endCreateMillis = Date.now();
 
     // Schedule the next profile.
-    setImmediate(this.pollProfilerService.bind(this)).unref();
+    setTimeout(this.pollProfilerService.bind(this), 0).unref();
   }
 
   /**
