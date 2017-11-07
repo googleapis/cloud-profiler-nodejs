@@ -57,11 +57,11 @@ export interface ServiceConfig {
 
 // TODO: Make this more precise
 export interface ServiceObjectConfig {
-  parent: any;
+  parent: object;
   baseUrl: string;
   createMethod?: string;
   id?: string;
-  methods?: any;
+  methods?: object;
 }
 
 export interface LoggerOptions {
@@ -74,10 +74,10 @@ export interface Logger {
   new(options?: string|LoggerOptions): Logger;
   LEVELS: string[];
   // TODO: Determine the correct signatures for these members
-  error: (message: any, ...args: any[]) => void;
-  warn: (message: any, ...args: any[]) => void;
-  info: (message: any, ...args: any[]) => void;
-  debug: (message: any, ...args: any[]) => void;
+  error: (message: {}, ...args: Array<{}>) => void;
+  warn: (message: {}, ...args: Array<{}>) => void;
+  info: (message: {}, ...args: Array<{}>) => void;
+  debug: (message: {}, ...args: Array<{}>) => void;
 }
 
 export interface Service {
@@ -88,13 +88,13 @@ export interface RequestOptions {
   uri: string;
   json: boolean;
   method?: string;
-  body?: any;
+  body?: {};
 }
 
 export interface ServiceObject {
   new(config: ServiceObjectConfig): ServiceObject;
   // TODO: Determine if this signature is correct.
-  request: (reqOpts: RequestOptions) => Promise<any[]>;
+  request: (reqOpts: RequestOptions) => Promise<object[]>;
 }
 
 export interface Common {
@@ -103,7 +103,7 @@ export interface Common {
   logger: Logger;
   util: {
     // TODO: Make this more precise.
-    normalizeArguments: (globalContext: any, localConfig: any, options?: any) =>
-        any;
+    normalizeArguments: <T>(
+        globalContext: object|null, localConfig: T, options?: object) => T;
   };
 }

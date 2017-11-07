@@ -85,7 +85,7 @@ export interface Deployment {
 export interface RequestProfile {
   name?: string;
   profileType?: string;
-  duration?: any;
+  duration?: {};
   profileBytes?: string;
   deployment?: Deployment;
   labels?: {instance: string};
@@ -144,7 +144,7 @@ export class Profiler extends common.ServiceObject {
     this.deployment = {
       projectId: this.config.projectId,
       target: this.config.serviceContext.service,
-      labels: labels
+      labels
     };
 
     this.profileLabels = {instance: this.config.instance};
@@ -225,7 +225,11 @@ export class Profiler extends common.ServiceObject {
     let reqErr: Error|undefined = undefined;
     let retry = true;
     try {
-      const [body, response] = await this.request(options);
+      const results = await this.request(options);
+      // TODO: check types, don't cast.
+      const body = results[0] as RequestProfile;
+      const response = results[1] as http.ServerResponse;
+
       if (isErrorResponseStatusCode(response.statusCode)) {
         retry = isRetriableResponseStatusCode(response.statusCode);
         reqErr = new Error('Error creating profile: ' + response.statusMessage);
@@ -270,7 +274,9 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
     try {
-      const [body, response] = await this.request(options);
+      const results = await this.request(options);
+      const response = results[1] as http.ServerResponse;
+
       if (isErrorResponseStatusCode(response.statusCode)) {
         this.logger.debug('Error uploading profile: ' + response.statusMessage);
       }

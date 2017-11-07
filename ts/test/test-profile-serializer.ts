@@ -20,14 +20,15 @@ import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
 import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile, timeProfile, v8AnonymousFunctionHeapProfile, v8AnonymousFunctionTimeProfile, v8HeapProfile, v8TimeProfile} from './profiles-for-tests';
 
-let assert = require('assert');
+const assert = require('assert');
 
 describe('serializeTimeProfile', () => {
-  beforeEach(() => {
-    sinon.stub(Date, 'now').returns(0);
+  let dateStub: sinon.SinonStub;
+  before(() => {
+    dateStub = sinon.stub(Date, 'now').returns(0);
   });
-  afterEach(() => {
-    (Date.now as any).restore();
+  after(() => {
+    dateStub.restore();
   });
   it('should produce expected profile', () => {
     const timeProfileOut = serializeTimeProfile(v8TimeProfile, 1000);

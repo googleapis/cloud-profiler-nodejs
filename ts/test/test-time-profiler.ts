@@ -22,32 +22,33 @@ import {TimeProfiler} from '../src/profilers/time-profiler';
 
 import {timeProfile, v8TimeProfile} from './profiles-for-tests';
 
-let assert = require('assert');
+const assert = require('assert');
 const v8TimeProfiler = require('bindings')('time_profiler');
 
 describe('TimeProfiler', () => {
   describe('profile', () => {
+    const sinonStubs: sinon.SinonStub[] = new Array();
     before(() => {
-      sinon.stub(v8TimeProfiler, 'startProfiling');
-      sinon.stub(v8TimeProfiler, 'stopProfiling').returns(v8TimeProfile);
-      sinon.stub(v8TimeProfiler, 'setSamplingInterval');
-      sinon.stub(Date, 'now').returns(0);
+      sinonStubs.push(sinon.stub(v8TimeProfiler, 'startProfiling'));
+      sinonStubs.push(
+          sinon.stub(v8TimeProfiler, 'stopProfiling').returns(v8TimeProfile));
+      sinonStubs.push(sinon.stub(v8TimeProfiler, 'setSamplingInterval'));
+      sinonStubs.push(sinon.stub(Date, 'now').returns(0));
     });
 
     after(() => {
-      v8TimeProfiler.startProfiling.restore();
-      v8TimeProfiler.stopProfiling.restore();
-      v8TimeProfiler.setSamplingInterval.restore();
-      (Date.now as any).restore();
+      sinonStubs.forEach((stub) => {
+        stub.restore();
+      });
     });
 
     it('should profile during duration and finish profiling after duration',
        async () => {
          const durationMillis = 500;
          const intervalMicros = 1000;
-         let profiler = new TimeProfiler(intervalMicros);
+         const profiler = new TimeProfiler(intervalMicros);
          let isProfiling = true;
-         let profilePromise = profiler.profile(durationMillis).then(() => {
+         const profilePromise = profiler.profile(durationMillis).then(() => {
            isProfiling = false;
          });
          await delay(2 * durationMillis);
@@ -57,8 +58,8 @@ describe('TimeProfiler', () => {
     it('should return a profile equal to the expected profile', async () => {
       const durationMillis = 500;
       const intervalMicros = 1000;
-      let profiler = new TimeProfiler(intervalMicros);
-      let profile = await profiler.profile(durationMillis);
+      const profiler = new TimeProfiler(intervalMicros);
+      const profile = await profiler.profile(durationMillis);
       assert.deepEqual(timeProfile, profile);
     });
   });

@@ -67,7 +67,7 @@ function nockOauth2(): nock.Scope {
   return nock('https://accounts.google.com')
       .post(
           '/o/oauth2/token',
-          (body: any) => {
+          (body: {}) => {
             return true;
           })
       .once()
@@ -240,7 +240,7 @@ describe('Profiler', () => {
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
-              .reply(200, (uri: string, requestBody: any) => {
+              .reply(200, (uri: string, requestBody: {}) => {
                 assert.deepEqual(requestProf, requestBody);
               });
 
@@ -262,7 +262,7 @@ describe('Profiler', () => {
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
-              .reply(200, (uri: string, requestBody: any) => {
+              .reply(200, (uri: string, requestBody: {}) => {
                 assert.deepEqual(requestProf, requestBody);
               });
 
@@ -284,7 +284,7 @@ describe('Profiler', () => {
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
-              .reply(200, (uri: string, requestBody: any) => {
+              .reply(200, (uri: string, requestBody: {}) => {
                 assert.deepEqual(requestProf, requestBody);
               });
 
@@ -306,7 +306,7 @@ describe('Profiler', () => {
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
       assert.equal(requestStub.callCount, 1, 'request should be made once');
-      (common.ServiceObject.prototype.request as any).restore();
+      requestStub.restore();
     });
     it('should not retry when non-200 status code returned.', async () => {
       const requestProf = {
@@ -323,7 +323,7 @@ describe('Profiler', () => {
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
       assert.equal(requestStub.callCount, 1, 'request should be made once');
-      (common.ServiceObject.prototype.request as any).restore();
+      requestStub.restore();
     });
   });
   describe('createProfile', () => {
@@ -370,7 +370,7 @@ describe('Profiler', () => {
       const actualResponse = await profiler.createProfile();
       assert.equal(requestStub.callCount, 2, 'request should be made twice');
       assert.deepEqual(response, actualResponse);
-      (common.ServiceObject.prototype.request as any).restore();
+      requestStub.restore();
     });
     it('should retry when non-200 status code returned.', async () => {
       const config = extend(true, {}, testConfig);
@@ -395,7 +395,7 @@ describe('Profiler', () => {
       const actualResponse = await profiler.createProfile();
       assert.deepEqual(response, actualResponse);
       assert.equal(requestStub.callCount, 2, 'request should be made twice');
-      (common.ServiceObject.prototype.request as any).restore();
+      requestStub.restore();
     });
   });
 });

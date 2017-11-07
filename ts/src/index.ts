@@ -49,8 +49,8 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
   };
 
   if (process.env.GCLOUD_PROFILER_LOGLEVEL !== undefined) {
-    let envLogLevel = parseInt(process.env.GCLOUD_PROFILER_LOGLEVEL || '', 10);
-    if (envLogLevel !== NaN) {
+    const envLogLevel = Number(process.env.GCLOUD_PROFILER_LOGLEVEL);
+    if (!isNaN(envLogLevel)) {
       envConfig.logLevel = envLogLevel;
     }
   }
@@ -61,7 +61,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
         require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG)) as Config;
   }
 
-  let mergedConfig = extend(
+  const mergedConfig = extend(
       true, {}, defaultConfig, envSetConfig, envConfig, config, internalConfig);
 
   if (!mergedConfig.zone || !mergedConfig.instance) {

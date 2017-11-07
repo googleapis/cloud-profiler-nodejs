@@ -63,7 +63,7 @@ export interface Config extends AuthenticationConfig {
 
 // Interface for an initialized config.
 export interface ProfilerConfig extends AuthenticationConfig {
-  projectId: string;
+  projectId?: string;
   logLevel: number;
   serviceContext: {service: string; version?: string;};
   instance: string;

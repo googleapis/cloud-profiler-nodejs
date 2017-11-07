@@ -22,30 +22,31 @@ import {HeapProfiler} from '../src/profilers/heap-profiler';
 
 import {heapProfile, v8HeapProfile} from './profiles-for-tests';
 
-let assert = require('assert');
+const assert = require('assert');
 const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
 
 describe('HeapProfiler', () => {
   describe('profile', () => {
+    const sinonStubs: sinon.SinonStub[] = new Array();
     before(() => {
-      sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler');
-      sinon.stub(v8HeapProfiler, 'stopSamplingHeapProfiler');
-      sinon.stub(v8HeapProfiler, 'getAllocationProfile').returns(v8HeapProfile);
-      sinon.stub(Date, 'now').returns(0);
+      sinonStubs.push(sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler'));
+      sinonStubs.push(sinon.stub(v8HeapProfiler, 'stopSamplingHeapProfiler'));
+      sinonStubs.push(sinon.stub(v8HeapProfiler, 'getAllocationProfile')
+                          .returns(v8HeapProfile));
+      sinonStubs.push(sinon.stub(Date, 'now').returns(0));
     });
 
     after(() => {
-      v8HeapProfiler.startSamplingHeapProfiler.restore();
-      v8HeapProfiler.stopSamplingHeapProfiler.restore();
-      v8HeapProfiler.getAllocationProfile.restore();
-      (Date.now as any).restore();
+      sinonStubs.forEach((stub) => {
+        stub.restore();
+      });
     });
 
     it('should return a profile equal to the expected profile', async () => {
       const intervalBytes = 1024 * 512;
       const stackDepth = 32;
-      let profiler = new HeapProfiler(intervalBytes, stackDepth);
-      let profile = profiler.profile();
+      const profiler = new HeapProfiler(intervalBytes, stackDepth);
+      const profile = profiler.profile();
       assert.deepEqual(heapProfile, profile);
     });
 
