@@ -70,10 +70,10 @@ export interface ProfilerConfig extends AuthenticationConfig {
   zone: string;
   disableTime: boolean;
   disableHeap: boolean;
-  
+
   // Internal configuration parameters.
   // One must be very careful if modifying values for these fields.
-  // Modifying values for these fields is not reccomended. 
+  // Modifying values for these fields is not reccomended.
   timeIntervalMicros: number;
   heapIntervalBytes: number;
   heapMaxStackDepth: number;
@@ -92,7 +92,7 @@ export const defaultConfig = {
 
 // Configuration parameters set internally.
 // One must be very careful if modifying these values. Modifying these values
-// is not reccomended. 
+// is not reccomended.
 export const internalConfig = {
   timeIntervalMicros: 1000,
   heapIntervalBytes: 512 * 1024,
