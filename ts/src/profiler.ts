@@ -72,7 +72,7 @@ function isRetriableError(err: Error) {
 export interface Deployment {
   projectId?: string;
   target?: string;
-  labels?: Map<string, string>;
+  labels?: {zone?: string, version?: string};
 }
 
 /**
@@ -134,17 +134,13 @@ export class Profiler extends common.ServiceObject {
       tag: pjson.name
     });
 
-    const labels = new Map<string, string>();
-    if (this.config.zone) {
-      labels.set(zoneNameLabel, this.config.zone);
-    }
-    if (this.config.serviceContext.version) {
-      labels.set(versionLabel, this.config.serviceContext.version);
-    }
     this.deployment = {
       projectId: this.config.projectId,
       target: this.config.serviceContext.service,
-      labels
+      labels: {
+        zone: this.config.zone,
+        version: this.config.serviceContext.version
+      }
     };
 
     this.profileLabels = {instance: this.config.instance};
