@@ -47,22 +47,6 @@ function isErrorResponseStatusCode(code: number) {
 }
 
 /**
- * Returns true if http status code indicates request should be retried.
- */
-function isRetriableResponseStatusCode(code: number) {
-  // TODO: determine which codes one should not retry on.
-  return true;
-}
-
-/**
- * Returns true if error indicates that request should be retried.
- */
-function isRetriableError(err: Error) {
-  // TODO: determine which errors one should not retry on.
-  return true;
-}
-
-/**
  * Interface for deployment field of RequestProfile. Profiles with matching
  * deployments will be grouped together.
  * Used as body of request when creating profile using the profiler API.
@@ -218,8 +202,6 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
 
-    let reqErr: Error|undefined = undefined;
-    let retry = true;
     try {
       const results = await this.request(options);
       // TODO: check types, don't cast.
@@ -227,25 +209,19 @@ export class Profiler extends common.ServiceObject {
       const response = results[1] as http.ServerResponse;
 
       if (isErrorResponseStatusCode(response.statusCode)) {
-        retry = isRetriableResponseStatusCode(response.statusCode);
-        reqErr = new Error('Error creating profile: ' + response.statusMessage);
-        this.logger.error(reqErr);
+        this.logger.error('Error creating profile: ' + response.statusMessage);
       } else {
         return body;
       }
     } catch (err) {
-      retry = isRetriableError(err) ||
-          isRetriableResponseStatusCode(err.statusCode);
-      reqErr = new Error('Error creating profile: ' + err.toString());
-      this.logger.error(reqErr);
+      this.logger.error('Error creating profile: ' + err.toString());
     }
-    if (retry) {
-      // TODO: check response to see if response specifies a backoff.
-      // TODO: implement exponential backoff.
-      await delay(this.config.backoffMillis);
-      return this.createProfile();
-    }
-    throw reqErr;
+
+    // TODO: determine which codes and errors one should not retry on.
+    // TODO: check response to see if response specifies a backoff.
+    // TODO: implement exponential backoff.
+    await delay(this.config.backoffMillis);
+    return this.createProfile();
   }
 
   /**
