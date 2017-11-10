@@ -59,6 +59,27 @@ export interface Config extends AuthenticationConfig {
 
   // When true, heap profiling will be disabled.
   disableHeap?: boolean;
+
+  // Average time between samples collected by time profiler.
+  // Increasing the time between samples will reduce quality of profiles by
+  // reducing number of samples.
+  // Decreasing time between samples may increase overhead of profiling.
+  timeIntervalMicros?: number;
+
+  // Average bytes between samples collected by heap profiler.
+  // Increasing the bytes between samples will reduce quality of profiles by
+  // reducing number of samples.
+  // Decreasing bytes between samples may increase overhead of profiling.
+  heapIntervalBytes?: number;
+
+  // Maximum depth of stacks recorded for heap samples. Decreasing stack depth
+  // will make it more likely that stack traces are truncated. Increasing
+  // stack depth may increase overhead of profiling.
+  heapMaxStackDepth?: number;
+
+  // Time to wait before trying to create a profile again if profile creation
+  // fails.
+  backoffMillis?: number;
 }
 
 // Interface for an initialized config.
@@ -70,30 +91,63 @@ export interface ProfilerConfig extends AuthenticationConfig {
   zone: string;
   disableTime: boolean;
   disableHeap: boolean;
-
-  // Internal configuration parameters.
-  // Modifying values for these fields is not recommended.
   timeIntervalMicros: number;
   heapIntervalBytes: number;
   heapMaxStackDepth: number;
   backoffMillis: number;
 }
 
+/**
+ * Returns true if config is a Profiler Config, otherwise throws an error.
+ */
+// tslint:disable-next-line: no-any
+export function isProfilerConfig(config: any): config is ProfilerConfig {
+  if (!(typeof config.logLevel === 'number')) {
+    throw new Error('logLevel must be specified in the configuration.');
+  }
+  if (!config.serviceContext) {
+    throw new Error('service must be specified in the configuration.');
+  }
+  if (!(typeof config.serviceContext.service === 'string')) {
+    throw new Error('service must be specified in the configuration.');
+  }
+  if (!(typeof config.instance === 'string')) {
+    throw new Error('instance must be specified in the configuration.');
+  }
+  if (!(typeof config.disableTime === 'boolean')) {
+    throw new Error('disableTime must be specified in the configuration.');
+  }
+  if (!(typeof config.disableHeap === 'boolean')) {
+    throw new Error('disableHeap must be specified in the configuration.');
+  }
+  if (!(typeof config.timeIntervalMicros === 'number')) {
+    throw new Error(
+        'timeIntervalMicros must be specified in the configuration.');
+  }
+  if (!(typeof config.heapIntervalBytes === 'number')) {
+    throw new Error(
+        'heapIntervalBytes must be specified in the configuration.');
+  }
+  if (!(typeof config.heapMaxStackDepth === 'number')) {
+    throw new Error(
+        'heapMaxStackDepth must be specified in the configuration.');
+  }
+  if (!(typeof config.backoffMillis === 'number')) {
+    throw new Error('backoffMillismust be specified in the configuration.');
+  }
+  return true;
+}
+
 // Default values for configuration for a profiler.
 export const defaultConfig = {
   logLevel: 1,
-  serviceContext: {},
+  serviceContext: undefined,
   disableHeap: false,
   disableTime: false,
   instance: '',
-  zone: ''
-};
-
-// Configuration parameters set internally.
-// Modifying these values is not recommended.
-export const internalConfig = {
+  zone: '',
   timeIntervalMicros: 1000,
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
-  backoffMillis: 5 * 60 * 1000,  // 5 minutes
+  backoffMillis: 5 * 60 * 1000
 };

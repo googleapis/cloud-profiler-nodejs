@@ -19,7 +19,7 @@ import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as pify from 'pify';
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
-import {Config, defaultConfig, internalConfig, ProfilerConfig} from './config';
+import {Config, defaultConfig, isProfilerConfig, ProfilerConfig} from './config';
 import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
@@ -61,8 +61,8 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
         require(path.resolve(process.env.GCLOUD_PROFILER_CONFIG)) as Config;
   }
 
-  const mergedConfig = extend(
-      true, {}, defaultConfig, envSetConfig, envConfig, internalConfig, config);
+  const mergedConfig =
+      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
   if (!mergedConfig.zone || !mergedConfig.instance) {
     const [instance, zone] =
@@ -83,8 +83,9 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
     }
   }
 
-  if (mergedConfig.serviceContext.service === undefined) {
-    throw new Error('Service must be specified in the configuration.');
+  if (!isProfilerConfig(mergedConfig)) {
+    throw new Error(
+        'Config ${mergedConfig} missing fields required for profile');
   }
 
   return mergedConfig;

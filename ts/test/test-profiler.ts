@@ -23,7 +23,7 @@ import {instance, mock, when} from 'ts-mockito';
 import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
-import {ProfilerConfig} from '../src/config';
+import {isProfilerConfig, ProfilerConfig} from '../src/config';
 import {parseDurationMillis, Profiler} from '../src/profiler';
 import {HeapProfiler} from '../src/profilers/heap-profiler';
 import {TimeProfiler} from '../src/profilers/time-profiler';
