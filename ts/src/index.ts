@@ -19,7 +19,7 @@ import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as pify from 'pify';
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
-import {Config, defaultConfig, isProfilerConfig, ProfilerConfig} from './config';
+import {Config, defaultConfig, ProfilerConfig} from './config';
 import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
@@ -32,6 +32,13 @@ async function getMetadataInstanceField(field: string): Promise<string> {
   const [response, metadata] =
       await pify(gcpMetadata.instance, {multiArgs: true})(field);
   return metadata;
+}
+
+
+function hasService(config: Config):
+    config is {serviceContext: {service: string}} {
+  return config.serviceContext !== undefined &&
+      typeof config.serviceContext.service === 'string';
 }
 
 /**
@@ -79,7 +86,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
                     // ignore errors, which will occur when not on GCE.
                 }) ||
         ['', ''];
-    if (!mergedConfig.zone && zone) {
+    if (!mergedConfig.zone) {
       mergedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
     if (!mergedConfig.instance) {
@@ -87,9 +94,8 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
     }
   }
 
-  if (!isProfilerConfig(mergedConfig)) {
-    throw new Error(
-        `Config ${mergedConfig} missing fields required for profile`);
+  if (!hasService(mergedConfig)) {
+    throw new Error('Service must be specified in the configuration.');
   }
 
   return mergedConfig;

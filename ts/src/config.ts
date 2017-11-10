@@ -97,50 +97,10 @@ export interface ProfilerConfig extends AuthenticationConfig {
   backoffMillis: number;
 }
 
-/**
- * Returns true if config is a Profiler Config, otherwise throws an error.
- */
-export function isProfilerConfig(config: Config): config is ProfilerConfig {
-  if (!(typeof config.logLevel === 'number')) {
-    throw new Error('logLevel must be specified in the configuration.');
-  }
-  if (!config.serviceContext) {
-    throw new Error('service must be specified in the configuration.');
-  }
-  if (!(typeof config.serviceContext.service === 'string')) {
-    throw new Error('service must be specified in the configuration.');
-  }
-  if (!(typeof config.instance === 'string')) {
-    throw new Error('instance must be specified in the configuration.');
-  }
-  if (!(typeof config.disableTime === 'boolean')) {
-    throw new Error('disableTime must be specified in the configuration.');
-  }
-  if (!(typeof config.disableHeap === 'boolean')) {
-    throw new Error('disableHeap must be specified in the configuration.');
-  }
-  if (!(typeof config.timeIntervalMicros === 'number')) {
-    throw new Error(
-        'timeIntervalMicros must be specified in the configuration.');
-  }
-  if (!(typeof config.heapIntervalBytes === 'number')) {
-    throw new Error(
-        'heapIntervalBytes must be specified in the configuration.');
-  }
-  if (!(typeof config.heapMaxStackDepth === 'number')) {
-    throw new Error(
-        'heapMaxStackDepth must be specified in the configuration.');
-  }
-  if (!(typeof config.backoffMillis === 'number')) {
-    throw new Error('backoffMillismust be specified in the configuration.');
-  }
-  return true;
-}
-
 // Default values for configuration for a profiler.
 export const defaultConfig = {
   logLevel: 1,
-  serviceContext: undefined,
+  serviceContext: {},
   disableHeap: false,
   disableTime: false,
   instance: '',
