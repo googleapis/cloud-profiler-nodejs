@@ -39,7 +39,7 @@ const fakeCredentials =
 
 const testConfig: ProfilerConfig = {
   projectId: 'test-projectId',
-  logLevel: 1,
+  logLevel: 0,
   serviceContext: {service: 'test-service', version: 'test-version'},
   instance: 'test-instance',
   zone: 'test-zone',

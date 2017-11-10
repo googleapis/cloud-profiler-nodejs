@@ -123,6 +123,24 @@ export interface RequestProfile {
 }
 
 /**
+ * Returns true if an prof is a RequestProfile.
+ */
+// tslint:disable-next-line: no-any
+function isRequestProfile(prof: any): prof is RequestProfile {
+  return prof && typeof prof.name === 'string' &&
+      typeof prof.profileType === 'string' && typeof prof.duration === 'string';
+}
+
+/**
+ * Returns true if response has statusCode and statusMessage.
+ */
+// tslint:disable-next-line: no-any
+function hasHttpStatusCode(response: any):
+    response is {statusCode: number, statusMessage: string} {
+  return response && typeof response.statusCode === 'number';
+}
+
+/**
  * Converts a profile to a compressed, base64 encoded string.
  *
  * @param p - profile to be converted to string.
@@ -250,21 +268,28 @@ export class Profiler extends common.ServiceObject {
     };
 
     try {
-      const results = await this.request(options);
-      // TODO: check types, don't cast.
-      const body = results[0] as RequestProfile;
-      const response = results[1] as http.ServerResponse;
-
+      const [body, response] = await this.request(options);
+      if (!hasHttpStatusCode(response)) {
+        throw new Error(
+            'Error creating profile: server response missing status information.');
+      }
       if (isErrorResponseStatusCode(response.statusCode)) {
-        this.logger.error('Error creating profile: ' + response.statusMessage);
+        let message: number|string = response.statusCode;
+        // tslint:disable-next-line: no-any
+        if ((response as any).statusMessage) {
+          message = response.statusMessage;
+        }
+        this.logger.error('Error creating profile: ' + message);
       } else {
+        if (!isRequestProfile(body)) {
+          throw new Error(
+              'Error creating profile: profile not valid ' + body.toString());
+        }
         return body;
       }
     } catch (err) {
       this.logger.error('Error creating profile: ' + err.toString());
     }
-
-    // TODO: determine which codes and errors one should not retry on.
     // TODO: check response to see if response specifies a backoff.
     // TODO: implement exponential backoff.
     await delay(this.config.backoffMillis);
@@ -293,11 +318,18 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
     try {
-      const results = await this.request(options);
-      const response = results[1] as http.ServerResponse;
-
+      const [body, response] = await this.request(options);
+      if (!hasHttpStatusCode(response)) {
+        throw new Error(
+            'Error uploading profile: server response missing status information.');
+      }
       if (isErrorResponseStatusCode(response.statusCode)) {
-        this.logger.debug('Error uploading profile: ' + response.statusMessage);
+        let message: number|string = response.statusCode;
+        // tslint:disable-next-line: no-any
+        if ((response as any).statusMessage) {
+          message = response.statusMessage;
+        }
+        this.logger.error('Error creating profile: ' + message);
       }
     } catch (err) {
       this.logger.debug('Error uploading profile: ' + err.toString());
