@@ -249,6 +249,12 @@ describe('Profiler', () => {
     });
   });
   describe('profileAndUpload', () => {
+    let requestStub: undefined|sinon.SinonStub;
+    afterEach(() => {
+      if (requestStub) {
+        requestStub.restore();
+      }
+    });
     it('should send request to upload time profile.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
@@ -256,14 +262,14 @@ describe('Profiler', () => {
         profileType: 'WALL',
         labels: {instance: 'test-instance'}
       };
-      const expProf =
-          extend(true, {profileBytes: base64TimeProfile}, testConfig);
+      const expBody =
+          extend(true, {profileBytes: base64TimeProfile}, requestProf);
       nockOauth2();
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
               .reply(200, (uri: string, requestBody: {}) => {
-                assert.deepEqual(requestProf, requestBody);
+                assert.deepEqual(expBody, requestBody);
               });
 
       const profiler = new Profiler(testConfig);
@@ -278,14 +284,14 @@ describe('Profiler', () => {
         profileType: 'HEAP',
         labels: {instance: 'test-instance'}
       };
-      const expProf =
-          extend(true, {profileBytes: base64TimeProfile}, testConfig);
+      const expBody =
+          extend(true, {profileBytes: base64HeapProfile}, requestProf);
       nockOauth2();
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
               .reply(200, (uri: string, requestBody: {}) => {
-                assert.deepEqual(requestProf, requestBody);
+                assert.deepEqual(expBody, requestBody);
               });
 
       const profiler = new Profiler(testConfig);
@@ -300,14 +306,14 @@ describe('Profiler', () => {
         profileType: 'UNKNOWN_PROFILE_TYPE',
         labels: {instance: 'test-instance'}
       };
-      const expProf =
-          extend(true, {profileBytes: base64TimeProfile}, testConfig);
+      const expBody =
+          extend(true, {profileBytes: base64TimeProfile}, requestProf);
       nockOauth2();
       const uploadProfileMock =
           nock(API)
               .patch('/' + requestProf.name)
               .reply(200, (uri: string, requestBody: {}) => {
-                assert.deepEqual(requestProf, requestBody);
+                assert.deepEqual(expBody, requestBody);
               });
 
       const profiler = new Profiler(testConfig);
@@ -322,13 +328,12 @@ describe('Profiler', () => {
         profileType: 'WALL',
         labels: {instance: 'test-instance'}
       };
-      const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
-                              .rejects(new Error('Network error'));
+      requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                        .rejects(new Error('Network error'));
       const profiler = new Profiler(testConfig);
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
       assert.equal(requestStub.callCount, 1, 'request should be made once');
-      requestStub.restore();
     });
     it('should not retry when non-200 status code returned.', async () => {
       const requestProf = {
@@ -337,7 +342,7 @@ describe('Profiler', () => {
         profileType: 'WALL',
         labels: {instance: 'test-instance'}
       };
-      const requestStub =
+      requestStub =
           sinon.stub(common.ServiceObject.prototype, 'request')
               .returns(new Promise(resolve => {
                 resolve(
@@ -347,11 +352,16 @@ describe('Profiler', () => {
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
       assert.equal(requestStub.callCount, 1, 'request should be made once');
-      requestStub.restore();
     });
   });
-  describe('createProfile', () => {
-    it('should send request to create only wall profile when heap disabled.',
+  describe('requestProfile', () => {
+    let requestStub: undefined|sinon.SinonStub;
+    afterEach(() => {
+      if (requestStub) {
+        requestStub.restore();
+      }
+    });
+    it('should send request for only wall profile when heap disabled.',
        async () => {
          const config = extend(true, {}, testConfig);
          config.disableHeap = true;
@@ -362,18 +372,18 @@ describe('Profiler', () => {
            labels: {instance: config.instance}
          };
          nockOauth2();
-         const createProfileMock =
+         const requestProfileMock =
              nock(API)
                  .post('/projects/' + testConfig.projectId + '/profiles')
                  .once()
                  .reply(200, response);
          const profiler = new Profiler(testConfig);
-         const actualResponse = await profiler.createProfile();
+         const actualResponse = await profiler.requestProfile();
          assert.deepEqual(response, actualResponse);
          assert.ok(
-             createProfileMock.isDone(), 'expected call to create profile');
+             requestProfileMock.isDone(), 'expected call to create profile');
        });
-    it('should retry when error thrown by http request.', async () => {
+    it('should throw error when error thrown by http request.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableHeap = true;
       const response = {
@@ -382,44 +392,161 @@ describe('Profiler', () => {
         duration: '10s',
         labels: {instance: config.instance}
       };
-      const requestStub =
-          sinon.stub(common.ServiceObject.prototype, 'request')
-              .onCall(0)
-              .returns(Promise.reject(new Error('Network error')))
-              .onCall(1)
-              .returns(new Promise(resolve => {
-                resolve([response, {statusCode: 200}]);
-              }));
+      requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                        .onCall(0)
+                        .returns(Promise.reject(new Error('Network error')));
       const profiler = new Profiler(testConfig);
-      const actualResponse = await profiler.createProfile();
-      assert.equal(requestStub.callCount, 2, 'request should be made twice');
-      assert.deepEqual(response, actualResponse);
-      requestStub.restore();
+      try {
+        await profiler.requestProfile();
+        assert.fail('expected error, no error thrown');
+      } catch (err) {
+        assert.equal(err.message, 'Network error');
+      }
     });
-    it('should retry when non-200 status code returned.', async () => {
-      const config = extend(true, {}, testConfig);
-      config.disableHeap = true;
-      const response = {
-        name: 'projects/12345678901/test-projectId',
-        profileType: 'WALL',
-        duration: '10s',
-        labels: {instance: config.instance}
-      };
-      const requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
-                              .onCall(0)
-                              .returns(new Promise(resolve => {
-                                resolve([{}, {statusCode: 500}]);
-                              }))
-                              .onCall(1)
-                              .returns(new Promise(resolve => {
-                                resolve([response, {statusCode: 200}]);
-                              }));
+    it('should throw status message when response has non-200 status.',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const response = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         requestStub =
+             sinon.stub(common.ServiceObject.prototype, 'request')
+                 .onCall(0)
+                 .returns(new Promise(resolve => {
+                   resolve([
+                     {}, {statusCode: 500, statusMessage: '500 status code'}
+                   ]);
+                 }));
 
-      const profiler = new Profiler(testConfig);
-      const actualResponse = await profiler.createProfile();
-      assert.deepEqual(response, actualResponse);
-      assert.equal(requestStub.callCount, 2, 'request should be made twice');
-      requestStub.restore();
+         const profiler = new Profiler(testConfig);
+         try {
+           await profiler.requestProfile();
+           assert.fail('expected error, no error thrown');
+         } catch (err) {
+           assert.equal(err.message, '500 status code');
+         }
+       });
+    it('should throw status code when response has non-200 status and no status message.',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const response = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                           .onCall(0)
+                           .returns(new Promise(resolve => {
+                             resolve([{}, {statusCode: 500}]);
+                           }));
+
+         const profiler = new Profiler(testConfig);
+         try {
+           await profiler.requestProfile();
+           assert.fail('expected error, no error thrown');
+         } catch (err) {
+           assert.equal(err.message, '500');
+         }
+       });
+  });
+  describe('collectProfile', () => {
+    let requestStub: undefined|sinon.SinonStub;
+    afterEach(() => {
+      if (requestStub) {
+        requestStub.restore();
+      }
     });
+    it('should indicate collectProfile should be called immediately when no errors',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const requestProfileResponseBody = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         const expUploadedProfile = extend(
+             true, {}, requestProfileResponseBody,
+             {profileBytes: base64TimeProfile});
+         requestStub =
+             sinon.stub(common.ServiceObject.prototype, 'request')
+                 .onCall(0)
+                 .returns(new Promise(resolve => {
+                   resolve([requestProfileResponseBody, {statusCode: 200}]);
+                 }))
+                 .onCall(1)
+                 .returns(new Promise(resolve => {
+                   resolve([{}, {statusCode: 200}]);
+                 }));
+
+
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const delayMillis = await profiler.collectProfile();
+         assert.deepEqual(
+             expUploadedProfile, requestStub.secondCall.args[0].body);
+         assert.equal(
+             0, delayMillis, 'No delay before asking to collect next profile');
+       });
+    it('should indicate collectProfile should be called after some backoff' +
+           'when error in requesting profile',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const requestProfileResponseBody = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         const expUploadedProfile = extend(
+             true, {}, requestProfileResponseBody,
+             {profileBytes: base64TimeProfile});
+         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                           .onCall(0)
+                           .returns(new Promise(resolve => {
+                             resolve([{}, {statusCode: 404}]);
+                           }));
+
+
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const delayMillis = await profiler.collectProfile();
+         assert.equal(
+             1000, delayMillis,
+             'No delay before asking to collect next profile');
+       });
+    it('should indicate collectProfile should be called immediately error' +
+           ' in collecting and uploading profile.',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const requestProfileResponseBody = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         const expUploadedProfile = extend(
+             true, {}, requestProfileResponseBody,
+             {profileBytes: base64TimeProfile});
+         requestStub =
+             sinon.stub(common.ServiceObject.prototype, 'request')
+                 .onCall(0)
+                 .returns(new Promise(resolve => {
+                   resolve([requestProfileResponseBody, {statusCode: 200}]);
+                 }))
+                 .onCall(1)
+                 .returns(Promise.reject('Error uploading profile'));
+
+
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const delayMillis = await profiler.collectProfile();
+         assert.equal(
+             0, delayMillis, 'No delay before asking to collect next profile');
+       });
   });
 });

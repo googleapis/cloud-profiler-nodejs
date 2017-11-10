@@ -218,36 +218,50 @@ export class Profiler extends common.ServiceObject {
    * promise should not ever be resolved or rejected.
    */
   start(): Promise<void> {
-    return this.pollProfilerService();
+    return this.runLoop();
   }
 
   /**
    * Endlessly polls the profiler server for instructions, and collects and
    * uploads profiles as requested.
    */
-  async pollProfilerService(): Promise<void> {
-    const startCreateMillis = Date.now();
-    const prof = await this.createProfile();
-    await this.profileAndUpload(prof);
-    const endCreateMillis = Date.now();
+  async runLoop(): Promise<void> {
+    const delayMillis = await this.collectProfile();
 
     // Schedule the next profile.
-    setTimeout(this.pollProfilerService.bind(this), 0).unref();
+    setTimeout(this.runLoop.bind(this), delayMillis).unref();
+  }
+
+  /**
+   * Waits for profiler server to tell it to collect a profile, then collects
+   * a profile and uploads it.
+   * Returns time, in ms, to wait before asking profiler server if one should
+   * collect another profile.
+   *
+   *
+   * TODO: implement backoff and retry when error encountered in
+   * requestProfile() should be retried at time response indicates this request
+   * should be retried or with exponential backoff (up to one hour) if the
+   * response does not indicate when to retry this request.
+   */
+  async collectProfile(): Promise<number> {
+    let prof: RequestProfile;
+    try {
+      prof = await this.requestProfile();
+    } catch (err) {
+      this.logger.error(
+          `Error requesting profile type to be collected: ${err}`);
+      return this.config.backoffMillis;
+    }
+    await this.profileAndUpload(prof);
+    return 0;
   }
 
   /**
    * Talks to profiler server, which hangs until server indicates
    * job should be profiled.
    *
-   * If any problem is encountered, the problem will be logged and
-   * createProfile() will be retried.
-   *
-   * TODO: implement backoff and retry when error encountered. createProfile()
-   * should be retried at time response indicates this request should be retried
-   * or with exponential backoff (up to one hour) if the response does not
-   * indicate when to retry this request. Once this is implemented, an error
-   * will be thrown only if the error indicates one definitely should not
-   * retry createProfile.
+   * If any problem is encountered, an error will be thrown.
    *
    * TODO (issue #28): right now, this call could hang for up to an hour when
    * this method is the only thing on the event loop, keeping the program open
@@ -256,7 +270,7 @@ export class Profiler extends common.ServiceObject {
    *
    * Public to allow for testing.
    */
-  async createProfile(): Promise<RequestProfile> {
+  async requestProfile(): Promise<RequestProfile> {
     const reqBody = {
       deployment: this.deployment,
       profileType: this.profileTypes,
@@ -268,41 +282,28 @@ export class Profiler extends common.ServiceObject {
       json: true,
     };
 
-    try {
-      const [body, response] = await this.request(options);
-      if (!hasHttpStatusCode(response)) {
-        throw new Error(
-            'Error creating profile: server response missing status information.');
-      }
-      if (isErrorResponseStatusCode(response.statusCode)) {
-        let message: number|string = response.statusCode;
-        // tslint:disable-next-line: no-any
-        if ((response as any).statusMessage) {
-          message = response.statusMessage;
-        }
-        this.logger.error(`Error creating profile: ${message}`);
-      } else {
-        if (!isRequestProfile(body)) {
-          throw new Error(`Error creating profile: profile not valid ${body}`);
-        }
-        return body;
-      }
-    } catch (err) {
-      this.logger.error(`Error creating profile: ${err}`);
+    const [body, response] = await this.request(options);
+    if (!hasHttpStatusCode(response)) {
+      throw new Error('Server response missing status information.');
     }
-    // TODO: check response to see if response specifies a backoff.
-    // TODO: implement exponential backoff.
-    return await new Promise<RequestProfile>((resolve) => {
-      setTimeout(async () => {
-        resolve(await this.createProfile());
-      }, this.config.backoffMillis);
-    });
+    if (isErrorResponseStatusCode(response.statusCode)) {
+      let message: number|string = response.statusCode;
+      // tslint:disable-next-line: no-any
+      if ((response as any).statusMessage) {
+        message = response.statusMessage;
+      }
+      throw new Error(message.toString());
+    }
+    if (!isRequestProfile(body)) {
+      throw new Error(`Profile not valid: ${body}`);
+    }
+    return body;
   }
 
   /**
    * Collects a profile of the type specified by the profileType field of prof.
    * If any problem is encountered, like a problem collecting or uploading the
-   * profile, an error will be logged at the debug level, but otherwise ignored.
+   * profile, an error will be logged at the error level, but otherwise ignored.
    *
    * Public to allow for testing.
    */
