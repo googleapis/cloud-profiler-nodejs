@@ -24,19 +24,23 @@ import {Profiler} from './profiler';
 
 const common: Common = require('@google-cloud/common');
 
-// Returns value of metadata field.
-// Throws error if there is a problem accessing metadata API.
+/**
+ * Returns value of metadata field.
+ * Throws error if there is a problem accessing metadata API.
+ */
 async function getMetadataInstanceField(field: string): Promise<string> {
   const [response, metadata] =
       await pify(gcpMetadata.instance, {multiArgs: true})(field);
   return metadata;
 }
 
-// initConfig sets unset values in the configuration to the value retrieved from
-// environment variables, metadata, or the default values specified in
-// defaultConfig.
-// Throws error if value that must be set cannot be initialized.
-// Exported for testing purposes.
+/**
+ * Sets unset values in the configuration to the value retrieved from
+ * environment variables, metadata, or specified in defaultConfig.
+ * Throws error if value that must be set cannot be initialized.
+ *
+ * Exported for testing purposes.
+ */
 export async function initConfig(config: Config): Promise<ProfilerConfig> {
   config = common.util.normalizeArguments(null, config);
 
@@ -75,7 +79,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
                     // ignore errors, which will occur when not on GCE.
                 }) ||
         ['', ''];
-    if (!mergedConfig.zone) {
+    if (!mergedConfig.zone && zone) {
       mergedConfig.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
     if (!mergedConfig.instance) {
@@ -85,7 +89,7 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
 
   if (!isProfilerConfig(mergedConfig)) {
     throw new Error(
-        'Config ${mergedConfig} missing fields required for profile');
+        `Config ${mergedConfig} missing fields required for profile`);
   }
 
   return mergedConfig;
@@ -95,7 +99,8 @@ let profiler: Profiler|undefined = undefined;
 
 /**
  * Starts the profiling agent and returns a promise.
- * If any error is encountered when profiling, the promise will be rejected.
+ * If any error is encountered when configuring the profiler or when profiling,
+ * the promise will be rejected.
  *
  * config - Config describing configuration for profiling.
  *

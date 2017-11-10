@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as delay from 'delay';
 import * as http from 'http';
 import * as path from 'path';
 import * as pify from 'pify';
@@ -210,13 +209,15 @@ export class Profiler extends common.ServiceObject {
    * Starts and endless loop to poll profiler server for
    * instructions, and collects and uploads profiles as requested.
    * If there is a problem when collecting a profile or uploading a profile to
-   * profiler server, this problem will be logged at the debug level.
+   * profiler server, this problem will be logged at the debug level and
+   * otherwise ignored.
    * If there is a problem polling profiler server for instructions
-   * on the type of profile created, this problem will be logged. If the problem
-   * indicates one definitely will not be able to profile, an error will be
-   * thrown.
+   * on the type of profile created, this problem will be logged and profile
+   * creation will be retried.
+   * This promise will not resolve while profiling is still occurring. This
+   * promise should not ever be resolved or rejected.
    */
-  async start(): Promise<void> {
+  start(): Promise<void> {
     return this.pollProfilerService();
   }
 
@@ -279,21 +280,23 @@ export class Profiler extends common.ServiceObject {
         if ((response as any).statusMessage) {
           message = response.statusMessage;
         }
-        this.logger.error('Error creating profile: ' + message);
+        this.logger.error(`Error creating profile: ${message}`);
       } else {
         if (!isRequestProfile(body)) {
-          throw new Error(
-              'Error creating profile: profile not valid ' + body.toString());
+          throw new Error(`Error creating profile: profile not valid ${body}`);
         }
         return body;
       }
     } catch (err) {
-      this.logger.error('Error creating profile: ' + err.toString());
+      this.logger.error(`Error creating profile: ${err}`);
     }
     // TODO: check response to see if response specifies a backoff.
     // TODO: implement exponential backoff.
-    await delay(this.config.backoffMillis);
-    return this.createProfile();
+    return await new Promise<RequestProfile>((resolve) => {
+      setTimeout(async () => {
+        resolve(await this.createProfile());
+      }, this.config.backoffMillis);
+    });
   }
 
   /**
@@ -308,7 +311,7 @@ export class Profiler extends common.ServiceObject {
       prof = await this.profile(prof);
       prof.labels = this.profileLabels;
     } catch (err) {
-      this.logger.debug('Error collecting profile: ' + err.toString());
+      this.logger.debug(`Error collecting profile: ${err}`);
       return;
     }
     const options = {
@@ -329,10 +332,10 @@ export class Profiler extends common.ServiceObject {
         if ((response as any).statusMessage) {
           message = response.statusMessage;
         }
-        this.logger.error('Error creating profile: ' + message);
+        this.logger.error(`Error creating profile: ${message}`);
       }
     } catch (err) {
-      this.logger.debug('Error uploading profile: ' + err.toString());
+      this.logger.debug(`Error uploading profile: ${err}`);
     }
   }
 
@@ -351,7 +354,7 @@ export class Profiler extends common.ServiceObject {
       case ProfileTypes.Heap:
         return this.writeHeapProfile(prof);
       default:
-        throw new Error('Unexpected profile type ' + prof.profileType + '.');
+        throw new Error(`Unexpected profile type ${prof.profileType}.`);
     }
   }
 
@@ -367,8 +370,8 @@ export class Profiler extends common.ServiceObject {
       const durationMillis = parseDurationMillis(prof.duration);
       if (!durationMillis) {
         throw Error(
-            'Cannot collect time profile, duration \"' + prof.duration +
-            '\" cannot be parsed');
+            `Cannot collect time profile, duration "${prof.duration}" cannot` +
+            ` be parsed`);
       }
       const p = await this.timeProfiler.profile(durationMillis);
       prof.profileBytes = await profileBytes(p);

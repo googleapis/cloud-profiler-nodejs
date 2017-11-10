@@ -100,8 +100,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
 /**
  * Returns true if config is a Profiler Config, otherwise throws an error.
  */
-// tslint:disable-next-line: no-any
-export function isProfilerConfig(config: any): config is ProfilerConfig {
+export function isProfilerConfig(config: Config): config is ProfilerConfig {
   if (!(typeof config.logLevel === 'number')) {
     throw new Error('logLevel must be specified in the configuration.');
   }
