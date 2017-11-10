@@ -34,7 +34,6 @@ async function getMetadataInstanceField(field: string): Promise<string> {
   return metadata;
 }
 
-
 function hasService(config: Config):
     config is {serviceContext: {service: string}} {
   return config.serviceContext !== undefined &&

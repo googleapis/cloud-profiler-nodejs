@@ -212,8 +212,8 @@ export class Profiler extends common.ServiceObject {
    * profiler server, this problem will be logged at the debug level and
    * otherwise ignored.
    * If there is a problem polling profiler server for instructions
-   * on the type of profile created, this problem will be logged and profile
-   * creation will be retried.
+   * on the type of profile to be collected, this problem will be logged and 
+   * getting profile type will be retried.
    * This promise will not resolve while profiling is still occurring. This
    * promise should not ever be resolved or rejected.
    */
@@ -238,9 +238,8 @@ export class Profiler extends common.ServiceObject {
    * Returns time, in ms, to wait before asking profiler server if one should
    * collect another profile.
    *
-   *
    * TODO: implement backoff and retry when error encountered in
-   * requestProfile() should be retried at time response indicates this request
+   * requestProfile() should be retried when response indicates this request
    * should be retried or with exponential backoff (up to one hour) if the
    * response does not indicate when to retry this request.
    */
@@ -259,7 +258,8 @@ export class Profiler extends common.ServiceObject {
 
   /**
    * Talks to profiler server, which hangs until server indicates
-   * job should be profiled.
+   * job should be profiled and then indicates what type of profile should 
+   * be collected.
    *
    * If any problem is encountered, an error will be thrown.
    *
@@ -341,7 +341,7 @@ export class Profiler extends common.ServiceObject {
   }
 
   /**
-   * Collects a profile of the type specified by the profileType field of prof.
+   * Collects a profile of the type specified by profileType field of prof.
    * If any problem is encountered, for example the profileType is not
    * recognized or profiling is disabled for the specified profileType, an
    * error will be thrown.
@@ -367,7 +367,6 @@ export class Profiler extends common.ServiceObject {
    */
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
-      // TODO: determine time from request profile.
       const durationMillis = parseDurationMillis(prof.duration);
       if (!durationMillis) {
         throw Error(
@@ -382,7 +381,7 @@ export class Profiler extends common.ServiceObject {
   }
 
   /**
-   * Collects a time profile, converts profile to compressed, base64 encoded
+   * Collects a heap profile, converts profile to compressed, base64 encoded
    * string, and adds profileBytes field to prof with this string.
    *
    * Public to allow for testing.
