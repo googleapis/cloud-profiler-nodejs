@@ -131,7 +131,7 @@ function isRequestProfile(prof: any): prof is RequestProfile {
 }
 
 /**
- * Returns true if response has statusCode and statusMessage.
+ * Returns true if response has statusCode.
  */
 // tslint:disable-next-line: no-any
 function hasHttpStatusCode(response: any):

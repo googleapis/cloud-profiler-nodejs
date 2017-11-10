@@ -82,7 +82,7 @@ describe('parseDurationMillis', () => {
   it('should parse "10s" string', () => {
     assert.equal(10000, parseDurationMillis('10s'));
   });
-  it('should parse "5ms." string', () => {
+  it('should parse "5ms" string', () => {
     assert.equal(5, parseDurationMillis('5ms'));
   });
   it('should parse "5m" string', () => {
