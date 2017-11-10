@@ -40,6 +40,53 @@ enum ProfileTypes {
 }
 
 /**
+ * Parses string containing a time duration, and returns this duration in ms.
+ * If duration cannot be parsed, returns undefined.
+ *
+ * Public for testing.
+ */
+export function parseDurationMillis(durationString: string): number|undefined {
+  if (!/(d+h)?(d+m)?(d+s)?(d+ms)?(d+us)?(d+ns)?/.test(durationString)) {
+    return undefined;
+  }
+  const values = durationString.match(/\d+(h|m(?!s)|s|ms|us|ns)/g);
+  if (values == null) {
+    return undefined;
+  }
+  let durationMillis = 0;
+  values.forEach(element => {
+    const digit = element.match(/\d+/);
+    const unit = element.match(/\D+/);
+    if (unit && digit) {
+      const num = Number(digit[0]);
+      switch (unit[0]) {
+        case 'h':
+          durationMillis = durationMillis + num * 60 * 60 * 1000;
+          break;
+        case 'm':
+          durationMillis = durationMillis + num * 60 * 1000;
+          break;
+        case 's':
+          durationMillis = durationMillis + num * 1000;
+          break;
+        case 'ms':
+          durationMillis = durationMillis + num;
+          break;
+        case 'us':
+          durationMillis = durationMillis + num / 1000;
+          break;
+        case 'ns':
+          durationMillis = durationMillis + num / (1000 * 1000);
+          break;
+        default:
+          break;
+      }
+    }
+  });
+  return durationMillis;
+}
+
+/**
  * Returns true if http status code indicates an error.
  */
 function isErrorResponseStatusCode(code: number) {
@@ -67,9 +114,9 @@ export interface Deployment {
  * Public for testing.
  */
 export interface RequestProfile {
-  name?: string;
+  name: string;
   profileType?: string;
-  duration?: {};
+  duration: string;
   profileBytes?: string;
   deployment?: Deployment;
   labels?: {instance: string};
@@ -285,7 +332,12 @@ export class Profiler extends common.ServiceObject {
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
       // TODO: determine time from request profile.
-      const durationMillis = 10 * 1000;  // 10 seconds
+      const durationMillis = parseDurationMillis(prof.duration);
+      if (!durationMillis) {
+        throw Error(
+            'Cannot collect time profile, duration \"' + prof.duration +
+            '\" cannot be parsed');
+      }
       const p = await this.timeProfiler.profile(durationMillis);
       prof.profileBytes = await profileBytes(p);
       return prof;
