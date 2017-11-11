@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as http from 'http';
+
 import * as path from 'path';
 import * as pify from 'pify';
 import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
-import {AuthenticationConfig, Common, Logger, Service, ServiceConfig, ServiceObject, ServiceObjectConfig} from '../third_party/types/common-types';
+import {Common, Logger, Service, ServiceObject} from '../third_party/types/common-types';
 import {ProfilerConfig} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
