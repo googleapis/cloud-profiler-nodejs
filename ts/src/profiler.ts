@@ -214,11 +214,9 @@ export class Profiler extends common.ServiceObject {
    * If there is a problem polling profiler server for instructions
    * on the type of profile to be collected, this problem will be logged and 
    * getting profile type will be retried.
-   * This promise will not resolve while profiling is still occurring. This
-   * promise should not ever be resolved or rejected.
    */
-  start(): Promise<void> {
-    return this.runLoop();
+  start() {
+    this.runLoop();
   }
 
   /**

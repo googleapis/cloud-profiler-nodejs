@@ -104,8 +104,8 @@ let profiler: Profiler|undefined = undefined;
 
 /**
  * Starts the profiling agent and returns a promise.
- * If any error is encountered when configuring the profiler or when profiling,
- * the promise will be rejected.
+ * If any error is encountered when configuring the profiler the promise will 
+ * be rejected. Resolves when profiling is started.
  *
  * config - Config describing configuration for profiling.
  *
@@ -119,7 +119,7 @@ let profiler: Profiler|undefined = undefined;
 export async function start(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
-  return profiler.start();
+  profiler.start();
 }
 
 // If the module was --require'd from the command line, start the agent.
