@@ -37,7 +37,7 @@ enum ProfileTypes {
 }
 
 /**
- * Returns true if http status code indicates an error.
+ * @return - true if http status code indicates an error and false otherwise.
  */
 function isErrorResponseStatusCode(code: number) {
   return code < 200 || code >= 300;
@@ -73,7 +73,7 @@ export interface RequestProfile {
 }
 
 /**
- * Returns true if an prof is a RequestProfile.
+ * @return true if an prof is a RequestProfile and false otherwise.
  */
 // tslint:disable-next-line: no-any
 function isRequestProfile(prof: any): prof is RequestProfile {
