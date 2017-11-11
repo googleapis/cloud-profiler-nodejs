@@ -166,7 +166,7 @@ export class Profiler extends common.ServiceObject {
    * profiler server, this problem will be logged at the debug level and
    * otherwise ignored.
    * If there is a problem polling profiler server for instructions
-   * on the type of profile to be collected, this problem will be logged and 
+   * on the type of profile to be collected, this problem will be logged and
    * getting profile type will be retried.
    */
   start() {
@@ -187,7 +187,8 @@ export class Profiler extends common.ServiceObject {
   /**
    * Waits for profiler server to tell it to collect a profile, then collects
    * a profile and uploads it.
-   * Returns time, in ms, to wait before asking profiler server if one should
+   *
+   * @return - time in ms, to wait before asking profiler server if one should
    * collect another profile.
    *
    * TODO: implement backoff and retry when error encountered in
@@ -210,10 +211,14 @@ export class Profiler extends common.ServiceObject {
 
   /**
    * Talks to profiler server, which hangs until server indicates
-   * job should be profiled and then indicates what type of profile should 
+   * job should be profiled and then indicates what type of profile should
    * be collected.
    *
    * If any problem is encountered, an error will be thrown.
+   *
+   * @return - returns a RequestProfile specifying which type of profile
+   * should be collected and other information needed to collect and upload a
+   * profile of the specified type.
    *
    * TODO (issue #28): right now, this call could hang for up to an hour when
    * this method is the only thing on the event loop, keeping the program open
@@ -319,7 +324,7 @@ export class Profiler extends common.ServiceObject {
    */
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.timeProfiler) {
-      const durationMillis = parseDurationMillis(prof.duration);
+      const durationMillis = parseDuration(prof.duration);
       if (!durationMillis) {
         throw Error(
             `Cannot collect time profile, duration "${prof.duration}" cannot` +

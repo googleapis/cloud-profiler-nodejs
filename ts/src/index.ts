@@ -104,7 +104,7 @@ let profiler: Profiler|undefined = undefined;
 
 /**
  * Starts the profiling agent and returns a promise.
- * If any error is encountered when configuring the profiler the promise will 
+ * If any error is encountered when configuring the profiler the promise will
  * be rejected. Resolves when profiling is started.
  *
  * config - Config describing configuration for profiling.
