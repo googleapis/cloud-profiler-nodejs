@@ -24,7 +24,7 @@ import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
 import {ProfilerConfig} from '../src/config';
-import {parseDurationMillis, Profiler} from '../src/profiler';
+import {Profiler} from '../src/profiler';
 import {HeapProfiler} from '../src/profilers/heap-profiler';
 import {TimeProfiler} from '../src/profilers/time-profiler';
 import {Common} from '../third_party/types/common-types';
@@ -77,29 +77,6 @@ function nockOauth2(): nock.Scope {
         expiry_date: new Date(9999, 1, 1)
       });
 }
-
-describe('parseDurationMillis', () => {
-  it('should parse "10s" string', () => {
-    assert.equal(10000, parseDurationMillis('10s'));
-  });
-  it('should parse "5ms" string', () => {
-    assert.equal(5, parseDurationMillis('5ms'));
-  });
-  it('should parse "5m" string', () => {
-    assert.equal(300000, parseDurationMillis('5m'));
-  });
-  it('should parse "15000000ns" string', () => {
-    assert.equal(15, parseDurationMillis('15000000ns'));
-  });
-  it('should parse "15000us" string', () => {
-    assert.equal(15, parseDurationMillis('15000us'));
-  });
-  it('should parse "1h1m1s1ms1000us1000000ns" string', () => {
-    assert.equal(
-        1000 * 60 * 60 + 1000 * 60 + 1000 + 3,
-        parseDurationMillis('1h1m1s1ms1000us1000000ns'));
-  });
-});
 
 describe('Profiler', () => {
   afterEach(() => {

@@ -25,6 +25,7 @@ import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
 
 export const common: Common = require('@google-cloud/common');
+const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
 const zoneNameLabel = 'zone';
@@ -36,53 +37,6 @@ const gzip = pify(zlib.gzip);
 enum ProfileTypes {
   Wall = 'WALL',
   Heap = 'HEAP'
-}
-
-/**
- * Parses string containing a time duration, and returns this duration in ms.
- * If duration cannot be parsed, returns undefined.
- *
- * Public for testing.
- */
-export function parseDurationMillis(durationString: string): number|undefined {
-  if (!/(d+h)?(d+m)?(d+s)?(d+ms)?(d+us)?(d+ns)?/.test(durationString)) {
-    return undefined;
-  }
-  const values = durationString.match(/\d+(h|m(?!s)|s|ms|us|ns)/g);
-  if (values == null) {
-    return undefined;
-  }
-  let durationMillis = 0;
-  values.forEach(element => {
-    const digit = element.match(/\d+/);
-    const unit = element.match(/\D+/);
-    if (unit && digit) {
-      const num = Number(digit[0]);
-      switch (unit[0]) {
-        case 'h':
-          durationMillis = durationMillis + num * 60 * 60 * 1000;
-          break;
-        case 'm':
-          durationMillis = durationMillis + num * 60 * 1000;
-          break;
-        case 's':
-          durationMillis = durationMillis + num * 1000;
-          break;
-        case 'ms':
-          durationMillis = durationMillis + num;
-          break;
-        case 'us':
-          durationMillis = durationMillis + num / 1000;
-          break;
-        case 'ns':
-          durationMillis = durationMillis + num / (1000 * 1000);
-          break;
-        default:
-          break;
-      }
-    }
-  });
-  return durationMillis;
 }
 
 /**
