@@ -28,9 +28,6 @@ export const common: Common = require('@google-cloud/common');
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
-const zoneNameLabel = 'zone';
-const versionLabel = 'version';
-const instanceLabelName = 'instance';
 const scope = 'https://www.googleapis.com/auth/monitoring.write';
 const gzip = pify(zlib.gzip);
 
