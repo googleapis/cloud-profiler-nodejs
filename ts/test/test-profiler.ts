@@ -155,7 +155,7 @@ describe('Profiler', () => {
          // compare to decodedTimeProfile, which is equivalent to timeProfile,
          // but numbers are replaced with longs.
          assert.deepEqual(decodedTimeProfile, outProfile);
-       });
+      });
     it('should throw error when time profiling is not enabled.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableTime = true;
@@ -276,7 +276,7 @@ describe('Profiler', () => {
       await profiler.profileAndUpload(requestProf);
       assert.ok(uploadProfileMock.isDone(), 'expected call to upload profile');
     });
-    it('should not send request to upload unknown profile.', async () => {
+    it('should not send request to upload when profile type unknown.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
