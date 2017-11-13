@@ -157,14 +157,14 @@ export class Profiler extends common.ServiceObject {
   }
 
   /**
-   * Starts and endless loop to poll profiler server for
-   * instructions, and collects and uploads profiles as requested.
+   * Starts an endless loop to poll profiler server for instructions, and
+   * collects and uploads profiles as requested.
    * If there is a problem when collecting a profile or uploading a profile to
-   * profiler server, this problem will be logged at the debug level and
+   * profiler server, this problem will be logged at the error level and
    * otherwise ignored.
    * If there is a problem polling profiler server for instructions
-   * on the type of profile to be collected, this problem will be logged and
-   * getting profile type will be retried.
+   * on the type of profile to be collected, this problem will be logged at the
+   * error level and getting profile type will be retried.
    */
   start() {
     this.runLoop();
@@ -185,10 +185,10 @@ export class Profiler extends common.ServiceObject {
    * Waits for profiler server to tell it to collect a profile, then collects
    * a profile and uploads it.
    *
-   * @return - time in ms, to wait before asking profiler server if one should
-   * collect another profile.
+   * @return - time, in ms, to wait before asking profiler server again about
+   * collecting another profile.
    *
-   * TODO: implement backoff and retry when error encountered in
+   * TODO: implement backoff and retry. When error encountered in
    * requestProfile() should be retried when response indicates this request
    * should be retried or with exponential backoff (up to one hour) if the
    * response does not indicate when to retry this request.
@@ -213,9 +213,9 @@ export class Profiler extends common.ServiceObject {
    *
    * If any problem is encountered, an error will be thrown.
    *
-   * @return - returns a RequestProfile specifying which type of profile
-   * should be collected and other information needed to collect and upload a
-   * profile of the specified type.
+   * @return - a RequestProfile specifying which type of profile should be
+   * collected and other information needed to collect and upload a profile of
+   * the specified type.
    *
    * TODO (issue #28): right now, this call could hang for up to an hour when
    * this method is the only thing on the event loop, keeping the program open
@@ -287,7 +287,7 @@ export class Profiler extends common.ServiceObject {
         if ((response as any).statusMessage) {
           message = response.statusMessage;
         }
-        this.logger.error(`Error creating profile: ${message}`);
+        this.logger.error(`Error uploading profile: ${message}`);
       }
     } catch (err) {
       this.logger.debug(`Error uploading profile: ${err}`);
@@ -315,7 +315,7 @@ export class Profiler extends common.ServiceObject {
 
   /**
    * Collects a time profile, converts profile to compressed, base64 encoded
-   * string, and adds profileBytes field to prof with this string.
+   * string, and puts this string in profileBytes field of prof.
    *
    * Public to allow for testing.
    */
@@ -339,7 +339,6 @@ export class Profiler extends common.ServiceObject {
    * string, and adds profileBytes field to prof with this string.
    *
    * Public to allow for testing.
-   *
    */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (this.heapProfiler) {
