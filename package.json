@@ -1,6 +1,6 @@
 {
   "name": "@google-cloud/profiler",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Adds support for Google Cloud Profiler to node.js applications",
   "repository": "GoogleCloudPlatform/cloud-profiler-nodejs",
   "main": "out/src/index.js",
@@ -45,7 +45,7 @@
     "@types/node": "^8.0.30",
     "@types/pify": "^3.0.0",
     "@types/request": "^2.0.7",
-    "@types/sinon": "^2.3.6",
+    "@types/sinon": "^4.0.0",
     "clang-format": "^1.0.33",
     "codecov": "^3.0.0",
     "gts": "^0.5.0",
@@ -58,7 +58,7 @@
     "typescript": "~2.6.x"
   },
   "files": [
-    "build/src",
+    "out/src",
     "bindings",
     "proto",
     "binding.gyp",
@@ -69,7 +69,7 @@
   "nyc": {
     "exclude": [
       "proto",
-      "build/test"
+      "out/test"
     ]
   }
 }
