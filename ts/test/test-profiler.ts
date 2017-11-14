@@ -155,7 +155,7 @@ describe('Profiler', () => {
          // compare to decodedTimeProfile, which is equivalent to timeProfile,
          // but numbers are replaced with longs.
          assert.deepEqual(decodedTimeProfile, outProfile);
-      });
+       });
     it('should throw error when time profiling is not enabled.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableTime = true;
@@ -276,28 +276,29 @@ describe('Profiler', () => {
       await profiler.profileAndUpload(requestProf);
       assert.ok(uploadProfileMock.isDone(), 'expected call to upload profile');
     });
-    it('should not send request to upload when profile type unknown.', async () => {
-      const requestProf = {
-        name: 'projects/12345678901/test-projectId',
-        duration: '10s',
-        profileType: 'UNKNOWN_PROFILE_TYPE',
-        labels: {instance: 'test-instance'}
-      };
-      const expBody =
-          extend(true, {profileBytes: base64TimeProfile}, requestProf);
-      nockOauth2();
-      const uploadProfileMock =
-          nock(API)
-              .patch('/' + requestProf.name)
-              .reply(200, (uri: string, requestBody: {}) => {
-                assert.deepEqual(expBody, requestBody);
-              });
+    it('should not send request to upload when profile type unknown.',
+       async () => {
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           duration: '10s',
+           profileType: 'UNKNOWN_PROFILE_TYPE',
+           labels: {instance: 'test-instance'}
+         };
+         const expBody =
+             extend(true, {profileBytes: base64TimeProfile}, requestProf);
+         nockOauth2();
+         const uploadProfileMock =
+             nock(API)
+                 .patch('/' + requestProf.name)
+                 .reply(200, (uri: string, requestBody: {}) => {
+                   assert.deepEqual(expBody, requestBody);
+                 });
 
-      const profiler = new Profiler(testConfig);
-      await profiler.profileAndUpload(requestProf);
-      assert.ok(
-          !uploadProfileMock.isDone(), 'expected no call to upload profile');
-    });
+         const profiler = new Profiler(testConfig);
+         await profiler.profileAndUpload(requestProf);
+         assert.ok(
+             !uploadProfileMock.isDone(), 'expected no call to upload profile');
+       });
     it('should not retry when error thrown by http request.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
