@@ -222,13 +222,13 @@ export class Profiler extends common.ServiceObject {
       prof = await this.createProfile();
     } catch (err) {
       this.logger.error(
-          `Error requesting profile type to be collected: ${err}`);
+          `Error requesting profile type to be collected: ${err}.`);
       return this.config.backoffMillis;
     }
     try {
       await this.profileAndUpload(prof);
     } catch (err) {
-      this.logger.error(`Error collecting and uploading profile: ${err}`);
+      this.logger.error(`Error collecting and uploading profile: ${err}.`);
     }
     return 0;
   }
@@ -276,7 +276,7 @@ export class Profiler extends common.ServiceObject {
       throw new Error(message.toString());
     }
     if (!isRequestProfile(body)) {
-      throw new Error(`Profile not valid: ${body}`);
+      throw new Error(`Profile not valid: ${body}.`);
     }
     return body;
   }
@@ -309,7 +309,7 @@ export class Profiler extends common.ServiceObject {
       if ((response as any).statusMessage) {
         message = response.statusMessage;
       }
-      throw new Error(`Could not upload profile: ${message}`);
+      throw new Error(`Could not upload profile: ${message}.`);
     }
   }
 
@@ -346,7 +346,7 @@ export class Profiler extends common.ServiceObject {
     if (!durationMillis) {
       throw Error(
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
-          ` be parsed`);
+          ` be parsed.`);
     }
     const p = await this.timeProfiler.profile(durationMillis);
     prof.profileBytes = await profileBytes(p);

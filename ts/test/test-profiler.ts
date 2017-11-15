@@ -329,7 +329,7 @@ describe('Profiler', () => {
         await profiler.profileAndUpload(requestProf);
         assert.fail('expected error, no error thrown');
       } catch (err) {
-        assert.equal(err.message, 'Could not upload profile: Error 500');
+        assert.equal(err.message, 'Could not upload profile: Error 500.');
       }
     });
   });
