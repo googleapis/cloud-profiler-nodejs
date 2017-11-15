@@ -362,6 +362,26 @@ describe('Profiler', () => {
          assert.ok(
              requestProfileMock.isDone(), 'expected call to create profile');
        });
+    it('should keep additional fields in request profile.', async () => {
+      const config = extend(true, {}, testConfig);
+      config.disableHeap = true;
+      const response = {
+        name: 'projects/12345678901/test-projectId',
+        profileType: 'WALL',
+        duration: '10s',
+        labels: {instance: config.instance},
+        additionalField: 'additionalField'
+      };
+      nockOauth2();
+      const requestProfileMock =
+          nock(API)
+              .post('/projects/' + testConfig.projectId + '/profiles')
+              .once()
+              .reply(200, response);
+      const profiler = new Profiler(testConfig);
+      const actualResponse = await profiler.createProfile();
+      assert.deepEqual(response, actualResponse);
+    });
     it('should throw error when error thrown by http request.', async () => {
       const config = extend(true, {}, testConfig);
       config.disableHeap = true;

@@ -77,11 +77,15 @@ export interface RequestProfile {
  */
 // tslint:disable-next-line: no-any
 function isDeployment(deployment: any): deployment is Deployment {
-  return (deployment.projectId === undefined || typeof deployment.projectId === 'string')
-      && (deployment.target === undefined || typeof deployment.target === 'string')
-      && (deployment.labels === undefined ||
-        (deployment.labels.zone === undefined || typeof deployment.labels.zone === 'string')
-        && (deployment.labels.version === undefined || typeof deployment.labels.zone === 'string'));
+  return (deployment.projectId === undefined ||
+          typeof deployment.projectId === 'string') &&
+      (deployment.target === undefined ||
+       typeof deployment.target === 'string') &&
+      (deployment.labels === undefined ||
+       (deployment.labels.zone === undefined ||
+        typeof deployment.labels.zone === 'string') &&
+           (deployment.labels.version === undefined ||
+            typeof deployment.labels.zone === 'string'));
 }
 
 /**
@@ -90,9 +94,10 @@ function isDeployment(deployment: any): deployment is Deployment {
 // tslint:disable-next-line: no-any
 function isRequestProfile(prof: any): prof is RequestProfile {
   return prof && typeof prof.name === 'string' &&
-      typeof prof.profileType === 'string' && typeof prof.duration === 'string'
-      && (prof.labels === undefined || typeof prof.labels.instance === 'string')
-      && (prof.deployment === undefined || isDeployment(prof.deployment));
+      typeof prof.profileType === 'string' &&
+      typeof prof.duration === 'string' &&
+      (prof.labels === undefined || typeof prof.labels.instance === 'string') &&
+      (prof.deployment === undefined || isDeployment(prof.deployment));
 }
 
 /**
