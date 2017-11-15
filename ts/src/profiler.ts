@@ -73,12 +73,26 @@ export interface RequestProfile {
 }
 
 /**
+ * @return true if an deployment is a Deployment and false otherwise.
+ */
+// tslint:disable-next-line: no-any
+function isDeployment(deployment: any): deployment is Deployment {
+  return (deployment.projectId === undefined || typeof deployment.projectId === 'string')
+      && (deployment.target === undefined || typeof deployment.target === 'string')
+      && (deployment.labels === undefined ||
+        (deployment.labels.zone === undefined || typeof deployment.labels.zone === 'string')
+        && (deployment.labels.version === undefined || typeof deployment.labels.zone === 'string'));
+}
+
+/**
  * @return true if an prof is a RequestProfile and false otherwise.
  */
 // tslint:disable-next-line: no-any
 function isRequestProfile(prof: any): prof is RequestProfile {
   return prof && typeof prof.name === 'string' &&
-      typeof prof.profileType === 'string' && typeof prof.duration === 'string';
+      typeof prof.profileType === 'string' && typeof prof.duration === 'string'
+      && (prof.labels === undefined || typeof prof.labels.instance === 'string')
+      && (prof.deployment === undefined || isDeployment(prof.deployment));
 }
 
 /**
@@ -92,7 +106,8 @@ function hasHttpStatusCode(response: any):
 
 /**
  * Converts a profile to a compressed, base64 encoded string.
- * Work for converting profile is done on the event loop. In particular, 
+ *
+ * Work for converting profile is done on the event loop. In particular,
  * profile encoding is done on the event loop. So, this does  block execution
  * of the program, but for a short period of time, since profiles are small.
  *
@@ -177,7 +192,7 @@ export class Profiler extends common.ServiceObject {
    * Endlessly polls the profiler server for instructions, and collects and
    * uploads profiles as requested.
    */
-  async runLoop(): Promise<void> {
+  async runLoop() {
     const delayMillis = await this.collectProfile();
 
     // Schedule the next profile.
