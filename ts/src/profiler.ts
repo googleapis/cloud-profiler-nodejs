@@ -28,7 +28,7 @@ export const common: Common = require('@google-cloud/common');
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
-const scope = 'https://www.googleapis.com/auth/monitoring.write';
+const SCOPE = 'https://www.googleapis.com/auth/monitoring.write';
 const gzip = pify(zlib.gzip);
 
 enum ProfileTypes {
@@ -121,7 +121,7 @@ export class Profiler extends common.ServiceObject {
     config = common.util.normalizeArguments(null, config);
     const serviceConfig = {
       baseUrl: API,
-      scopes: [scope],
+      scopes: [SCOPE],
       packageJson: pjson,
     };
     super({parent: new common.Service(serviceConfig, config), baseUrl: '/'});
