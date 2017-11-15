@@ -202,7 +202,11 @@ export class Profiler extends common.ServiceObject {
           `Error requesting profile type to be collected: ${err}`);
       return this.config.backoffMillis;
     }
-    await this.profileAndUpload(prof);
+    try {
+      await this.profileAndUpload(prof);
+    } catch (err) {
+      this.logger.error(`Error collecting and uploading profile: ${err}`);
+    }
     return 0;
   }
 
@@ -257,40 +261,32 @@ export class Profiler extends common.ServiceObject {
   /**
    * Collects a profile of the type specified by the profileType field of prof.
    * If any problem is encountered, like a problem collecting or uploading the
-   * profile, an error will be logged at the error level, but otherwise ignored.
+   * profile, an error will be thrown.
    *
    * Public to allow for testing.
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
-    try {
-      prof = await this.profile(prof);
-      prof.labels = this.profileLabels;
-    } catch (err) {
-      this.logger.debug(`Error collecting profile: ${err}`);
-      return;
-    }
+    prof = await this.profile(prof);
+    prof.labels = this.profileLabels;
+
     const options = {
       method: 'PATCH',
       uri: API + '/' + prof.name,
       body: prof,
       json: true,
     };
-    try {
-      const [body, response] = await this.request(options);
-      if (!hasHttpStatusCode(response)) {
-        throw new Error(
-            'Error uploading profile: server response missing status information.');
+    const [body, response] = await this.request(options);
+    if (!hasHttpStatusCode(response)) {
+      throw new Error(
+          'Server response missing status information when attempting to upload profile.');
+    }
+    if (isErrorResponseStatusCode(response.statusCode)) {
+      let message: number|string = response.statusCode;
+      // tslint:disable-next-line: no-any
+      if ((response as any).statusMessage) {
+        message = response.statusMessage;
       }
-      if (isErrorResponseStatusCode(response.statusCode)) {
-        let message: number|string = response.statusCode;
-        // tslint:disable-next-line: no-any
-        if ((response as any).statusMessage) {
-          message = response.statusMessage;
-        }
-        this.logger.error(`Error uploading profile: ${message}`);
-      }
-    } catch (err) {
-      this.logger.debug(`Error uploading profile: ${err}`);
+      throw new Error(`Could not upload profile: ${message}`);
     }
   }
 
