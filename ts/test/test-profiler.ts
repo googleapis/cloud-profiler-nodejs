@@ -333,7 +333,7 @@ describe('Profiler', () => {
       }
     });
   });
-  describe('requestProfile', () => {
+  describe('createProfile', () => {
     let requestStub: undefined|sinon.SinonStub;
     afterEach(() => {
       if (requestStub) {
@@ -357,7 +357,7 @@ describe('Profiler', () => {
                  .once()
                  .reply(200, response);
          const profiler = new Profiler(testConfig);
-         const actualResponse = await profiler.requestProfile();
+         const actualResponse = await profiler.createProfile();
          assert.deepEqual(response, actualResponse);
          assert.ok(
              requestProfileMock.isDone(), 'expected call to create profile');
@@ -376,7 +376,7 @@ describe('Profiler', () => {
                         .returns(Promise.reject(new Error('Network error')));
       const profiler = new Profiler(testConfig);
       try {
-        await profiler.requestProfile();
+        await profiler.createProfile();
         assert.fail('expected error, no error thrown');
       } catch (err) {
         assert.equal(err.message, 'Network error');
@@ -402,7 +402,7 @@ describe('Profiler', () => {
 
          const profiler = new Profiler(testConfig);
          try {
-           await profiler.requestProfile();
+           await profiler.createProfile();
            assert.fail('expected error, no error thrown');
          } catch (err) {
            assert.equal(err.message, '500 status code');
@@ -425,7 +425,7 @@ describe('Profiler', () => {
 
          const profiler = new Profiler(testConfig);
          try {
-           await profiler.requestProfile();
+           await profiler.createProfile();
            assert.fail('expected error, no error thrown');
          } catch (err) {
            assert.equal(err.message, '500');

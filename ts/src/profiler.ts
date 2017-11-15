@@ -92,6 +92,9 @@ function hasHttpStatusCode(response: any):
 
 /**
  * Converts a profile to a compressed, base64 encoded string.
+ * Work for converting profile is done on the event loop. In particular, 
+ * profile encoding is done on the event loop. So, this does  block execution
+ * of the program, but for a short period of time, since profiles are small.
  *
  * @param p - profile to be converted to string.
  */
@@ -189,14 +192,14 @@ export class Profiler extends common.ServiceObject {
    * collecting another profile.
    *
    * TODO: implement backoff and retry. When error encountered in
-   * requestProfile() should be retried when response indicates this request
+   * createProfile() should be retried when response indicates this request
    * should be retried or with exponential backoff (up to one hour) if the
    * response does not indicate when to retry this request.
    */
   async collectProfile(): Promise<number> {
     let prof: RequestProfile;
     try {
-      prof = await this.requestProfile();
+      prof = await this.createProfile();
     } catch (err) {
       this.logger.error(
           `Error requesting profile type to be collected: ${err}`);
@@ -228,7 +231,7 @@ export class Profiler extends common.ServiceObject {
    *
    * Public to allow for testing.
    */
-  async requestProfile(): Promise<RequestProfile> {
+  async createProfile(): Promise<RequestProfile> {
     const reqBody = {
       deployment: this.deployment,
       profileType: this.profileTypes,
