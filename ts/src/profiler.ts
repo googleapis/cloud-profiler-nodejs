@@ -316,18 +316,18 @@ export class Profiler extends common.ServiceObject {
    * Public to allow for testing.
    */
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
-    if (this.timeProfiler) {
-      const durationMillis = parseDuration(prof.duration);
-      if (!durationMillis) {
-        throw Error(
-            `Cannot collect time profile, duration "${prof.duration}" cannot` +
-            ` be parsed`);
-      }
-      const p = await this.timeProfiler.profile(durationMillis);
-      prof.profileBytes = await profileBytes(p);
-      return prof;
+    if (!this.timeProfiler) {
+      throw Error('Cannot collect time profile, time profiler not enabled.');
     }
-    throw Error('Cannot collect time profile, time profiler not enabled.');
+    const durationMillis = parseDuration(prof.duration);
+    if (!durationMillis) {
+      throw Error(
+          `Cannot collect time profile, duration "${prof.duration}" cannot` +
+          ` be parsed`);
+    }
+    const p = await this.timeProfiler.profile(durationMillis);
+    prof.profileBytes = await profileBytes(p);
+    return prof;
   }
 
   /**
@@ -337,11 +337,11 @@ export class Profiler extends common.ServiceObject {
    * Public to allow for testing.
    */
   async writeHeapProfile(prof: RequestProfile): Promise<RequestProfile> {
-    if (this.heapProfiler) {
-      const p = this.heapProfiler.profile();
-      prof.profileBytes = await profileBytes(p);
-      return prof;
+    if (!this.heapProfiler) {
+      throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
-    throw Error('Cannot collect heap profile, heap profiler not enabled.');
+    const p = this.heapProfiler.profile();
+    prof.profileBytes = await profileBytes(p);
+    return prof;
   }
 }
