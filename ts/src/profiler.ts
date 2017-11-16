@@ -167,7 +167,7 @@ export class Profiler extends common.ServiceObject {
     this.deployment = {
       projectId: this.config.projectId,
       target: this.config.serviceContext.service,
-      labels: labels
+      labels
     };
 
     this.profileLabels = {};
