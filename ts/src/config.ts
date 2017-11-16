@@ -16,6 +16,7 @@
 
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
 
+const parseDuration: (str: string) => number = require('parse-duration');
 const common: Common = require('@google-cloud/common');
 const extend = require('extend');
 
@@ -77,9 +78,25 @@ export interface Config extends AuthenticationConfig {
   // stack depth may increase overhead of profiling.
   heapMaxStackDepth?: number;
 
-  // Time to wait before trying to create a profile again if profile creation
-  // fails.
-  backoffMillis?: number;
+  // On first error during profile creation, if the backoff is not specified
+  // by the server response, then profiler will between 0 and
+  // initialBackoffMillis before asking the server to create a profile again.
+  // After a successful profile creation, the backoff will be reset to
+  // initialExpBackoffMillis.
+  initialBackoffMillis?: number;
+
+  // If the backoff is not specified by the server response, then profiler will
+  // wait at most maxBackoffMillis before asking server to create a profile
+  // again.
+  maxBackoffMillis?: number;
+
+  // On each consecutive error in profile creation, the maximum backoff will
+  // increase by this factor. The backoff will be random value selected
+  // from a uniform distribution between 0 and the maximum backoff.
+  backoffMultiplier?: number;
+
+  // Server-specified backoffs will be capped at backoffLimitMillis.
+  backoffLimitMillis?: number;
 }
 
 // Interface for an initialized config.
@@ -94,7 +111,10 @@ export interface ProfilerConfig extends AuthenticationConfig {
   timeIntervalMicros: number;
   heapIntervalBytes: number;
   heapMaxStackDepth: number;
-  backoffMillis: number;
+  initialBackoffMillis: number;
+  maxBackoffMillis: number;
+  backoffMultiplier: number;
+  backoffLimitMillis: number;
 }
 
 // Default values for configuration for a profiler.
@@ -106,5 +126,8 @@ export const defaultConfig = {
   timeIntervalMicros: 1000,
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
-  backoffMillis: 5 * 60 * 1000
+  initialBackoffMillis: 1000,
+  maxBackoffMillis: parseDuration('1h'),
+  backoffMultiplier: 1.3,
+  backoffLimitMillis: parseDuration('7d'),  // 7 days
 };
