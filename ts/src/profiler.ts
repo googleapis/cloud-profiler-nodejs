@@ -228,13 +228,13 @@ export class Profiler extends common.ServiceObject {
     try {
       prof = await this.createProfile();
     } catch (err) {
-      this.logger.error(`Failed to create profile: ${err}.`);
+      this.logger.error(`Failed to create profile: ${err}`);
       return this.config.backoffMillis;
     }
     try {
       await this.profileAndUpload(prof);
     } catch (err) {
-      this.logger.error(`Failed to collect and upload profile: ${err}.`);
+      this.logger.error(`Failed to collect and upload profile: ${err}`);
     }
     return 0;
   }
