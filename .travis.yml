@@ -7,16 +7,8 @@ node_js:
   - "8"
   - "9"
 
-os:
-  - linux
-  - osx
-
 env:
   - CXX=g++-4.8
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then xcode-select --install; fi
 
 addons:
   apt:
