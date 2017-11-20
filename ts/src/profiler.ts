@@ -234,7 +234,7 @@ export class Profiler extends common.ServiceObject {
     try {
       await this.profileAndUpload(prof);
     } catch (err) {
-      this.logger.error(`Failed to collect and upload profile: ${err}`);
+      this.logger.error(`Failed to collect and upload profile: ${err}.`);
     }
     return 0;
   }
@@ -298,7 +298,7 @@ export class Profiler extends common.ServiceObject {
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
     prof = await this.profile(prof);
-    this.logger.debug(`Successfully collected profile ${prof.profileType}`);
+    this.logger.debug(`Successfully collected profile ${prof.profileType}.`);
     prof.labels = this.profileLabels;
 
     const options = {
@@ -320,7 +320,7 @@ export class Profiler extends common.ServiceObject {
       }
       throw new Error(`Could not upload profile: ${message}.`);
     }
-    this.logger.debug(`Successfully uploaded profile ${prof.profileType}`);
+    this.logger.debug(`Successfully uploaded profile ${prof.profileType}.`);
   }
 
   /**
