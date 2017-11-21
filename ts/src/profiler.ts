@@ -80,12 +80,7 @@ function isDeployment(deployment: any): deployment is Deployment {
   return (deployment.projectId === undefined ||
           typeof deployment.projectId === 'string') &&
       (deployment.target === undefined ||
-       typeof deployment.target === 'string') &&
-      (deployment.labels === undefined ||
-       (deployment.labels.zone === undefined ||
-        typeof deployment.labels.zone === 'string') &&
-           (deployment.labels.version === undefined ||
-            typeof deployment.labels.zone === 'string'));
+       typeof deployment.target === 'string');
 }
 
 /**
