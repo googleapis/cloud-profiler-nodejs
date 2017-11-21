@@ -283,7 +283,7 @@ export class Profiler extends common.ServiceObject {
       throw new Error(message.toString());
     }
     if (!isRequestProfile(prof)) {
-      throw new Error(`Profile not valid: ${prof}.`);
+      throw new Error(`Profile not valid: ${JSON.stringify(prof)}.`);
     }
     this.logger.debug(`Successfully created profile ${prof.profileType}.`);
     return prof;
