@@ -107,7 +107,6 @@ describe('Profiler', () => {
          const requestProf = {
            name: 'projects/12345678901/test-projectId',
            profileType: 'HEAP',
-           duration: '10s',
            labels: {instance: 'test-instance'}
          };
          const prof = await profiler.profile(requestProf);
@@ -194,7 +193,6 @@ describe('Profiler', () => {
          const requestProf = {
            name: 'projects/12345678901/test-projectId',
            profileType: 'HEAP',
-           duration: '10s',
            labels: {instance: 'test-instance'}
          };
 
@@ -220,7 +218,6 @@ describe('Profiler', () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         profileType: 'HEAP',
-        duration: '10s',
         labels: {instance: 'test-instance'}
       };
       try {
@@ -383,6 +380,25 @@ describe('Profiler', () => {
          assert.ok(
              requestProfileMock.isDone(), 'expected call to create profile');
        });
+    it('should receive heap profile response without error.', async () => {
+      const config = extend(true, {}, testConfig);
+      config.disableHeap = true;
+      const response = {
+        name: 'projects/12345678901/test-projectId',
+        profileType: 'HEAP',
+        labels: {instance: config.instance}
+      };
+      nockOauth2();
+      const requestProfileMock =
+          nock(API)
+              .post('/projects/' + testConfig.projectId + '/profiles')
+              .once()
+              .reply(200, response);
+      const profiler = new Profiler(testConfig);
+      const actualResponse = await profiler.createProfile();
+      assert.deepEqual(response, actualResponse);
+      assert.ok(requestProfileMock.isDone(), 'expected call to create profile');
+    });
     it('should not have instance and zone in request body when instance and' +
            ' zone undefined',
        async () => {

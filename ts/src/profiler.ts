@@ -66,7 +66,7 @@ export interface Deployment {
 export interface RequestProfile {
   name: string;
   profileType?: string;
-  duration: string;
+  duration?: string;
   profileBytes?: string;
   deployment?: Deployment;
   labels?: {instance?: string};
@@ -95,7 +95,7 @@ function isDeployment(deployment: any): deployment is Deployment {
 function isRequestProfile(prof: any): prof is RequestProfile {
   return prof && typeof prof.name === 'string' &&
       typeof prof.profileType === 'string' &&
-      typeof prof.duration === 'string' &&
+      (prof.duration === undefined || typeof prof.duration === 'string') &&
       (prof.labels === undefined || prof.labels.instance === undefined ||
        typeof prof.labels.instance === 'string') &&
       (prof.deployment === undefined || isDeployment(prof.deployment));
@@ -351,6 +351,9 @@ export class Profiler extends common.ServiceObject {
   async writeTimeProfile(prof: RequestProfile): Promise<RequestProfile> {
     if (!this.timeProfiler) {
       throw Error('Cannot collect time profile, time profiler not enabled.');
+    }
+    if (prof.duration === undefined) {
+      throw Error('Cannot collect time profile, duration is undefined.');
     }
     const durationMillis = parseDuration(prof.duration);
     if (!durationMillis) {
