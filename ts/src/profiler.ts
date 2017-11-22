@@ -280,17 +280,18 @@ export class Profiler extends common.ServiceObject {
     try {
       prof = await this.createProfile();
     } catch (err) {
-      this.logger.error(`Failed to create profile: ${err}`);
       if (isBackoffResponseError(err)) {
+        this.logger.debug(`Must wait to create profile: ${err}`);
         return Math.min(err.backoffMillis, this.config.serverBackoffMillisCap);
       }
+      this.logger.warn(`Failed to create profile: ${err}`);
       return this.retryer.getBackoff();
     }
     this.retryer.reset();
     try {
       await this.profileAndUpload(prof);
     } catch (err) {
-      this.logger.error(`Failed to collect and upload profile: ${err}`);
+      this.logger.warn(`Failed to collect and upload profile: ${err}`);
     }
     return 0;
   }
