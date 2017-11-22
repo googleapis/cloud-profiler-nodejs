@@ -267,6 +267,7 @@ export class Profiler extends common.ServiceObject {
       uri: '/profiles',
       body: reqBody,
       json: true,
+      timeout: 60 * 60 * 1000,
     };
 
     this.logger.debug(`Attempting to create profile.`);
