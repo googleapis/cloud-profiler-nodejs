@@ -330,6 +330,8 @@ export class Profiler extends common.ServiceObject {
       // (up to one hour).
       timeout: parseDuration('1h'),
     };
+    
+    this.logger.debug(`Attempting to create profile.`);
     return new Promise<RequestProfile>((resolve, reject) => {
       this.request(
           options,
