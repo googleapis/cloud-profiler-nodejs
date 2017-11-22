@@ -79,7 +79,7 @@ interface ServerBackoffResponse {
 }
 
 /**
- * Returns true if response indicates a backoff.
+ * @return true if response indicates a backoff.
  */
 // tslint:disable-next-line: no-any
 function isServerBackoffResponse(response: any):
@@ -148,7 +148,7 @@ class BackoffResponseError extends Error {
 }
 
 /**
- * @return - true if error is a BackoffResponseError and false otherwise
+ * @return true if error is a BackoffResponseError and false otherwise
  */
 function isBackoffResponseError(err: Error): err is BackoffResponseError {
   // tslint:disable-next-line: no-any
