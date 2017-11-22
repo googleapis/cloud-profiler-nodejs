@@ -160,23 +160,22 @@ function isBackoffResponseError(err: Error): err is BackoffResponseError {
  * used to get this backoff.
  */
 export class Retryer {
-  private nextMaxBackoffMillis: number;
+  private nextBackoffMillis: number;
   constructor(
       readonly initialBackoffMillis: number, readonly maxBackoffMillis: number,
       readonly backoffMultiplier: number) {
-    this.nextMaxBackoffMillis = this.initialBackoffMillis;
+    this.nextBackoffMillis = this.initialBackoffMillis;
   }
   getBackoff(): number {
-    const curBackoff = Math.random() * this.nextMaxBackoffMillis;
-    this.nextMaxBackoffMillis =
-        this.backoffMultiplier * this.nextMaxBackoffMillis;
-    if (this.nextMaxBackoffMillis > this.maxBackoffMillis) {
-      this.nextMaxBackoffMillis = this.maxBackoffMillis;
+    const curBackoff = Math.random() * this.nextBackoffMillis;
+    this.nextBackoffMillis = this.backoffMultiplier * this.nextBackoffMillis;
+    if (this.nextBackoffMillis > this.maxBackoffMillis) {
+      this.nextBackoffMillis = this.maxBackoffMillis;
     }
     return curBackoff;
   }
   reset() {
-    this.nextMaxBackoffMillis = this.initialBackoffMillis;
+    this.nextBackoffMillis = this.initialBackoffMillis;
   }
 }
 
