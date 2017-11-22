@@ -178,6 +178,29 @@ export class Retryer {
 }
 
 /**
+ * @return profile iff response indicates success and the returned profile was
+ * valid.
+ * @throws error when the response indicated failure or the returned profile
+ * was not valid.
+ */
+function responseToProfileOrError(
+    err: Error, body: object, response: http.ServerResponse): RequestProfile {
+  if (response && isErrorResponseStatusCode(response.statusCode)) {
+    if (isServerBackoffResponse(response)) {
+      throw new BackoffResponseError(response);
+    }
+    throw new Error(response.statusMessage);
+  }
+  if (err) {
+    throw err;
+  }
+  if (isRequestProfile(body)) {
+    return body;
+  }
+  throw new Error(`Profile not valid: ${JSON.stringify(body)}.`);
+}
+
+/**
  * Polls profiler server for instructions on behalf of a task and
  * collects and uploads profiles as requested
  */
@@ -333,22 +356,15 @@ export class Profiler extends common.ServiceObject {
     return new Promise<RequestProfile>((resolve, reject) => {
       this.request(
           options,
-          (err: Error, prof: object, response: http.ServerResponse) => {
-            if (response && isErrorResponseStatusCode(response.statusCode)) {
-              if (isServerBackoffResponse(response)) {
-                reject(new BackoffResponseError(response));
-              }
-              reject(new Error(response.statusMessage));
-            }
-            if (err) {
-              reject(err);
-            }
-            if (isRequestProfile(prof)) {
+          (err: Error, body: object, response: http.ServerResponse) => {
+            try {
+              const prof = responseToProfileOrError(err, body, response);
               this.logger.debug(
                   `Successfully created profile ${prof.profileType}.`);
               resolve(prof);
+            } catch (err) {
+              reject(err);
             }
-            reject(new Error(`Profile not valid: ${JSON.stringify(prof)}.`));
           });
     });
   }
