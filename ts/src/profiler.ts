@@ -338,21 +338,19 @@ export class Profiler extends common.ServiceObject {
           (err: Error, prof: object, response: http.ServerResponse) => {
             if (response && isErrorResponseStatusCode(response.statusCode)) {
               if (isServerBackoffResponse(response)) {
-                throw new BackoffResponseError(response);
+                reject(new BackoffResponseError(response));
               }
-              throw new Error(response.statusMessage);
+              reject(new Error(response.statusMessage));
             }
             if (err) {
               reject(err);
-              return;
             }
             if (isRequestProfile(prof)) {
               this.logger.debug(
                   `Successfully created profile ${prof.profileType}.`);
               resolve(prof);
-              return;
             }
-            throw new Error(`Profile not valid: ${JSON.stringify(prof)}.`);
+            reject(new Error(`Profile not valid: ${JSON.stringify(prof)}.`));
           });
     });
   }
