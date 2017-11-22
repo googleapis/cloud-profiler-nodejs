@@ -168,10 +168,8 @@ export class Retryer {
   }
   getBackoff(): number {
     const curBackoff = Math.random() * this.nextBackoffMillis;
-    this.nextBackoffMillis = this.backoffMultiplier * this.nextBackoffMillis;
-    if (this.nextBackoffMillis > this.maxBackoffMillis) {
-      this.nextBackoffMillis = this.maxBackoffMillis;
-    }
+    this.nextBackoffMillis = Math.min(
+        this.backoffMultiplier * this.nextBackoffMillis, this.maxBackoffMillis);
     return curBackoff;
   }
   reset() {
