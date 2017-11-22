@@ -48,9 +48,9 @@ describe('initConfig', () => {
     heapIntervalBytes: 512 * 1024,
     heapMaxStackDepth: 64,
     initialBackoffMillis: 1000,
-    maxBackoffMillis: 60 * 60 * 1000,
+    expBackoffMillisCap: 60 * 60 * 1000,
     backoffMultiplier: 1.3,
-    backoffLimitMillis: 7 * 24 * 60 * 60 * 1000
+    serverBackoffMillisCap: 7 * 24 * 60 * 60 * 1000
   };
 
   it('should not modify specified fields when not on GCE', async () => {

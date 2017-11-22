@@ -51,9 +51,9 @@ const testConfig: ProfilerConfig = {
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
   initialBackoffMillis: 1000,
-  maxBackoffMillis: parseDuration('1h'),
+  expBackoffMillisCap: parseDuration('1h'),
   backoffMultiplier: 1.3,
-  backoffLimitMillis: parseDuration('7d')
+  serverBackoffMillisCap: parseDuration('7d')
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';

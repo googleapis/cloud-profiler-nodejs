@@ -242,7 +242,7 @@ export class Profiler extends common.ServiceObject {
     }
 
     this.retryer = new Retryer(
-        this.config.initialBackoffMillis, this.config.maxBackoffMillis,
+        this.config.initialBackoffMillis, this.config.expBackoffMillisCap,
         this.config.backoffMultiplier);
   }
 
@@ -283,7 +283,7 @@ export class Profiler extends common.ServiceObject {
     } catch (err) {
       this.logger.error(`Failed to create profile: ${err}`);
       if (isBackoffResponseError(err)) {
-        return Math.min(err.backoffMillis, this.config.backoffLimitMillis);
+        return Math.min(err.backoffMillis, this.config.serverBackoffMillisCap);
       }
       return this.retryer.getBackoff();
     }
