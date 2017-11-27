@@ -587,12 +587,12 @@ describe('Profiler', () => {
            duration: '10s',
            labels: {version: config.serviceContext.version}
          };
-         requestStub =
-             sinon.stub(common.ServiceObject.prototype, 'request')
-                 .onCall(0)
-                 .callsArgWith(
-                     1, undefined, undefined,
-                     {statusCode: 409, body: {details: {retryDelay: '50s'}}});
+         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                           .onCall(0)
+                           .callsArgWith(1, undefined, undefined, {
+                             statusCode: 409,
+                             body: {error: {details: [{retryDelay: '50s'}]}}
+                           });
 
          const profiler = new Profiler(testConfig);
          try {
@@ -726,13 +726,12 @@ describe('Profiler', () => {
            duration: '10s',
            labels: {instance: config.instance}
          };
-         requestStub =
-             sinon.stub(common.ServiceObject.prototype, 'request')
-                 .onCall(0)
-                 .callsArgWith(
-                     1, undefined, undefined,
-                     {statusCode: 409, body: {details: {retryDelay: '50s'}}});
-
+         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                           .onCall(0)
+                           .callsArgWith(1, undefined, undefined, {
+                             statusCode: 409,
+                             body: {error: {details: [{retryDelay: '50s'}]}}
+                           });
          const profiler = new Profiler(testConfig);
          profiler.timeProfiler = instance(mockTimeProfiler);
          const delayMillis = await profiler.collectProfile();
@@ -751,10 +750,10 @@ describe('Profiler', () => {
          requestStub =
              sinon.stub(common.ServiceObject.prototype, 'request')
                  .onCall(0)
-                 .callsArgWith(
-                     1, undefined, undefined,
-                     {statusCode: 409, body: {details: {retryDelay: '1000h'}}});
-
+                 .callsArgWith(1, undefined, undefined, {
+                   statusCode: 409,
+                   body: {error: {details: [{retryDelay: '1000h'}]}}
+                 });
          const profiler = new Profiler(testConfig);
          profiler.timeProfiler = instance(mockTimeProfiler);
          const delayMillis = await profiler.collectProfile();

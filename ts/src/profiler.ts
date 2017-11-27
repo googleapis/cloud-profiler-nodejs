@@ -73,19 +73,23 @@ export interface RequestProfile {
   labels?: {instance?: string};
 }
 
-interface ServerBackoffResponse {
-  statusMessage: string;
-  body: {details: {retryDelay: string}};
-}
-
 /**
- * @return true if response indicates a backoff.
+ * @return number indicated by backoff if the response indicates a backoff and
+ * undefined otherwise.
  */
 // tslint:disable-next-line: no-any
-function isServerBackoffResponse(response: any):
-    response is ServerBackoffResponse {
-  return response.body && response.body.details &&
-      typeof response.body.details.retryDelay === 'string';
+function getServerBackoffResponse(response: any): number|undefined {
+  if (response.body && response.body.error && response.body.error.details &&
+      response.body.error.details instanceof Array) {
+    for (let i = 0; i < response.body.error.details.length; i++) {
+      const item = response.body.error.details[i];
+      if (typeof item === 'object' && item.retryDelay &&
+          typeof item.retryDelay === 'string') {
+        return parseDuration(item.retryDelay);
+      }
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -140,10 +144,8 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
  * Error constructed from http server response which indicates backoff.
  */
 class BackoffResponseError extends Error {
-  backoffMillis: number;
-  constructor(response: ServerBackoffResponse) {
+  constructor(response: http.ServerResponse, readonly backoffMillis: number) {
     super(response.statusMessage);
-    this.backoffMillis = parseDuration(response.body.details.retryDelay);
   }
 }
 
@@ -186,8 +188,9 @@ export class Retryer {
 function responseToProfileOrError(
     err: Error, body: object, response: http.ServerResponse): RequestProfile {
   if (response && isErrorResponseStatusCode(response.statusCode)) {
-    if (isServerBackoffResponse(response)) {
-      throw new BackoffResponseError(response);
+    const delayMillis = getServerBackoffResponse(response);
+    if (delayMillis) {
+      throw new BackoffResponseError(response, delayMillis);
     }
     throw new Error(response.statusMessage);
   }
