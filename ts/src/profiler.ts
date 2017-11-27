@@ -21,12 +21,14 @@ import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
 import {Common, Logger, Service, ServiceObject} from '../third_party/types/common-types';
+
 import {ProfilerConfig} from './config';
 import {HeapProfiler} from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
 
 export const common: Common = require('@google-cloud/common');
 const parseDuration: (str: string) => number = require('parse-duration');
+const msToStr: (ms: number) => string = require('pretty-ms');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
 const SCOPE = 'https://www.googleapis.com/auth/monitoring.write';
@@ -38,7 +40,7 @@ enum ProfileTypes {
 }
 
 /**
- * @return true if http status code indicates an error and false otherwise.
+ * @return true iff http status code indicates an error.
  */
 function isErrorResponseStatusCode(code: number) {
   return code < 200 || code >= 300;
@@ -305,11 +307,14 @@ export class Profiler extends common.ServiceObject {
       prof = await this.createProfile();
     } catch (err) {
       if (isBackoffResponseError(err)) {
-        this.logger.debug(`Must wait to create profile: ${err}`);
+        this.logger.debug(`Must wait ${
+            msToStr(err.backoffMillis)} to create profile: ${err}`);
         return Math.min(err.backoffMillis, this.config.serverBackoffMillisCap);
       }
-      this.logger.warn(`Failed to create profile: ${err}`);
-      return this.retryer.getBackoff();
+      const backoff = this.retryer.getBackoff();
+      this.logger.warn(`Failed to create profile, waiting ${
+          msToStr(backoff)} to try again: ${err}`);
+      return backoff;
     }
     this.retryer.reset();
     try {
