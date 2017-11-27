@@ -97,7 +97,7 @@ export interface Config extends AuthenticationConfig {
   expBackoffMillisCap?: number;
 
   // Server-specified backoffs will be capped at serverBackoffMillisCap.
-  // The backoff is capped here because setTimeout (which is used to controll
+  // The backoff is capped here because setTimeout (which is used to control
   // when next profile is collected) will run immediately if the backoff is
   // to large.
   serverBackoffMillisCap?: number;
