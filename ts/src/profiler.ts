@@ -123,7 +123,7 @@ function isRequestProfile(prof: any): prof is RequestProfile {
  */
 // tslint:disable-next-line: no-any
 function hasHttpStatusCode(response: any):
-    response is {statusCode: number, statusMessage: string} {
+    response is {statusCode: number, statusMessage?: string} {
   return response && typeof response.statusCode === 'number';
 }
 
@@ -402,8 +402,7 @@ export class Profiler extends common.ServiceObject {
     }
     if (isErrorResponseStatusCode(response.statusCode)) {
       let message: number|string = response.statusCode;
-      // tslint:disable-next-line: no-any
-      if ((response as any).statusMessage) {
+      if (response.statusMessage) {
         message = response.statusMessage;
       }
       throw new Error(`Could not upload profile: ${message}.`);
