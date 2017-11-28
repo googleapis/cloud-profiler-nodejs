@@ -77,7 +77,7 @@ export interface RequestProfile {
 
 /**
  * @return number indicated by backoff if the response indicates a backoff and
- * undefined otherwise.
+ * that backoff is greater than 0. Otherwise returns undefined.
  */
 // tslint:disable-next-line: no-any
 function getServerBackoffResponse(response: any): number|undefined {
@@ -87,7 +87,10 @@ function getServerBackoffResponse(response: any): number|undefined {
       const item = response.body.error.details[i];
       if (typeof item === 'object' && item.retryDelay &&
           typeof item.retryDelay === 'string') {
-        return parseDuration(item.retryDelay);
+        const backoffMillis = parseDuration(item.retryDelay);
+        if (backoffMillis > 0) {
+          return backoffMillis;
+        }
       }
     }
   }
