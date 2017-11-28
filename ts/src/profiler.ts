@@ -18,6 +18,7 @@ import * as http from 'http';
 import * as path from 'path';
 import * as pify from 'pify';
 import * as zlib from 'zlib';
+import * as msToStr from 'pretty-ms';
 
 import {perftools} from '../../proto/profile';
 import {Common, Logger, Service, ServiceObject} from '../third_party/types/common-types';
@@ -28,7 +29,6 @@ import {TimeProfiler} from './profilers/time-profiler';
 
 export const common: Common = require('@google-cloud/common');
 const parseDuration: (str: string) => number = require('parse-duration');
-const msToStr: (ms: number) => string = require('pretty-ms');
 const pjson = require('../../package.json');
 const API = 'https://cloudprofiler.googleapis.com/v2';
 const SCOPE = 'https://www.googleapis.com/auth/monitoring.write';
@@ -155,8 +155,7 @@ class BackoffResponseError extends Error {
  * @return true if error is a BackoffResponseError and false otherwise
  */
 function isBackoffResponseError(err: Error): err is BackoffResponseError {
-  // tslint:disable-next-line: no-any
-  return typeof (err as any).backoffMillis === 'number';
+  return typeof (err as BackoffResponseError).backoffMillis === 'number';
 }
 
 /**
