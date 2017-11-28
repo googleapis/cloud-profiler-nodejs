@@ -99,8 +99,9 @@ export interface Config extends AuthenticationConfig {
   // Server-specified backoffs will be capped at serverBackoffCapMillis.
   // The backoff is capped here because setTimeout (which is used to control
   // when next profile is collected) will run immediately if the backoff is
-  // to large.
-  serverBackoffCapMillis?: number;
+  // too large.
+  // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
+  serverBackoffCapMillis?: 2147483646;
 }
 
 // Interface for an initialized config.

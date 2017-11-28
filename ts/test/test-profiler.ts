@@ -737,6 +737,27 @@ describe('Profiler', () => {
          const delayMillis = await profiler.collectProfile();
          assert.equal(50000, delayMillis);
        });
+    it('should return expected backoff when non-200 error and invalid server backoff' +
+           ' specified',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         const requestProfileResponseBody = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           labels: {instance: config.instance}
+         };
+         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                           .onCall(0)
+                           .callsArgWith(1, undefined, undefined, {
+                             statusCode: 409,
+                             body: {error: {details: [{retryDelay: ''}]}}
+                           });
+         const profiler = new Profiler(testConfig);
+         profiler.timeProfiler = instance(mockTimeProfiler);
+         const delayMillis = await profiler.collectProfile();
+         assert.equal(500, delayMillis);
+       });
     it('should return backoff limit, when server specified backoff is greater' +
            'then backoff limit',
        async () => {

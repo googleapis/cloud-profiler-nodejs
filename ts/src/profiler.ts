@@ -17,8 +17,8 @@
 import * as http from 'http';
 import * as path from 'path';
 import * as pify from 'pify';
-import * as zlib from 'zlib';
 import * as msToStr from 'pretty-ms';
+import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
 import {Common, Logger, Service, ServiceObject} from '../third_party/types/common-types';
