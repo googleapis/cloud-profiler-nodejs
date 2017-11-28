@@ -143,7 +143,7 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
 }
 
 /**
- * Error constructed from http server response which indicates backoff.
+ * Error constructed from HTTP server response which indicates backoff.
  */
 class BackoffResponseError extends Error {
   constructor(response: http.ServerResponse, readonly backoffMillis: number) {
@@ -166,14 +166,14 @@ function isBackoffResponseError(err: Error): err is BackoffResponseError {
 export class Retryer {
   private nextBackoffMillis: number;
   constructor(
-      readonly initialBackoffMillis: number, readonly maxBackoffMillis: number,
+      readonly initialBackoffMillis: number, readonly backoffCapMillis: number,
       readonly backoffMultiplier: number) {
     this.nextBackoffMillis = this.initialBackoffMillis;
   }
   getBackoff(): number {
     const curBackoff = Math.random() * this.nextBackoffMillis;
     this.nextBackoffMillis = Math.min(
-        this.backoffMultiplier * this.nextBackoffMillis, this.maxBackoffMillis);
+        this.backoffMultiplier * this.nextBackoffMillis, this.backoffCapMillis);
     return curBackoff;
   }
   reset() {
@@ -267,7 +267,7 @@ export class Profiler extends common.ServiceObject {
     }
 
     this.retryer = new Retryer(
-        this.config.initialBackoffMillis, this.config.expBackoffMillisCap,
+        this.config.initialBackoffMillis, this.config.backoffCapMillis,
         this.config.backoffMultiplier);
   }
 
@@ -309,7 +309,7 @@ export class Profiler extends common.ServiceObject {
       if (isBackoffResponseError(err)) {
         this.logger.debug(`Must wait ${
             msToStr(err.backoffMillis)} to create profile: ${err}`);
-        return Math.min(err.backoffMillis, this.config.serverBackoffMillisCap);
+        return Math.min(err.backoffMillis, this.config.serverBackoffCapMillis);
       }
       const backoff = this.retryer.getBackoff();
       this.logger.warn(`Failed to create profile, waiting ${

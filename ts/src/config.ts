@@ -88,19 +88,19 @@ export interface Config extends AuthenticationConfig {
   // by the server response, then profiler will wait between 0 and
   // initialBackoffMillis before asking the server to create a profile again.
   // After a successful profile creation, the backoff envelope will be reset to
-  // initialExpBackoffMillis.
+  // initialBackoffMillis.
   initialBackoffMillis?: number;
 
   // If the backoff is not specified by the server response, then profiler will
-  // wait at most expBackoffMillisCap before asking server to create a profile
+  // wait at most backoffCapMillis before asking server to create a profile
   // again.
-  expBackoffMillisCap?: number;
+  backoffCapMillis?: number;
 
-  // Server-specified backoffs will be capped at serverBackoffMillisCap.
+  // Server-specified backoffs will be capped at serverBackoffCapMillis.
   // The backoff is capped here because setTimeout (which is used to control
   // when next profile is collected) will run immediately if the backoff is
   // to large.
-  serverBackoffMillisCap?: number;
+  serverBackoffCapMillis?: number;
 }
 
 // Interface for an initialized config.
@@ -116,9 +116,9 @@ export interface ProfilerConfig extends AuthenticationConfig {
   heapIntervalBytes: number;
   heapMaxStackDepth: number;
   initialBackoffMillis: number;
-  expBackoffMillisCap: number;
+  backoffCapMillis: number;
   backoffMultiplier: number;
-  serverBackoffMillisCap: number;
+  serverBackoffCapMillis: number;
 }
 
 // Default values for configuration for a profiler.
@@ -131,7 +131,7 @@ export const defaultConfig = {
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
   initialBackoffMillis: 1000,
-  expBackoffMillisCap: parseDuration('1h'),
+  backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
-  serverBackoffMillisCap: parseDuration('7d'),  // 7 days
+  serverBackoffCapMillis: parseDuration('7d')
 };
