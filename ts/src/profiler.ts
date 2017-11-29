@@ -80,7 +80,7 @@ export interface RequestProfile {
  * that backoff is greater than 0. Otherwise returns undefined.
  */
 // tslint:disable-next-line: no-any
-function getServerBackoffResponse(response: any): number|undefined {
+function getServerResponseBackoff(response: any): number|undefined {
   if (response.body && response.body.error && response.body.error.details &&
       response.body.error.details instanceof Array) {
     for (let i = 0; i < response.body.error.details.length; i++) {
@@ -192,7 +192,7 @@ export class Retryer {
 function responseToProfileOrError(
     err: Error, body: object, response: http.ServerResponse): RequestProfile {
   if (response && isErrorResponseStatusCode(response.statusCode)) {
-    const delayMillis = getServerBackoffResponse(response);
+    const delayMillis = getServerResponseBackoff(response);
     if (delayMillis) {
       throw new BackoffResponseError(response, delayMillis);
     }
@@ -319,11 +319,7 @@ export class Profiler extends common.ServiceObject {
       return backoff;
     }
     this.retryer.reset();
-    try {
-      await this.profileAndUpload(prof);
-    } catch (err) {
-      this.logger.warn(`Failed to collect and upload profile: ${err}`);
-    }
+    await this.profileAndUpload(prof);
     return 0;
   }
 
@@ -382,34 +378,45 @@ export class Profiler extends common.ServiceObject {
   /**
    * Collects a profile of the type specified by the profileType field of prof.
    * If any problem is encountered, like a problem collecting or uploading the
-   * profile, an error will be thrown.
+   * profile, a message will be logged, and the error will otherwise be ignored.
    *
    * Public to allow for testing.
    */
   async profileAndUpload(prof: RequestProfile): Promise<void> {
-    prof = await this.profile(prof);
-    this.logger.debug(`Successfully collected profile ${prof.profileType}.`);
-    prof.labels = this.profileLabels;
-
+    try {
+      prof = await this.profile(prof);
+      this.logger.debug(`Successfully collected profile ${prof.profileType}.`);
+      prof.labels = this.profileLabels;  
+    } catch (err) {
+      this.logger.debug(`Failed to collect profile: ${err}`);
+      return;
+    }
     const options = {
       method: 'PATCH',
       uri: API + '/' + prof.name,
       body: prof,
       json: true,
     };
-    const [body, response] = await this.request(options);
-    if (!hasHttpStatusCode(response)) {
-      throw new Error(
-          'Server response missing status information when attempting to upload profile.');
-    }
-    if (isErrorResponseStatusCode(response.statusCode)) {
-      let message: number|string = response.statusCode;
-      if (response.statusMessage) {
-        message = response.statusMessage;
+
+    try {
+      const [body, response] = await this.request(options);
+      if (!hasHttpStatusCode(response)) {
+        this.logger.debug(
+            'Server response missing status information when attempting to upload profile.');
+        return;
       }
-      throw new Error(`Could not upload profile: ${message}.`);
+      if (isErrorResponseStatusCode(response.statusCode)) {
+        let message: number|string = response.statusCode;
+        if (response.statusMessage) {
+          message = response.statusMessage;
+        }
+        this.logger.debug(`Could not upload profile: ${message}.`);
+        return;
+      }
+      this.logger.debug(`Successfully uploaded profile ${prof.profileType}.`);
+    } catch (err) {
+      this.logger.debug(`Failed to upload profile: ${err}`);
     }
-    this.logger.debug(`Successfully uploaded profile ${prof.profileType}.`);
   }
 
   /**
