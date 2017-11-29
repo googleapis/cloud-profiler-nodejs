@@ -101,7 +101,7 @@ export interface Config extends AuthenticationConfig {
   // when next profile is collected) will run immediately if the backoff is
   // too large.
   // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
-  serverBackoffCapMillis?: 2147483646;
+  serverBackoffCapMillis?: number;
 }
 
 // Interface for an initialized config.
@@ -134,5 +134,5 @@ export const defaultConfig = {
   initialBackoffMillis: 1000,
   backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
-  serverBackoffCapMillis: parseDuration('7d')
+  serverBackoffCapMillis: 2147483647
 };

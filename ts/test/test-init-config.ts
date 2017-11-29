@@ -50,7 +50,7 @@ describe('initConfig', () => {
     initialBackoffMillis: 1000,
     backoffCapMillis: 60 * 60 * 1000,
     backoffMultiplier: 1.3,
-    serverBackoffCapMillis: 7 * 24 * 60 * 60 * 1000
+    serverBackoffCapMillis: 2147483647
   };
 
   it('should not modify specified fields when not on GCE', async () => {
