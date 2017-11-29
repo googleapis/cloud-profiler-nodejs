@@ -321,23 +321,23 @@ describe('Profiler', () => {
       uploaded.profileBytes = undefined;
       assert.deepEqual(uploaded, requestProf);
     });
-    it('should throw error when profile type unknown.', async () => {
+    it('should not uploaded when profile type unknown.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
         profileType: 'UNKNOWN_PROFILE_TYPE',
         labels: {instance: 'test-instance'}
       };
+      requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                        .onCall(0)
+                        .returns(new Promise(resolve => {
+                          resolve([{}, {}]);
+                        }));
       const profiler = new Profiler(testConfig);
-      try {
-        await profiler.profileAndUpload(requestProf);
-        assert.fail('expected error, no error thrown');
-      } catch (err) {
-        assert.equal(
-            err.message, 'Unexpected profile type UNKNOWN_PROFILE_TYPE.');
-      }
+      await profiler.profileAndUpload(requestProf);
+      assert.equal(0, requestStub.callCount);
     });
-    it('should throw error when error thrown by http request.', async () => {
+    it('should ignore error thrown by http request.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
@@ -348,14 +348,9 @@ describe('Profiler', () => {
                         .rejects(new Error('Network error'));
       const profiler = new Profiler(testConfig);
       profiler.timeProfiler = instance(mockTimeProfiler);
-      try {
-        await profiler.profileAndUpload(requestProf);
-        assert.fail('expected error, no error thrown');
-      } catch (err) {
-        assert.equal(err.message, 'Network error');
-      }
+      await profiler.profileAndUpload(requestProf);
     });
-    it('should throw error when non-200 status code returned.', async () => {
+    it('should ignore when non-200 status code returned.', async () => {
       const requestProf = {
         name: 'projects/12345678901/test-projectId',
         duration: '10s',
@@ -370,12 +365,7 @@ describe('Profiler', () => {
               }));
       const profiler = new Profiler(testConfig);
       profiler.timeProfiler = instance(mockTimeProfiler);
-      try {
-        await profiler.profileAndUpload(requestProf);
-        assert.fail('expected error, no error thrown');
-      } catch (err) {
-        assert.equal(err.message, 'Could not upload profile: Error 500.');
-      }
+      await profiler.profileAndUpload(requestProf);
     });
   });
   describe('createProfile', () => {

@@ -386,7 +386,7 @@ export class Profiler extends common.ServiceObject {
     try {
       prof = await this.profile(prof);
       this.logger.debug(`Successfully collected profile ${prof.profileType}.`);
-      prof.labels = this.profileLabels;  
+      prof.labels = this.profileLabels;
     } catch (err) {
       this.logger.debug(`Failed to collect profile: ${err}`);
       return;
