@@ -134,5 +134,9 @@ export const defaultConfig = {
   initialBackoffMillis: 1000,
   backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
+
+  // This is the largest duration for setTimeout which does not cause it to
+  // run immediately.
+  // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
   serverBackoffCapMillis: 2147483647
 };
