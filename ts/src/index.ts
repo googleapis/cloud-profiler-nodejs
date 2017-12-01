@@ -125,28 +125,24 @@ export async function start(config: Config = {}): Promise<void> {
 
 
 /**
- * For debugging purposes. Collects profiles and writes profiles
- * out to console in the format used to upload the profiles to the API.
+ * For debugging purposes. Collects profiles and discards the collected
+ * profiles.
  */
 export async function startLocal(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
-  
+
   while (true) {
-    if(!config.disableHeap) {
-      const heap = await profiler.profile({
-        name: 'HEAP-Profile' + new Date(),
-        profileType: 'HEAP'
-      });
-      console.log(heap);
+    if (!config.disableHeap) {
+      const heap = await profiler.profile(
+          {name: 'HEAP-Profile' + new Date(), profileType: 'HEAP'});
     }
-    if(!config.disableTime) {
+    if (!config.disableTime) {
       const wall = await profiler.profile({
         name: 'Time-Profile' + new Date(),
         profileType: 'WALL',
         duration: '10s'
       });
-      console.log(wall);
     }
     await delay(1000);
   }
