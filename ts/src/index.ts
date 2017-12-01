@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as delay from 'delay';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
@@ -120,6 +121,35 @@ export async function start(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
   profiler.start();
+}
+
+
+/**
+ * For debugging purposes. Collects profiles and writes profiles
+ * out to console in the format used to upload the profiles to the API.
+ */
+export async function startLocal(config: Config = {}): Promise<void> {
+  const normalizedConfig = await initConfig(config);
+  profiler = new Profiler(normalizedConfig);
+  
+  while (true) {
+    if(!config.disableHeap) {
+      const heap = await profiler.profile({
+        name: 'HEAP-Profile' + new Date(),
+        profileType: 'HEAP'
+      });
+      console.log(heap);
+    }
+    if(!config.disableTime) {
+      const wall = await profiler.profile({
+        name: 'Time-Profile' + new Date(),
+        profileType: 'WALL',
+        duration: '10s'
+      });
+      console.log(wall);
+    }
+    await delay(1000);
+  }
 }
 
 // If the module was --require'd from the command line, start the agent.
