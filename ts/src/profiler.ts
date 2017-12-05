@@ -84,8 +84,7 @@ function getServerResponseBackoff(response: any): number|undefined {
   if (response && response.body && response.body.error &&
       response.body.error.details &&
       response.body.error.details instanceof Array) {
-    for (let i = 0; i < response.body.error.details.length; i++) {
-      const item = response.body.error.details[i];
+    for (const item of response.body.error.details) {
       if (typeof item === 'object' && item.retryDelay &&
           typeof item.retryDelay === 'string') {
         const backoffMillis = parseDuration(item.retryDelay);
