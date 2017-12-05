@@ -592,6 +592,26 @@ describe('Profiler', () => {
            assert.equal(err.backoffMillis, 50000);
          }
        });
+    it('should throw error when response undefined', async () => {
+      const config = extend(true, {}, testConfig);
+      const requestProfileResponseBody = {
+        name: 'projects/12345678901/test-projectId',
+        profileType: 'WALL',
+        duration: '10s',
+        labels: {version: config.serviceContext.version}
+      };
+      requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
+                        .onCall(0)
+                        .callsArgWith(1, undefined, undefined, {status: 200});
+
+      const profiler = new Profiler(testConfig);
+      try {
+        await profiler.createProfile();
+        assert.fail('expected error, no error thrown');
+      } catch (err) {
+        assert.equal(err.message, 'Profile not valid: undefined.');
+      }
+    });
   });
   describe('collectProfile', () => {
     let requestStub: undefined|sinon.SinonStub;

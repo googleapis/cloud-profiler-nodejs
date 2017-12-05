@@ -81,7 +81,8 @@ export interface RequestProfile {
  */
 // tslint:disable-next-line: no-any
 function getServerResponseBackoff(response: any): number|undefined {
-  if (response.body && response.body.error && response.body.error.details &&
+  if (response && response.body && response.body.error &&
+      response.body.error.details &&
       response.body.error.details instanceof Array) {
     for (let i = 0; i < response.body.error.details.length; i++) {
       const item = response.body.error.details[i];
