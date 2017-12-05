@@ -79,12 +79,13 @@ export interface RequestProfile {
  * @return number indicated by backoff if the response indicates a backoff and
  * that backoff is greater than 0. Otherwise returns undefined.
  */
-// tslint:disable-next-line: no-any
-function getServerResponseBackoff(response: any): number|undefined {
-  if (response && response.body && response.body.error &&
-      response.body.error.details &&
-      response.body.error.details instanceof Array) {
-    for (const item of response.body.error.details) {
+function getServerResponseBackoff(response: http.ServerResponse): number|
+    undefined {
+  // tslint:disable-next-line: no-any
+  const body = (response as any).body;
+  if (body && body.error && body.error.details &&
+      body.error.details instanceof Array) {
+    for (const item of body.error.details) {
       if (typeof item === 'object' && item.retryDelay &&
           typeof item.retryDelay === 'string') {
         const backoffMillis = parseDuration(item.retryDelay);
