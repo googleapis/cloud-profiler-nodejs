@@ -123,15 +123,6 @@ function isRequestProfile(prof: any): prof is RequestProfile {
 }
 
 /**
- * @return true iff response has statusCode.
- */
-// tslint:disable-next-line: no-any
-function hasHttpStatusCode(response: any):
-    response is {statusCode: number, statusMessage?: string} {
-  return response && typeof response.statusCode === 'number';
-}
-
-/**
  * Converts a profile to a compressed, base64 encoded string.
  *
  * Work for converting profile is done on the event loop. In particular,
@@ -401,9 +392,8 @@ export class Profiler extends common.ServiceObject {
 
     try {
       const [body, response] = await this.request(options);
-      if (!hasHttpStatusCode(response)) {
-        this.logger.debug(
-            'Server response missing status information when attempting to upload profile.');
+      if (!(response instanceof http.ServerResponse)) {
+        this.logger.debug('Server response is not http.ServerResponse');
         return;
       }
       if (isErrorResponseStatusCode(response.statusCode)) {
