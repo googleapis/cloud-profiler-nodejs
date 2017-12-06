@@ -391,11 +391,8 @@ export class Profiler extends common.ServiceObject {
     };
 
     try {
-      const [body, response] = await this.request(options);
-      if (!(response instanceof http.ServerResponse)) {
-        this.logger.debug('Server response is not http.ServerResponse');
-        return;
-      }
+      const [body, serverResponse] = await this.request(options);
+      const response = serverResponse as http.ServerResponse;
       if (isErrorResponseStatusCode(response.statusCode)) {
         let message: number|string = response.statusCode;
         if (response.statusMessage) {
