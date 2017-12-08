@@ -84,7 +84,7 @@ function getServerResponseBackoff(response: http.ServerResponse): number|
   // tslint:disable-next-line: no-any
   const body = (response as any).body;
   if (body && body.error && body.error.details &&
-      body.error.details instanceof Array) {
+      Array.isArray(body.error.details)) {
     for (const item of body.error.details) {
       if (typeof item === 'object' && item.retryDelay &&
           typeof item.retryDelay === 'string') {
