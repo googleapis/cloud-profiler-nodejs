@@ -140,8 +140,8 @@ export async function start(config: Config = {}): Promise<void> {
 
 
 /**
- * For debugging purposes. Collects profiles and discards the collected
- * profiles.
+ * For debugging purposes. Collects profiles and writes the profiles out to the
+ * current directory.
  */
 export async function startLocal(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
