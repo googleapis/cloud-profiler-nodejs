@@ -77,7 +77,7 @@ NAN_METHOD(GetAllocationProfile) {
   AllocationProfile* profile = info.GetIsolate()->GetHeapProfiler()->GetAllocationProfile();
   AllocationProfile::Node* root = profile->GetRootNode();
   info.GetReturnValue().Set(TranslateAllocationProfile(root));
-  free(profile);
+  delete profile;
 }
 
 NAN_MODULE_INIT(InitAll) {
