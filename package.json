@@ -13,13 +13,14 @@
     "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
     "compile": "tsc -p .",
     "fix": "gts fix",
-    "prepare": "npm run compile",
+    "prepare": "npm run snyk-protect; npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
     "proto": "npm run proto:profile && npm run proto:profiler",
     "proto:profile": "mkdir -p proto && pbjs -t static-module -w commonjs -o proto/profile.js third_party/proto/profile.proto && pbts -o proto/profile.d.ts proto/profile.js",
     "proto:profiler": "mkdir -p proto && pbjs -t static-module -w commonjs -o proto/profiler.js third_party/googleapis/google/devtools/cloudprofiler/v2/profiler.proto && pbts -o proto/profiler.d.ts proto/profiler.js",
-    "license-check": "jsgl --local ."
+    "license-check": "jsgl --local .",
+    "snyk-protect": "snyk protect"
   },
   "author": {
     "name": "Google Inc."
@@ -37,7 +38,8 @@
     "pretty-ms": "^3.1.0",
     "protobufjs": "~6.8.0",
     "request": "^2.83.0",
-    "retry-request": "^3.0.1"
+    "retry-request": "^3.0.1",
+    "snyk": "^1.69.7"
   },
   "devDependencies": {
     "@types/delay": "^2.0.0",
@@ -76,5 +78,6 @@
       "out/test",
       "out/system-test"
     ]
-  }
+  },
+  "snyk": true
 }
