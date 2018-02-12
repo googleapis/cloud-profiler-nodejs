@@ -1,0 +1,10 @@
+{
+  "name": "busybenchmark",
+  "version": "0.0.0",
+  "description": "Benchmark for @google-cloud/profiler e2e test",
+  "author": {
+    "name": "Google Inc."
+  },
+  "license": "Apache-2.0",
+  "dependencies": {}
+}
