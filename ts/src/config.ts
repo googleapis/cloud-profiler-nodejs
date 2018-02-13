@@ -103,7 +103,8 @@ export interface Config extends AuthenticationConfig {
   // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
   serverBackoffCapMillis?: number;
 
-  // Allows user to specify API URL other than cloudprofiler.googleapis.com/v2.
+  // Allows user to specify API URL other than
+  // https://cloudprofiler.googleapis.com/v2.
   baseApiUrl?: string;
 }
 
