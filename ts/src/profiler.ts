@@ -30,8 +30,6 @@ import {TimeProfiler} from './profilers/time-profiler';
 export const common: Common = require('@google-cloud/common');
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
-const API = 'https://cloudprofiler.googleapis.com/v2';
-const TEST_API = 'https://test-cloudprofiler.sandbox.googleapis.com/v2';
 const SCOPE = 'https://www.googleapis.com/auth/monitoring.write';
 const gzip = pify(zlib.gzip);
 
@@ -216,7 +214,6 @@ export class Profiler extends common.ServiceObject {
   private deployment: Deployment;
   private profileTypes: string[];
   private retryer: Retryer;
-  private api: string;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -224,14 +221,12 @@ export class Profiler extends common.ServiceObject {
 
   constructor(config: ProfilerConfig) {
     config = common.util.normalizeArguments(null, config);
-    const api = config.useTestApi ? TEST_API : API;
     const serviceConfig = {
-      baseUrl: api,
+      baseUrl: config.baseApiUrl,
       scopes: [SCOPE],
       packageJson: pjson,
     };
     super({parent: new common.Service(serviceConfig, config), baseUrl: '/'});
-    this.api = api;
     this.config = config;
 
     this.logger = new common.logger({
@@ -393,7 +388,7 @@ export class Profiler extends common.ServiceObject {
     }
     const options = {
       method: 'PATCH',
-      uri: this.api + '/' + prof.name,
+      uri: this.config.baseApiUrl + '/' + prof.name,
       body: prof,
       json: true,
     };

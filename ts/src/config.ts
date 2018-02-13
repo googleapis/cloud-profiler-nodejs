@@ -103,9 +103,8 @@ export interface Config extends AuthenticationConfig {
   // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
   serverBackoffCapMillis?: number;
 
-  // Use test-cloudprofiler.sandbox.googleapis.com instead of
-  // cloudprofiler.googleapis.com when this is set to true.
-  useTestApi?: boolean;
+  // Allows user to specify API URL other than cloudprofiler.googleapis.com/v2.
+  baseApiUrl?: string;
 }
 
 // Interface for an initialized config.
@@ -124,7 +123,7 @@ export interface ProfilerConfig extends AuthenticationConfig {
   backoffCapMillis: number;
   backoffMultiplier: number;
   serverBackoffCapMillis: number;
-  useTestApi: boolean;
+  baseApiUrl: string;
 }
 
 // Default values for configuration for a profiler.
@@ -139,7 +138,7 @@ export const defaultConfig = {
   initialBackoffMillis: 1000,
   backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
-  useTestApi: false,
+  baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
 
   // This is the largest duration for setTimeout which does not cause it to
   // run immediately.

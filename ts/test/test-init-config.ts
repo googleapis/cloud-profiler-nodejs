@@ -51,7 +51,7 @@ describe('initConfig', () => {
     backoffCapMillis: 60 * 60 * 1000,
     backoffMultiplier: 1.3,
     serverBackoffCapMillis: 2147483647,
-    useTestApi: false
+    baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
   };
 
   it('should not modify specified fields when not on GCE', async () => {
@@ -176,13 +176,13 @@ describe('initConfig', () => {
     assert.deepEqual(initializedConfig, extend(config, internalConfigParams));
   });
 
-  it('should set useTestApi to true', async () => {
+  it('should set baseApiUrl to non-default value', async () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.throwsException('cannot access metadata');
 
     const config = {
       serviceContext: {version: '', service: 'fake-service'},
-      useTestApi: true
+      baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
     };
     const expConfig = extend(
         {
@@ -192,7 +192,8 @@ describe('initConfig', () => {
           logLevel: 2
         },
         internalConfigParams);
-    expConfig.useTestApi = true;
+    expConfig.baseApiUrl =
+        'https://test-cloudprofiler.sandbox.googleapis.com/v2';
     const initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, expConfig);
   });
