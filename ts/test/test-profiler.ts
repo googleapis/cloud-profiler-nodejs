@@ -16,6 +16,7 @@
 
 import * as assert from 'assert';
 import * as extend from 'extend';
+import {request} from 'https';
 import * as nock from 'nock';
 import * as pify from 'pify';
 import * as sinon from 'sinon';
@@ -53,10 +54,12 @@ const testConfig: ProfilerConfig = {
   initialBackoffMillis: 1000,
   backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
-  serverBackoffCapMillis: parseDuration('7d')
+  serverBackoffCapMillis: parseDuration('7d'),
+  useTestApi: false
 };
 
 const API = 'https://cloudprofiler.googleapis.com/v2';
+const TEST_API = 'https://test-cloudprofiler.sandbox.googleapis.com/v2';
 
 const mockTimeProfiler = mock(TimeProfiler);
 when(mockTimeProfiler.profile(10 * 1000)).thenReturn(new Promise((resolve) => {
@@ -359,6 +362,40 @@ describe('Profiler', () => {
       profiler.timeProfiler = instance(mockTimeProfiler);
       await profiler.profileAndUpload(requestProf);
     });
+    it('should send request to upload profile to real API without error.',
+       async () => {
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           duration: '10s',
+           profileType: 'HEAP',
+           labels: {instance: 'test-instance'}
+         };
+         nockOauth2();
+         const apiMock =
+             nock(API).patch('/' + requestProf.name).once().reply(200);
+         const profiler = new Profiler(testConfig);
+         profiler.heapProfiler = instance(mockHeapProfiler);
+         await profiler.profileAndUpload(requestProf);
+         assert.equal(apiMock.isDone(), true, 'completed call to real API');
+       });
+    it('should send request to upload profile to test API without error.',
+       async () => {
+         const requestProf = {
+           name: 'projects/12345678901/test-projectId',
+           duration: '10s',
+           profileType: 'HEAP',
+           labels: {instance: 'test-instance'}
+         };
+         nockOauth2();
+         const apiMock =
+             nock(TEST_API).patch('/' + requestProf.name).once().reply(200);
+         const config = extend(true, {}, testConfig);
+         config.useTestApi = true;
+         const profiler = new Profiler(config);
+         profiler.heapProfiler = instance(mockHeapProfiler);
+         await profiler.profileAndUpload(requestProf);
+         assert.equal(apiMock.isDone(), true, 'completed call to test API');
+       });
   });
   describe('createProfile', () => {
     let requestStub: undefined|sinon.SinonStub;
@@ -392,6 +429,34 @@ describe('Profiler', () => {
       assert.deepEqual(response, actualResponse);
       assert.ok(requestProfileMock.isDone(), 'expected call to create profile');
     });
+    it('should successfully create profile when connected to test api',
+       async () => {
+         const config = extend(true, {}, testConfig);
+         config.disableHeap = true;
+         config.useTestApi = true;
+         const response = {
+           name: 'projects/12345678901/test-projectId',
+           profileType: 'WALL',
+           duration: '10s',
+           deployment: {
+             labels: {version: 'test-version'},
+             projectId: 'test-projectId',
+             target: 'test-service'
+           },
+           labels: {version: config.serviceContext.version}
+         };
+         nockOauth2();
+         const requestProfileMock =
+             nock(TEST_API)
+                 .post('/projects/' + config.projectId + '/profiles')
+                 .once()
+                 .reply(200, response);
+         const profiler = new Profiler(config);
+         const actualResponse = await profiler.createProfile();
+         assert.deepEqual(response, actualResponse);
+         assert.ok(
+             requestProfileMock.isDone(), 'expected call to create profile');
+       });
     it('should successfully create heap profile', async () => {
       const config = extend(true, {}, testConfig);
       config.disableHeap = true;

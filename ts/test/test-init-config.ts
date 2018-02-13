@@ -50,7 +50,8 @@ describe('initConfig', () => {
     initialBackoffMillis: 1000,
     backoffCapMillis: 60 * 60 * 1000,
     backoffMultiplier: 1.3,
-    serverBackoffCapMillis: 2147483647
+    serverBackoffCapMillis: 2147483647,
+    useTestApi: false
   };
 
   it('should not modify specified fields when not on GCE', async () => {
@@ -173,6 +174,27 @@ describe('initConfig', () => {
     };
     const initializedConfig = await initConfig(config);
     assert.deepEqual(initializedConfig, extend(config, internalConfigParams));
+  });
+
+  it('should set useTestApi to true', async () => {
+    metadataStub = sinon.stub(gcpMetadata, 'instance');
+    metadataStub.throwsException('cannot access metadata');
+
+    const config = {
+      serviceContext: {version: '', service: 'fake-service'},
+      useTestApi: true
+    };
+    const expConfig = extend(
+        {
+          serviceContext: {version: '', service: 'fake-service'},
+          disableHeap: false,
+          disableTime: false,
+          logLevel: 2
+        },
+        internalConfigParams);
+    expConfig.useTestApi = true;
+    const initializedConfig = await initConfig(config);
+    assert.deepEqual(initializedConfig, expConfig);
   });
 
   it('should get values from from environment variable when not specified in config or environment variables',
