@@ -74,9 +74,13 @@ npm install
 npm run compile
 npm pack
 VERSION=$(node -e "console.log(require('./package.json').version);")
-PROFILER="../google-cloud-profiler-$VERSION.tgz"
+PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
 
-cd e2e
+TESTDIR="$HOME/test"
+mkdir -p "$TESTDIR"
+cp "e2e/busybenchmark.js" "$TESTDIR"
+cd "$TESTDIR"
+
 npm install "$PROFILER"
 
 # Run benchmark with agent
