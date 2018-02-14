@@ -45,7 +45,7 @@ const (
 	cloudScope        = "https://www.googleapis.com/auth/cloud-platform"
 	monitorWriteScope = "https://www.googleapis.com/auth/monitoring.write"
 	// benchFinishString should keep in sync with the finish string in busybench.
-	benchFinishString = "bench finished profiling"
+	benchFinishString = "busybench finished profiling"
 )
 const startupTemplate = `
 #! /bin/bash
@@ -275,12 +275,6 @@ func (tr *testRunner) runTestOnGCE(ctx context.Context, t *testing.T, inst insta
 			t.Errorf("queryAndCheckProfile(%s, %s, %s, %s) got error: %v", inst.service, startTime, endTime, pType, err)
 		}
 	}
-}
-
-type imageResponse struct {
-	Manifest map[string]interface{} `json:"manifest"`
-	Name     string                 `json:"name"`
-	Tags     []string               `json:"tags"`
 }
 
 func TestAgentIntegration(t *testing.T) {
