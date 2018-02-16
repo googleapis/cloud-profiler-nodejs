@@ -6,6 +6,8 @@ set -eo pipefail
 # Display commands being run.
 set -x
 
+cd github/cloud-profiler-nodejs
+
 SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
 COMMIT=$(git rev-parse HEAD)
 
@@ -21,4 +23,4 @@ cp -R "git/cloud-profiler-nodejs/integration_test" "$GOPATH/src"
 # Run test.
 cd "$GOPATH/src/integration_test"
 go get -d -t ./
-go test -timeout=30m -parallel=5 -tags=integration -run TestAgentIntegration -commit="$COMMIT"
+go test -timeout=30m -parallel=2 -run TestAgentIntegration -commit="$COMMIT"
