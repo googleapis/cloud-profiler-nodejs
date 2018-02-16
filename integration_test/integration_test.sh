@@ -18,7 +18,7 @@ export GOOGLE_APPLICATION_CREDENTIALS="${SERVICE_KEY}"
 # Move test to go path.
 export GOPATH="$HOME/go"
 mkdir -p "$GOPATH/src"
-cp -R "git/cloud-profiler-nodejs/integration_test" "$GOPATH/src"
+cp -R "integration_test" "$GOPATH/src"
 
 # Run test.
 cd "$GOPATH/src/integration_test"
