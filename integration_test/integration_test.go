@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package profiler
+package integration
 
 import (
 	"bytes"
