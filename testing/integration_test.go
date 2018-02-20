@@ -78,13 +78,13 @@ PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
 
 TESTDIR="$HOME/test"
 mkdir -p "$TESTDIR"
-cp "e2e/busybenchmark.js" "$TESTDIR"
+cp "e2e/busybench.js" "$TESTDIR"
 cd "$TESTDIR"
 
 npm install "$PROFILER"
 
 # Run benchmark with agent
-GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --require @google-cloud/profiler busybenchmark.js 600
+GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --require @google-cloud/profiler busybench.js 600
 
 # Indicate script finished
 echo "busybench finished profiling"
