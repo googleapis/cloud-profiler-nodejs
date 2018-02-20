@@ -50,8 +50,8 @@ const (
 const startupTemplate = `
 #! /bin/bash
 
-#Fail on any error
-set -e pipefail
+# Fail on any error
+set -eo pipefail
 
 # Display commands being run
 set -x
