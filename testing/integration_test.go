@@ -240,8 +240,8 @@ func (tr *testRunner) pollForSerialOutput(ctx context.Context, projectID, zone, 
 }
 func (tr *testRunner) queryAndCheckProfile(service, startTime, endTime, profileType, projectID string) error {
 	queryURL := fmt.Sprintf("https://cloudprofiler.googleapis.com/v2/projects/%s/profiles:query", projectID)
-	const queryJsonFmt = `{"endTime": "%s", "profileType": "%s","startTime": "%s", "target": "%s"}`
-	queryRequest := fmt.Sprintf(queryJsonFmt, endTime, profileType, startTime, service)
+	const queryJSONFmt = `{"endTime": "%s", "profileType": "%s","startTime": "%s", "target": "%s"}`
+	queryRequest := fmt.Sprintf(queryJSONFmt, endTime, profileType, startTime, service)
 	resp, err := tr.client.Post(queryURL, "application/json", strings.NewReader(queryRequest))
 	if err != nil {
 		return fmt.Errorf("failed to query API: %v", err)
