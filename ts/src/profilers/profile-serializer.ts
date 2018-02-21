@@ -170,7 +170,9 @@ function createSampleCountValueType(table: StringTable):
  */
 function createTimeValueType(table: StringTable): perftools.profiles.ValueType {
   return new perftools.profiles.ValueType({
-    type: table.getIndexOrAdd('time'),
+    // TODO: change type back to time.
+    // This is a work-around so profiles can be viewed using the UI.
+    type: table.getIndexOrAdd('wall'),
     unit: table.getIndexOrAdd('microseconds')
   });
 }
