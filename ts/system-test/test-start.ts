@@ -123,7 +123,7 @@ describe('start', () => {
         'samples');
     assert.equal(
         outProfile.stringTable[outProfile.sampleType[1].type as number],
-        'time');
+        'wall');
     assert.equal(
         outProfile.stringTable[outProfile.sampleType[0].unit as number],
         'count');
