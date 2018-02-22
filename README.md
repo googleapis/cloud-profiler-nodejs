@@ -13,6 +13,7 @@ deprecation policy.*
 
 
 ## Prerequisites
+
 1. Your application will need to be using Node.js version 6.12.3 or greater, 
 or Node.js 8.9.4 or greater.
 1. You will need a project in the [Google Developers Console][cloud-console]. 
@@ -21,6 +22,7 @@ particular project.
 1. You will need to enable the Stackdriver Profiler API for your project.
 
 ## Basic Set-up
+
 1. Install `@google-cloud/profiler` with [`npm`](https://www.npmjs.com) or add 
 to your [`package.json`](https://docs.npmjs.com/files/package.json#dependencies).
 
@@ -54,6 +56,7 @@ application default credentials:
     details on this, see [Running elsewhere](#running-elsewhere)
 
 ## Configuration
+
 See [the default configuration](ts/src/config.ts) for a list of possible 
 configuration options. These options can be passed to the agent through the 
 object argument to the start command shown below:
@@ -73,6 +76,7 @@ export GCLOUD_PROFILER_CONFIG=./path/to/your/profiler/configuration.js
 ```
 
 ### Changing log level
+
 The profiler writes log statements to the console log. By default, the log 
 level is set to warn. You can adjust this by setting `logLevel` in the config. 
 Setting `logLevel` to 0 will disable logging, 1 sets log level to error, 2 sets 
@@ -86,6 +90,7 @@ require('@google-cloud/profiler').start({logLevel: 4});
 ```
 
 ### Disabling heap or time profile collection
+
 By default, the profiler collects both heap profiles, which show memory 
 allocations, and time profiles, which capture how much wall-clock time is spent 
 in different locations of the code. Using the configuration, it is possible to 
@@ -113,6 +118,7 @@ version 6.12.3 or greater, or Node.js 8.9.4 or greater, follow the
 service-specific instructions to enable the profiler.
 
 ### Running on App Engine flexible environment
+
 To enable the profiling agent for a Node.js program running in the App Engine 
 flexible environment, import the agent at the top of your application’s main 
 script or entry point by including the following code snippet:
@@ -134,6 +140,7 @@ The above snippet will ensure that you're using 8.9.4 or greater.
 Deploy your application to App Engine Flexible environment as usual.
 
 ### Running on Google Compute Engine
+
 To enable the profiling agent for a Node.js program running in the Google 
 Compute Engine environment, import the agent at the top of your application’s 
 main script or entry point by including the following code snippet:
@@ -155,6 +162,7 @@ apt-get install build-essential
 ```
 
 ### Running on Google Container Engine
+
 To enable the profiling agent for a Node.js program running in the Google 
 Container Engine environment, import the agent at the top of your application’s 
 main script or entry point by including the following code snippet:
@@ -171,6 +179,7 @@ require('@google-cloud/profiler').start({
 You may also need to add `build-essential` to your environment. 
 
 ## Running elsewhere
+
 You can still use `@google-cloud/profiler` if your application is running 
 outside of Google Cloud Platform, for example, running locally, on-premise, or 
 on another cloud provider. 
