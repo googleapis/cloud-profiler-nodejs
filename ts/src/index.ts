@@ -18,9 +18,9 @@ import * as delay from 'delay';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
-import * as semver from 'semver';
 import {normalize} from 'path';
 import * as pify from 'pify';
+import * as semver from 'semver';
 
 import {AuthenticationConfig, Common, ServiceConfig} from '../third_party/types/common-types';
 
@@ -123,8 +123,10 @@ let profiler: Profiler|undefined = undefined;
  */
 export async function start(config: Config = {}): Promise<void> {
   if (!semver.satisfies(process.version, pjson.engines.node)) {
-    logError(`Could not start profiler: node version ${process.version}` 
-        +` does not satisfies "${pjson.engines.node}"`, config);
+    logError(
+        `Could not start profiler: node version ${process.version}` +
+            ` does not satisfies "${pjson.engines.node}"`,
+        config);
     return;
   }
   let normalizedConfig: ProfilerConfig;
@@ -140,7 +142,7 @@ export async function start(config: Config = {}): Promise<void> {
 
 function logError(msg: string, config: Config) {
   const logger = new common.logger(
-    {level: common.logger.LEVELS[config.logLevel || 2], tag: pjson.name});
+      {level: common.logger.LEVELS[config.logLevel || 2], tag: pjson.name});
   logger.error(msg);
 }
 
