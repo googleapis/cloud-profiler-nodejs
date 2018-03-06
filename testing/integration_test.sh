@@ -23,4 +23,4 @@ cp -R "integration_test" "$GOPATH/src"
 # Run test.
 cd "$GOPATH/src/integration_test"
 go get -d -t ./
-go test -timeout=30m -parallel=2 -run TestAgentIntegration -commit="$COMMIT"
+go test -timeout=30m -parallel=3 -run TestAgentIntegration -commit="$COMMIT"

@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc. All Rights Reserved.
+// Copyright 2018 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ set -eo pipefail
 # Display commands being run
 set -x
 # Install git
-sudo apt-get update
-sudo apt-get -y -q install git-all build-essential
+apt-get update
+apt-get -y -q install git-all build-essential
 
 # Install desired version of Node.js
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
@@ -126,7 +126,6 @@ func TestAgentIntegration(t *testing.T) {
 	}
 
 	if *commit == "" {
-		I12aedd58f181f365849e0ee3db28daf307075129
 		t.Fatal("commit flag is not set")
 	}
 
@@ -147,12 +146,10 @@ func TestAgentIntegration(t *testing.T) {
 		t.Fatalf("failed to parse startup script template: %v", err)
 	}
 
-	tr := proftest.TestRunner{
-		Client: client,
-	}
-
 	gceTr := proftest.GCETestRunner{
-		TestRunner:     tr,
+		TestRunner: proftest.TestRunner{
+			Client: client,
+		},
 		ComputeService: computeService,
 	}
 
@@ -175,7 +172,17 @@ func TestAgentIntegration(t *testing.T) {
 			},
 			name:             fmt.Sprintf("profiler-test-node8-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP"},
-			nodeVersion:      "1.8",
+			nodeVersion:      "8",
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID: projectID,
+				Zone:      zone,
+				Name:      fmt.Sprintf("profiler-test-node9-%d", runID),
+			},
+			name:             fmt.Sprintf("profiler-test-node9-%d-gce", runID),
+			wantProfileTypes: []string{"CPU", "HEAP"},
+			nodeVersion:      "9",
 		},
 	}
 	for _, tc := range testcases {
