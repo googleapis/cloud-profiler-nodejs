@@ -42,6 +42,10 @@ const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
 const startupTemplate = `
 #! /bin/bash
 
+# Shut down the VM in 5 minutes after this script exits
+# to stop accounting the VM for billing and cores quota.
+trap "sleep 300 && poweroff" EXIT
+
 # Fail on any error
 set -eo pipefail
 
