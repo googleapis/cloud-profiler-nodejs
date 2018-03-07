@@ -33,6 +33,8 @@ import (
 )
 
 var (
+	repo   = flag.String("repo", "", "git repo to test")
+	branch = flag.String("branch", "", "git branch to test")
 	commit = flag.String("commit", "", "git commit to test")
 	runID  = time.Now().Unix()
 )
