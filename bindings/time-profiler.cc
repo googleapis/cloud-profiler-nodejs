@@ -60,8 +60,7 @@ Local<Value> TranslateTimeProfile(const CpuProfile* profile) {
 
 NAN_METHOD(StartProfiling) {
   Local<String> name = info[0].As<String>();
-  bool record_samples = info[1].As<Boolean>()->BooleanValue();
-  info.GetIsolate()->GetCpuProfiler()->StartProfiling(name, record_samples);
+  info.GetIsolate()->GetCpuProfiler()->StartProfiling(name, false);
 }
 
 NAN_METHOD(StopProfiling) {
