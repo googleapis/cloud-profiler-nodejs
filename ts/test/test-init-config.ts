@@ -198,7 +198,7 @@ describe('initConfig', () => {
 
   it('should get values from from environment variable when not specified in config or environment variables',
      async () => {
-       process.env.GCLOUD_PROJECT = 'process-projectId';
+       process.env.GOOGLE_CLOUD_PROJECT = 'process-projectId';
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
@@ -225,9 +225,58 @@ describe('initConfig', () => {
            initializedConfig, extend(expConfig, internalConfigParams));
      });
 
+  it('should get projectId from GOOGLE_CLOUD_PROJECT over GCLOUD_PROJECT',
+     async () => {
+       process.env.GOOGLE_CLOUD_PROJECT = 'google-cloud-project';
+       process.env.GCLOUD_PROJECT = 'gcloud-project';
+       process.env.GAE_SERVICE = 'process-service';
+       metadataStub = sinon.stub(gcpMetadata, 'instance');
+       metadataStub.withArgs('name')
+           .resolves({data: 'gce-instance'})
+           .withArgs('zone')
+           .resolves({data: 'projects/123456789012/zones/gce-zone'});
+       const config = {};
+       const expConfig = {
+         projectId: 'google-cloud-project',
+         logLevel: 2,
+         serviceContext: {service: 'process-service'},
+         disableHeap: false,
+         disableTime: false,
+         instance: 'gce-instance',
+         zone: 'gce-zone'
+       };
+       const initializedConfig = await initConfig(config);
+       assert.deepEqual(
+           initializedConfig, extend(expConfig, internalConfigParams));
+     });
+
+  it('should get projectId from GCLOUD_PROJECT when GOOGLE_CLOUD_PROJECT is not set',
+     async () => {
+       process.env.GCLOUD_PROJECT = 'gcloud-project';
+       process.env.GAE_SERVICE = 'process-service';
+       metadataStub = sinon.stub(gcpMetadata, 'instance');
+       metadataStub.withArgs('name')
+           .resolves({data: 'gce-instance'})
+           .withArgs('zone')
+           .resolves({data: 'projects/123456789012/zones/gce-zone'});
+       const config = {};
+       const expConfig = {
+         projectId: 'gcloud-project',
+         logLevel: 2,
+         serviceContext: {service: 'process-service'},
+         disableHeap: false,
+         disableTime: false,
+         instance: 'gce-instance',
+         zone: 'gce-zone'
+       };
+       const initializedConfig = await initConfig(config);
+       assert.deepEqual(
+           initializedConfig, extend(expConfig, internalConfigParams));
+     });
+
   it('should not get values from from environment variable when values specified in config',
      async () => {
-       process.env.GCLOUD_PROJECT = 'process-projectId';
+       process.env.GOOGLE_CLOUD_PROJECT = 'process-projectId';
        process.env.GCLOUD_PROFILER_LOGLEVEL = '4';
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
