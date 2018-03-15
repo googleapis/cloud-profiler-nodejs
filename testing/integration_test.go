@@ -32,10 +32,12 @@ import (
 )
 
 var (
-	repo   = flag.String("repo", "", "git repo to test")
+	repo   = flag.String("repo", "https://github.com/GoogleCloudPlatform/cloud-profiler-nodejs.git", "git repo to test")
 	branch = flag.String("branch", "", "git branch to test")
 	commit = flag.String("commit", "", "git commit to test")
-	runID  = time.Now().Unix()
+
+	pr    = flag.Int("pr", 0, "git pull request to test")
+	runID = time.Now().Unix()
 )
 
 const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
@@ -65,9 +67,15 @@ npm -v
 node -v
 
 # Install agent
-git clone https://github.com/GoogleCloudPlatform/cloud-profiler-nodejs.git
+git clone {{.Repo}}
 cd cloud-profiler-nodejs
-git pull {{.Repo}} {{.Branch}}
+{{if .PR}} 
+	git fetch origin pull/{{.PR}}/head:pull_branch 
+	git checkout pull_branch
+{{else if .Branch}}
+	git fetch origin '{{.Brach}}':pull_branch
+	git checkout pull_branch
+{{end}}
 git reset --hard {{.Commit}}
 npm install
 npm run compile
@@ -103,17 +111,22 @@ type nodeGCETestCase struct {
 
 func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) error {
 	var buf bytes.Buffer
+
+	var checkoutBranchCmd string
+
 	err := template.Execute(&buf,
 		struct {
 			Service     string
 			NodeVersion string
 			Repo        string
+			PR          int
 			Branch      string
 			Commit      string
 		}{
 			Service:     tc.name,
 			NodeVersion: tc.nodeVersion,
 			Repo:        *repo,
+			PR:          *pr,
 			Branch:      *branch,
 			Commit:      *commit,
 		})
