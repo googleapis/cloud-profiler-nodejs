@@ -53,10 +53,10 @@ function hasService(config: Config):
  * Exported for testing purposes.
  */
 export async function initConfig(config: Config): Promise<ProfilerConfig> {
-  config = common.util.normalizeArguments(null, config);
+  const normalizedConfig: Config = common.util.normalizeArguments(null, config);
 
   const envConfig: Config = {
-    projectId: process.env.GCLOUD_PROJECT,
+    projectId: process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT,
     serviceContext: {
       service: process.env.GAE_SERVICE,
       version: process.env.GAE_VERSION,
@@ -76,8 +76,9 @@ export async function initConfig(config: Config): Promise<ProfilerConfig> {
     envSetConfig = require(path.resolve(val)) as Config;
   }
 
-  const mergedConfig =
-      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
+  const mergedConfig: ProfilerConfig = extend(
+      true, {}, normalizedConfig, defaultConfig, envSetConfig, envConfig,
+      config);
 
   if (!mergedConfig.zone || !mergedConfig.instance) {
     const [instance, zone] =
