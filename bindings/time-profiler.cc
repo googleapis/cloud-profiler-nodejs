@@ -14,45 +14,45 @@
  * limitations under the License.
  */
 
-#include "v8-profiler.h"
 #include "nan.h"
+#include "serialize-v8.h"
+#include "v8-profiler.h"
 
 using namespace v8;
 
 Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("name").ToLocalChecked(),
-    node->GetFunctionName());
+               node->GetFunctionName());
   js_node->Set(Nan::New<String>("scriptName").ToLocalChecked(),
-    node->GetScriptResourceName());
+               node->GetScriptResourceName());
   js_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),
-    Nan::New<Integer>(node->GetScriptId()));
+               Nan::New<Integer>(node->GetScriptId()));
   js_node->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->GetLineNumber()));
+               Nan::New<Integer>(node->GetLineNumber()));
   js_node->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->GetColumnNumber()));
+               Nan::New<Integer>(node->GetColumnNumber()));
   js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
-    Nan::New<Integer>(node->GetHitCount()));
+               Nan::New<Integer>(node->GetHitCount()));
   int32_t count = node->GetChildrenCount();
   Local<Array> children = Nan::New<Array>(count);
   for (int32_t i = 0; i < count; i++) {
     children->Set(i, TranslateTimeProfileNode(node->GetChild(i)));
   }
-  js_node->Set(Nan::New<String>("children").ToLocalChecked(),
-    children);
+  js_node->Set(Nan::New<String>("children").ToLocalChecked(), children);
   return js_node;
 }
 
 Local<Value> TranslateTimeProfile(const CpuProfile* profile) {
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
-    profile->GetTitle());
+                  profile->GetTitle());
   js_profile->Set(Nan::New<String>("topDownRoot").ToLocalChecked(),
-    TranslateTimeProfileNode(profile->GetTopDownRoot()));
+                  TranslateTimeProfileNode(profile->GetTopDownRoot()));
   js_profile->Set(Nan::New<String>("startTime").ToLocalChecked(),
-    Nan::New<Number>(profile->GetStartTime()));
+                  Nan::New<Number>(profile->GetStartTime()));
   js_profile->Set(Nan::New<String>("endTime").ToLocalChecked(),
-    Nan::New<Number>(profile->GetEndTime()));
+                  Nan::New<Number>(profile->GetEndTime()));
   return js_profile;
 }
 
@@ -67,10 +67,29 @@ NAN_METHOD(StartProfiling) {
 NAN_METHOD(StopProfiling) {
   Local<String> name = info[0].As<String>();
   CpuProfile* profile =
-    info.GetIsolate()->GetCpuProfiler()->StopProfiling(name);
+      info.GetIsolate()->GetCpuProfiler()->StopProfiling(name);
   Local<Value> translated_profile = TranslateTimeProfile(profile);
   profile->Delete();
   info.GetReturnValue().Set(translated_profile);
+}
+
+void free_buffer_callback(char* data, void* buf) {
+  delete reinterpret_cast<std::vector<char>*>(buf);
+}
+
+NAN_METHOD(StopProfilingProto) {
+  Local<String> name = info[0].As<String>();
+  int64_t samplingIntervalMicros = info[1].As<Integer>()->IntegerValue();
+  int64_t startTimeNanos = info[2].As<Integer>()->IntegerValue();
+  CpuProfile* profile =
+      info.GetIsolate()->GetCpuProfiler()->StopProfiling(name);
+  std::unique_ptr<std::vector<char>> b =
+      serializeTimeProfile(profile, samplingIntervalMicros, startTimeNanos);
+  profile->Delete();
+  std::vector<char>* buf = b.release();
+  info.GetReturnValue().Set(
+      Nan::NewBuffer(&buf->at(0), buf->size(), free_buffer_callback, buf)
+          .ToLocalChecked());
 }
 
 NAN_METHOD(SetSamplingInterval) {
@@ -85,13 +104,20 @@ NAN_METHOD(SetIdle) {
 
 NAN_MODULE_INIT(InitAll) {
   Nan::Set(target, Nan::New("startProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling))
+               .ToLocalChecked());
   Nan::Set(target, Nan::New("stopProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling))
+               .ToLocalChecked());
+  Nan::Set(target, Nan::New("stopProfilingProto").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfilingProto))
+               .ToLocalChecked());
   Nan::Set(target, Nan::New("setSamplingInterval").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval)).ToLocalChecked());
-  Nan::Set(target, Nan::New("setIdle").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(SetIdle)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval))
+               .ToLocalChecked());
+  Nan::Set(
+      target, Nan::New("setIdle").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<FunctionTemplate>(SetIdle)).ToLocalChecked());
 }
 
 NODE_MODULE(time_profiler, InitAll);
