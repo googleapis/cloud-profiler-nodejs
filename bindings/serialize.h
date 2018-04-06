@@ -28,6 +28,8 @@ class ValueType : public ProtoField {
   int64_t typeX;  // Index into string table.
   int64_t unitX;  // Index into string table.
   ValueType(int64_t typeX = 0, int64_t unitX = 0);
+  int64_t getTypeX();
+  int64_t getUnitX();
   virtual void encode(std::vector<char> *b) const;
 };
 
@@ -66,6 +68,17 @@ class Mapping : public ProtoField {
   Mapping(uint64_t id, uint64_t start, uint64_t limit, uint64_t offset,
           uint64_t fileX, uint64_t buildIDX, bool hasFunctions,
           bool hasFilenames, bool hasLineNumbers, bool hasInlineFrames);
+  uint64_t getID();
+  uint64_t getStart();
+  uint64_t getLimit();
+  uint64_t getOffset();
+  uint64_t getFileX();
+  uint64_t getBuildIDX();
+  bool getHasFunctions();
+  bool getHasFilenames();
+  bool getHasLineNumbers();
+  bool getHasInlineFrames();
+
   virtual void encode(std::vector<char> *b) const;
 };
 

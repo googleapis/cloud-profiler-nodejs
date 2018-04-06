@@ -25,6 +25,10 @@ void ValueType::encode(std::vector<char> *b) const {
   encodeInt64Opt(2, unitX, b);
 }
 
+int64_t ValueType::getTypeX() { return typeX; }
+
+int64_t ValueType::getUnitX() { return unitX; }
+
 Label::Label(int64_t keyX, int64_t strX, int64_t num, int64_t unitX)
     : keyX(keyX), strX(strX), num(num), unitX(unitX) {}
 
@@ -56,6 +60,17 @@ Mapping::Mapping(uint64_t id, uint64_t start, uint64_t limit, uint64_t offset,
       hasFilenames(hasFilenames),
       hasLineNumbers(hasLineNumbers),
       hasInlineFrames(hasInlineFrames) {}
+
+uint64_t Mapping::getID() { return id; }
+uint64_t Mapping::getStart() { return start; }
+uint64_t Mapping::getLimit() { return limit; }
+uint64_t Mapping::getOffset() { return offset; }
+uint64_t Mapping::getFileX() { return fileX; }
+uint64_t Mapping::getBuildIDX() { return buildIDX; }
+bool Mapping::getHasFunctions() { return hasFunctions; }
+bool Mapping::getHasFilenames() { return hasFilenames; }
+bool Mapping::getHasLineNumbers() { return hasLineNumbers; }
+bool Mapping::getHasInlineFrames() { return hasInlineFrames; }
 
 void Mapping::encode(std::vector<char> *b) const {
   encodeUint64Opt(1, id, b);
