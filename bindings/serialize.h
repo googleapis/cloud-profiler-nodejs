@@ -17,6 +17,7 @@
 #ifndef BINDINGS_SERIALIZE_H_
 #define BINDINGS_SERIALIZE_H_
 
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <unordered_map>

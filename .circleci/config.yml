@@ -17,6 +17,9 @@ unit_tests: &unit_tests
         name: Run unit tests.
         command: npm run test
     - run:
+        name: Run C++ unit tests.
+        command: npm run cpptest
+    - run:
         name: Submit coverage data to codecov.
         command: npm run codecov
         when: always
