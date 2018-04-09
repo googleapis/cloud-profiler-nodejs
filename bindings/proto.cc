@@ -65,7 +65,7 @@ void encodeIntegerOpt(int tag, T x, std::vector<char> *b) {
   if (x == 0) {
     return;
   }
-  encodeUint64(tag, x, b);
+  encodeInteger<T>(tag, x, b);
 }
 
 void encodeUint64(int tag, uint64_t x, std::vector<char> *b) {

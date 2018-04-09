@@ -32,7 +32,7 @@ CPPFLAGS += -std=c++11 -isystem $(GTEST_DIR)/include
 CXXFLAGS += -g -Wall -Wextra -pthread
 
 # All tests produced by this Makefile.
-TESTS = test_serialize
+TESTS = test_serialize test_proto
 
 all : $(TESTS)
 
@@ -71,4 +71,7 @@ test_serialize.o : $(TEST_DIR)/test_serialize.cc \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/test_serialize.cc
 
 test_serialize : test_serialize.o serialize.o proto.o gtest_main.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+test_proto : test_proto.o proto.o gtest_main.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@

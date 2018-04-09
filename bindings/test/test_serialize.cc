@@ -367,3 +367,303 @@ TEST(Profile, addSampleTwice) {
 
   assertExpectedProfile(p, e);
 }
+
+TEST(ValueType, encode) {
+  ValueType v = ValueType(10,  // typeX
+                          20   // unitX
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8), static_cast<char>(10),   // typeX
+      static_cast<char>(0x10), static_cast<char>(20),  // unitX
+  };
+  std::vector<char> actual;
+  v.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(Label, encode) {
+  Label l = Label(5,  // keyX
+                  6,  // strX
+                  7,  // num
+                  8   // unitX
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8),  static_cast<char>(5),  // keyX
+      static_cast<char>(0x10), static_cast<char>(6),  // strX
+      static_cast<char>(0x18), static_cast<char>(7),  // num
+      static_cast<char>(0x20), static_cast<char>(8),  // unitX
+  };
+  std::vector<char> actual;
+  l.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(Mapping, encode) {
+  Mapping m = Mapping(3,     // id
+                      6,     // start
+                      9,     // limit
+                      12,    // offset
+                      15,    // fileX
+                      18,    // buildIDX
+                      true,  // hasFunctions
+                      true,  // hasFilenames
+                      true,  // hasLineNumbers
+                      true   // hasInlineFrames
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8),  static_cast<char>(3),   // id
+      static_cast<char>(0x10), static_cast<char>(6),   // start
+      static_cast<char>(0x18), static_cast<char>(9),   // limit
+      static_cast<char>(0x20), static_cast<char>(12),  // offset
+      static_cast<char>(0x28), static_cast<char>(15),  // fileX
+      static_cast<char>(0x30), static_cast<char>(18),  // buildIDX
+      static_cast<char>(0x38), static_cast<char>(1),   // hasFunctions
+      static_cast<char>(0x40), static_cast<char>(1),   // hasFilenames
+      static_cast<char>(0x48), static_cast<char>(1),   // hasLineNumbers
+      static_cast<char>(0x50), static_cast<char>(1),   // hasInlineFrames
+  };
+
+  std::vector<char> actual;
+  m.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(Line, encode) {
+  Line line = Line(50,  // function id
+                   60   // line number
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8), static_cast<char>(50),   // function id
+      static_cast<char>(0x10), static_cast<char>(60),  // line number
+  };
+
+  std::vector<char> actual;
+  line.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(ProfileFunction, encode) {
+  ProfileFunction f = ProfileFunction(20,  // id
+                                      15,  // nameX
+                                      10,  // systemNameX
+                                      5,   // filenameX
+                                      50   // start line
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8),  static_cast<char>(20),  // id
+      static_cast<char>(0x10), static_cast<char>(15),  // nameX
+      static_cast<char>(0x18), static_cast<char>(10),  // systemNameX
+      static_cast<char>(0x20), static_cast<char>(5),   // filenameX
+      static_cast<char>(0x28), static_cast<char>(50),  // start line
+  };
+
+  std::vector<char> actual;
+  f.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(ProfileLocation, encode) {
+  ProfileLocation l = ProfileLocation(30,              // id
+                                      27,              // mappingId
+                                      29,              // address
+                                      {Line(6, 570)},  // line
+                                      false            // isFolded
+  );
+  std::vector<char> expected = {
+      static_cast<char>(0x8),
+      static_cast<char>(30),  // id
+      static_cast<char>(0x10),
+      static_cast<char>(27),  // mappingId
+      static_cast<char>(0x18),
+      static_cast<char>(29),  // address
+
+      // line
+      static_cast<char>(0x22),
+      static_cast<char>(0x5),  // line length
+      static_cast<char>(0x8),
+      static_cast<char>(6),  // line's function id
+      // line's line number
+      static_cast<char>(0x10),
+      static_cast<char>(0xBA),
+      static_cast<char>(0x4),
+  };
+
+  std::vector<char> actual;
+  l.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(Sample, encode) {
+  Sample s = Sample({1, 2, 3, 4},  // location id
+                    {50, 100},     // value
+
+                    // label
+                    {Label(5,  // key
+                           6,  // strX
+                           7,  // num
+                           8   // unitX
+                           )});
+
+  std::vector<char> expected = {
+      // location id
+      static_cast<char>(0xA), static_cast<char>(4), static_cast<char>(1),
+      static_cast<char>(2), static_cast<char>(3), static_cast<char>(4),
+
+      // value
+      static_cast<char>(0x10), static_cast<char>(50), static_cast<char>(0x10),
+      static_cast<char>(100),
+
+      // label
+      static_cast<char>(0x1A),
+      static_cast<char>(8),                           // length
+      static_cast<char>(0x8), static_cast<char>(5),   // keyX
+      static_cast<char>(0x10), static_cast<char>(6),  // strX
+      static_cast<char>(0x18), static_cast<char>(7),  // num
+      static_cast<char>(0x20), static_cast<char>(8),  // unitX
+  };
+
+  std::vector<char> actual;
+  s.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}
+
+TEST(Profile, encode) {
+  Profile p = Profile("time", "ms", 100, 25, 15);
+  p.addSampleType("time", "ms");
+  p.addSampleType("samples", "count");
+
+  int64_t fileID = 80;
+  int64_t lineNumber = 90;
+  int64_t columnNumber = 100;
+  std::vector<SampleContents> sampleValues;
+  sampleValues.push_back({{50, 60}, {}});
+  std::unique_ptr<Node> node(new TestNode(
+      "name", "filename", fileID, lineNumber, columnNumber, sampleValues));
+
+  std::deque<uint64_t> stack = {};
+  p.addSample(node, &stack);
+
+  std::vector<char> expected = {
+      // sample type
+      static_cast<char>(0xA),
+      static_cast<char>(0x4),
+      static_cast<char>(0x8),
+      static_cast<char>(0x2),
+      static_cast<char>(0x10),
+      static_cast<char>(0x1),
+      static_cast<char>(0xA),
+      static_cast<char>(0x4),
+      static_cast<char>(0x8),
+      static_cast<char>(0x3),
+      static_cast<char>(0x10),
+      static_cast<char>(0x4),
+
+      // sample
+      static_cast<char>(0x12),
+      static_cast<char>(0x6),
+      static_cast<char>(0x8),
+      static_cast<char>(0x1),  // sample location id
+      static_cast<char>(0x10),
+      static_cast<char>(50),  // sample value
+      static_cast<char>(0x10),
+      static_cast<char>(60),  // sample value
+
+      // profile location
+      static_cast<char>(0x22),
+      static_cast<char>(0x8),
+      static_cast<char>(0x8),
+      static_cast<char>(0x1),  // id
+      // line
+      static_cast<char>(0x22),
+      static_cast<char>(0x4),
+      static_cast<char>(0x8),
+      static_cast<char>(0x1),  // line function id
+      static_cast<char>(0x10),
+      static_cast<char>(90),  // line line number
+
+      // function
+      static_cast<char>(0x2A),
+      static_cast<char>(0xA),
+      static_cast<char>(0x8),
+      static_cast<char>(0x1),  // id
+      static_cast<char>(0x10),
+      static_cast<char>(0x5),  // name
+      static_cast<char>(0x18),
+      static_cast<char>(0x5),  // system name
+      static_cast<char>(0x20),
+      static_cast<char>(0x6),  // filename
+      static_cast<char>(0x28),
+      static_cast<char>(90),  // line
+
+      // String table
+      static_cast<char>(0x32),
+      static_cast<char>(0x0),  // ""
+      static_cast<char>(0x32),
+      static_cast<char>(0x2),
+      'm',
+      's',
+      static_cast<char>(0x32),
+      static_cast<char>(0x4),
+      't',
+      'i',
+      'm',
+      'e',
+      static_cast<char>(0x32),
+      static_cast<char>(0x7),
+      's',
+      'a',
+      'm',
+      'p',
+      'l',
+      'e',
+      's',
+      static_cast<char>(0x32),
+      static_cast<char>(0x5),
+      'c',
+      'o',
+      'u',
+      'n',
+      't',
+      static_cast<char>(0x32),
+      static_cast<char>(0x4),
+      'n',
+      'a',
+      'm',
+      'e',
+      static_cast<char>(0x32),
+      static_cast<char>(0x8),
+      'f',
+      'i',
+      'l',
+      'e',
+      'n',
+      'a',
+      'm',
+      'e',
+
+      static_cast<char>(0x48),
+      static_cast<char>(25),  // time nanos
+      static_cast<char>(0x50),
+      static_cast<char>(15),  // duration nanos
+
+      // period type
+      static_cast<char>(0x5A),
+      static_cast<char>(0x4),
+      static_cast<char>(0x8),
+      static_cast<char>(0x2),
+      static_cast<char>(0x10),
+      static_cast<char>(0x1),
+
+      // period
+      static_cast<char>(0x60),
+      static_cast<char>(100),
+
+      // default sample type
+      static_cast<char>(0x70),
+      static_cast<char>(0),
+
+  };
+  std::vector<char> actual;
+  p.encode(&actual);
+  ASSERT_EQ(expected, actual);
+}

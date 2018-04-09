@@ -6,3 +6,4 @@ node_modules
 bindings/test/*.o
 bindings/test/*.a
 bindings/test/test_serialize
+bindings/test/test_proto

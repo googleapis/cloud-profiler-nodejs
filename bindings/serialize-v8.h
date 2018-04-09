@@ -16,8 +16,8 @@
 
 #ifndef BINDINGS_SERIALIZE_V8_H_
 #define BINDINGS_SERIALIZE_V8_H_
-#include <memory>
 #include <cstdint>
+#include <memory>
 #include "v8-profiler.h"
 
 // Returns a buffer with the input v8::AllocationProfile profile in

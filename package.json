@@ -7,7 +7,7 @@
   "types": "out/src/index.d.ts",
   "scripts": {
     "install": "node-gyp rebuild",
-    "cpptest": "make -C bindings/test && ./bindings/test/test_serialize",
+    "cpptest": "make -C bindings/test && ./bindings/test/test_serialize && ./bindings/test/test_proto",
     "test": "nyc mocha --require source-map-support/register out/test/test-*.js && nyc --no-clean mocha --require source-map-support/register  out/system-test/test-*.js --timeout=60000",
     "check": "gts check",
     "clean": "gts clean",
