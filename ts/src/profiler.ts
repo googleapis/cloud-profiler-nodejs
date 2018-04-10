@@ -448,8 +448,7 @@ export class Profiler extends common.ServiceObject {
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
           ` be parsed.`);
     }
-    const p = await this.timeProfiler.profile(durationMillis);
-    prof.profileBytes = await profileBytes(p);
+    prof.profileBytes = await this.timeProfiler.profile(durationMillis);
     return prof;
   }
 
@@ -463,8 +462,7 @@ export class Profiler extends common.ServiceObject {
     if (!this.heapProfiler) {
       throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
-    const p = this.heapProfiler.profile();
-    prof.profileBytes = await profileBytes(p);
+    prof.profileBytes = await this.heapProfiler.profile();
     return prof;
   }
 }

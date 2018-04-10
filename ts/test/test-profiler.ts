@@ -29,7 +29,7 @@ import {HeapProfiler} from '../src/profilers/heap-profiler';
 import {TimeProfiler} from '../src/profilers/time-profiler';
 import {Common} from '../third_party/types/common-types';
 
-import {decodedHeapProfile, decodedTimeProfile, heapProfile, timeProfile} from './profiles-for-tests';
+import {base64HeapProfile, base64TimeProfile, decodedHeapProfile, decodedTimeProfile} from './profiles-for-tests';
 
 const common: Common = require('@google-cloud/common');
 const v8TimeProfiler = require('bindings')('time_profiler');
@@ -66,11 +66,13 @@ const testConfig: ProfilerConfig = {
 
 const mockTimeProfiler = mock(TimeProfiler);
 when(mockTimeProfiler.profile(10 * 1000)).thenReturn(new Promise((resolve) => {
-  resolve(timeProfile);
+  resolve(base64TimeProfile);
 }));
 
 const mockHeapProfiler = mock(HeapProfiler);
-when(mockHeapProfiler.profile()).thenReturn(heapProfile);
+when(mockHeapProfiler.profile()).thenReturn(new Promise((resolve) => {
+  resolve(base64HeapProfile);
+}));
 
 nock.disableNetConnect();
 function nockOauth2(): nock.Scope {

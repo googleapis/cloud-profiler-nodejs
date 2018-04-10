@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import * as zlib from 'zlib';
 import {perftools} from '../../proto/profile';
 import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
@@ -154,6 +154,8 @@ export const timeProfile: perftools.profiles.IProfile = {
 // decodedTimeProfile
 const encodedTimeProfile =
     perftools.profiles.Profile.encode(timeProfile).finish();
+const gzTimeBuf = zlib.gzipSync(new Buffer(encodedTimeProfile));
+export const base64TimeProfile = gzTimeBuf.toString('base64');
 export const decodedTimeProfile =
     perftools.profiles.Profile.decode(encodedTimeProfile);
 
@@ -265,6 +267,8 @@ export const heapProfile: perftools.profiles.IProfile = {
 // decodedHeapProfile
 const encodedHeapProfile =
     perftools.profiles.Profile.encode(heapProfile).finish();
+const gzHeapBuf = zlib.gzipSync(new Buffer(encodedHeapProfile));
+export const base64HeapProfile = gzHeapBuf.toString('base64');
 export const decodedHeapProfile =
     perftools.profiles.Profile.decode(encodedHeapProfile);
 
