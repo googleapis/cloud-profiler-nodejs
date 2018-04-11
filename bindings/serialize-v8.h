@@ -29,7 +29,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
 // Returns a buffer with the input v8::CpuProfile profile in the profile.proto
 // format.
 std::unique_ptr<std::vector<char>> serializeTimeProfile(
-    v8::CpuProfile *profile, int64_t samplingIntervalMicros,
+    v8::CpuProfile* profile, int64_t samplingIntervalMicros,
     int64_t startTimeNanos);
 
 #endif

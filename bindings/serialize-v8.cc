@@ -21,12 +21,14 @@ using namespace v8;
 
 class HeapNode : public Node {
  private:
-  AllocationProfile::Node *node;
+  AllocationProfile::Node* node;
 
  public:
-  HeapNode(AllocationProfile::Node *node) { this->node = node; }
+  HeapNode(AllocationProfile::Node* node) : node(node) {}
 
-  virtual std::string name() const override { return *String::Utf8Value(node->name); }
+  virtual std::string name() const override {
+    return *String::Utf8Value(node->name);
+  }
 
   virtual std::string filename() const override {
     return *String::Utf8Value(node->script_name);
@@ -38,8 +40,8 @@ class HeapNode : public Node {
 
   virtual int64_t columnNumber() const override { return node->column_number; }
 
-  virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) const override {
+  virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
+                                      Profile* p) const override {
     std::vector<Sample> samples;
     for (size_t i = 0; i < node->allocations.size(); i++) {
       AllocationProfile::Allocation allocation = node->allocations[i];
@@ -57,14 +59,12 @@ class HeapNode : public Node {
 
 class TimeNode : public Node {
  private:
-  const CpuProfileNode *node;
+  const CpuProfileNode* node;
   int samplingIntervalMicros;
 
  public:
-  TimeNode(const CpuProfileNode *node, int samplingIntervalMicros) {
-    this->node = node;
-    this->samplingIntervalMicros = samplingIntervalMicros;
-  }
+  TimeNode(const CpuProfileNode* node, int samplingIntervalMicros)
+      : node(node), samplingIntervalMicros(samplingIntervalMicros) {}
 
   virtual std::string name() const override {
     return *String::Utf8Value(node->GetFunctionName());
@@ -82,8 +82,8 @@ class TimeNode : public Node {
     return node->GetColumnNumber();
   }
 
-  virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                              Profile *p) const override {
+  virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
+                                      Profile* p) const override {
     std::vector<Sample> samples;
     int64_t hitCount = node->GetHitCount();
     std::vector<int64_t> vals = {hitCount, hitCount * samplingIntervalMicros};
@@ -94,7 +94,7 @@ class TimeNode : public Node {
 };
 
 struct TimeEntry {
-  const CpuProfileNode *node;
+  const CpuProfileNode* node;
 
   // number of entries which would need to be removed from the stack after
   // processing the node if the node were a leaf node.
@@ -102,7 +102,7 @@ struct TimeEntry {
 };
 
 std::unique_ptr<std::vector<char>> serializeTimeProfile(
-    CpuProfile *profile, int64_t samplingIntervalMicros,
+    CpuProfile* profile, int64_t samplingIntervalMicros,
     int64_t startTimeNanos) {
   int64_t durationNanos =
       (profile->GetEndTime() - profile->GetStartTime()) * 1000;
@@ -113,7 +113,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
   p.addSampleType("wall", "microseconds");
 
   // Add root to entries
-  const CpuProfileNode *root = profile->GetTopDownRoot();
+  const CpuProfileNode* root = profile->GetTopDownRoot();
   std::deque<TimeEntry> entries;
   int32_t count = root->GetChildrenCount();
   for (int32_t i = 0; i < count; i++) {
@@ -147,13 +147,13 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
   }
 
   // serialize profile
-  std::vector<char> *b = new std::vector<char>();
+  std::vector<char>* b = new std::vector<char>();
   p.encode(b);
   return std::unique_ptr<std::vector<char>>(b);
 }
 
 struct HeapEntry {
-  AllocationProfile::Node *node;
+  AllocationProfile::Node* node;
 
   // number of entries which would need to be removed from the stack after
   // processing the node if the node were a leaf node.
@@ -168,7 +168,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
   p.addSampleType("space", "bytes");
 
   // Add root to entries
-  AllocationProfile::Node *root = profile->GetRootNode();
+  AllocationProfile::Node* root = profile->GetRootNode();
   std::deque<HeapEntry> entries;
   for (size_t i = 0; i < root->children.size(); i++) {
     HeapEntry entry = {root->children[i], 1};
@@ -201,7 +201,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
   }
 
   // serialize profile
-  std::vector<char> *b = new std::vector<char>();
+  std::vector<char>* b = new std::vector<char>();
   p.encode(b);
   return std::unique_ptr<std::vector<char>>(b);
 }

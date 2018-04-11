@@ -20,7 +20,7 @@
 ValueType::ValueType(int64_t typeX, int64_t unitX)
     : typeX(typeX), unitX(unitX) {}
 
-void ValueType::encode(std::vector<char> *b) const {
+void ValueType::encode(std::vector<char>* b) const {
   encodeInt64Opt(1, typeX, b);
   encodeInt64Opt(2, unitX, b);
 }
@@ -40,7 +40,7 @@ int64_t Label::getNum() { return num; }
 
 int64_t Label::getUnitX() { return unitX; }
 
-void Label::encode(std::vector<char> *b) const {
+void Label::encode(std::vector<char>* b) const {
   encodeInt64Opt(1, keyX, b);
   encodeInt64Opt(2, strX, b);
   encodeInt64Opt(3, num, b);
@@ -72,7 +72,7 @@ bool Mapping::getHasFilenames() { return hasFilenames; }
 bool Mapping::getHasLineNumbers() { return hasLineNumbers; }
 bool Mapping::getHasInlineFrames() { return hasInlineFrames; }
 
-void Mapping::encode(std::vector<char> *b) const {
+void Mapping::encode(std::vector<char>* b) const {
   encodeUint64Opt(1, id, b);
   encodeUint64Opt(2, start, b);
   encodeUint64Opt(3, limit, b);
@@ -92,7 +92,7 @@ uint64_t Line::getFunctionID() { return functionID; }
 
 int64_t Line::getLine() { return line; }
 
-void Line::encode(std::vector<char> *b) const {
+void Line::encode(std::vector<char>* b) const {
   encodeUint64Opt(1, functionID, b);
   encodeInt64Opt(2, line, b);
 }
@@ -112,7 +112,7 @@ int64_t ProfileFunction::getSystemNameX() { return systemNameX; }
 int64_t ProfileFunction::getFilenameX() { return filenameX; }
 int64_t ProfileFunction::getStartLine() { return startLine; }
 
-void ProfileFunction::encode(std::vector<char> *b) const {
+void ProfileFunction::encode(std::vector<char>* b) const {
   encodeUint64Opt(1, id, b);
   encodeInt64Opt(2, nameX, b);
   encodeInt64Opt(3, systemNameX, b);
@@ -139,7 +139,7 @@ std::vector<Line> ProfileLocation::getLine() { return line; }
 
 bool ProfileLocation::getIsFolded() { return isFolded; }
 
-void ProfileLocation::encode(std::vector<char> *b) const {
+void ProfileLocation::encode(std::vector<char>* b) const {
   encodeUint64Opt(1, id, b);
   encodeInt64Opt(2, mappingID, b);
   encodeInt64Opt(3, address, b);
@@ -157,7 +157,7 @@ std::vector<int64_t> Sample::getValue() { return value; }
 
 std::vector<Label> Sample::getLabel() { return label; }
 
-void Sample::encode(std::vector<char> *b) const {
+void Sample::encode(std::vector<char>* b) const {
   encodeUint64s(1, locationID, b);
   encodeInt64s(2, value, b);
   encodeRepeatedMessage<Label>(3, label, b);
@@ -183,15 +183,15 @@ void Profile::addSampleType(std::string type, std::string unit) {
   sampleType.push_back(ValueType(typeX, unitX));
 }
 
-void Profile::addSample(std::unique_ptr<Node> &node,
-                        std::deque<uint64_t> *stack) {
+void Profile::addSample(std::unique_ptr<Node>& node,
+                        std::deque<uint64_t>* stack) {
   uint64_t loc = locationID(node);
   stack->push_front(loc);
   std::vector<Sample> nodeSamples = node->samples(*stack, this);
   sample.insert(sample.end(), nodeSamples.begin(), nodeSamples.end());
 }
 
-uint64_t Profile::locationID(std::unique_ptr<Node> &node) {
+uint64_t Profile::locationID(std::unique_ptr<Node>& node) {
   LocationKey key(node->getFileID(), node->lineNumber(), node->columnNumber(),
                   node->name());
   auto ids = locationIDMap.find(key);
@@ -208,11 +208,11 @@ uint64_t Profile::locationID(std::unique_ptr<Node> &node) {
   return id;
 }
 
-Line Profile::line(std::unique_ptr<Node> &node) {
+Line Profile::line(std::unique_ptr<Node>& node) {
   return Line(functionID(node), node->lineNumber());
 }
 
-int64_t Profile::functionID(std::unique_ptr<Node> &node) {
+int64_t Profile::functionID(std::unique_ptr<Node>& node) {
   std::string name = node->name();
   FunctionKey key(node->getFileID(), name);
   auto ids = functionIDMap.find(key);
@@ -270,7 +270,7 @@ int64_t Profile::getDropFramesX() { return dropFramesX; }
 
 int64_t Profile::getKeepFramesX() { return keepFramesX; }
 
-void Profile::encode(std::vector<char> *b) const {
+void Profile::encode(std::vector<char>* b) const {
   encodeRepeatedMessage<ValueType>(1, sampleType, b);
   encodeRepeatedMessage<Sample>(2, sample, b);
   encodeRepeatedMessage<Mapping>(3, mapping, b);

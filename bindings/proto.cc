@@ -20,7 +20,7 @@
 #include "proto.h"
 #include <algorithm>
 
-void encodeVarint(uint64_t x, std::vector<char> *b) {
+void encodeVarint(uint64_t x, std::vector<char>* b) {
   while (x >= 128) {
     uint64_t a = (x & 0xFF);
     uint64_t y = a | 0x80;
@@ -30,19 +30,19 @@ void encodeVarint(uint64_t x, std::vector<char> *b) {
   b->push_back(static_cast<char>(x));
 }
 
-void encodeLength(int tag, int len, std::vector<char> *b) {
+void encodeLength(int tag, int len, std::vector<char>* b) {
   encodeVarint(static_cast<uint64_t>(tag) << 3 | 2, b);
   encodeVarint(static_cast<uint64_t>(len), b);
 }
 
 template <typename T>
-void encodeInteger(int tag, T x, std::vector<char> *b) {
+void encodeInteger(int tag, T x, std::vector<char>* b) {
   encodeVarint(static_cast<uint64_t>(tag) << 3, b);
   encodeVarint(x, b);
 }
 
 template <typename T>
-void encodeIntegers(int tag, const std::vector<T> &x, std::vector<char> *b) {
+void encodeIntegers(int tag, const std::vector<T>& x, std::vector<char>* b) {
   if (x.size() > 2) {
     // Use packed encoding:
     // https://developers.google.com/protocol-buffers/docs/encoding#packed
@@ -61,62 +61,62 @@ void encodeIntegers(int tag, const std::vector<T> &x, std::vector<char> *b) {
 }
 
 template <typename T>
-void encodeIntegerOpt(int tag, T x, std::vector<char> *b) {
+void encodeIntegerOpt(int tag, T x, std::vector<char>* b) {
   if (x == 0) {
     return;
   }
   encodeInteger<T>(tag, x, b);
 }
 
-void encodeUint64(int tag, uint64_t x, std::vector<char> *b) {
+void encodeUint64(int tag, uint64_t x, std::vector<char>* b) {
   encodeInteger<uint64_t>(tag, x, b);
 }
 
-void encodeUint64s(int tag, const std::vector<uint64_t> &x,
-                   std::vector<char> *b) {
+void encodeUint64s(int tag, const std::vector<uint64_t>& x,
+                   std::vector<char>* b) {
   encodeIntegers<uint64_t>(tag, x, b);
 }
 
-void encodeUint64Opt(int tag, uint64_t x, std::vector<char> *b) {
+void encodeUint64Opt(int tag, uint64_t x, std::vector<char>* b) {
   encodeIntegerOpt<uint64_t>(tag, x, b);
 }
 
-void encodeInt64(int tag, int64_t x, std::vector<char> *b) {
+void encodeInt64(int tag, int64_t x, std::vector<char>* b) {
   encodeInteger<int64_t>(tag, x, b);
 }
 
-void encodeInt64s(int tag, const std::vector<int64_t> &x,
-                  std::vector<char> *b) {
+void encodeInt64s(int tag, const std::vector<int64_t>& x,
+                  std::vector<char>* b) {
   encodeIntegers<int64_t>(tag, x, b);
 }
 
-void encodeInt64Opt(int tag, int64_t x, std::vector<char> *b) {
+void encodeInt64Opt(int tag, int64_t x, std::vector<char>* b) {
   encodeIntegerOpt<int64_t>(tag, x, b);
 }
 
-void encodeString(int tag, const std::string &x, std::vector<char> *b) {
+void encodeString(int tag, const std::string& x, std::vector<char>* b) {
   encodeLength(tag, x.length(), b);
   b->insert(b->end(), x.begin(), x.end());
 }
 
-void encodeStrings(int tag, const std::vector<std::string> &x,
-                   std::vector<char> *b) {
+void encodeStrings(int tag, const std::vector<std::string>& x,
+                   std::vector<char>* b) {
   for (size_t i = 0; i < x.size(); i++) {
     encodeString(tag, x[i], b);
   }
 }
 
-void encodeBool(int tag, bool x, std::vector<char> *b) {
+void encodeBool(int tag, bool x, std::vector<char>* b) {
   encodeUint64(tag, x ? 1 : 0, b);
 }
 
-void encodeBoolOpt(int tag, bool x, std::vector<char> *b) {
+void encodeBoolOpt(int tag, bool x, std::vector<char>* b) {
   if (x) {
     encodeUint64(tag, 1, b);
   }
 }
 
-void encodeMessage(int tag, const ProtoField &m, std::vector<char> *b) {
+void encodeMessage(int tag, const ProtoField& m, std::vector<char>* b) {
   int n1 = b->size();
   m.encode(b);
   int n2 = b->size();
