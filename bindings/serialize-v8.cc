@@ -21,7 +21,7 @@ using namespace v8;
 
 class HeapNode : public Node {
  private:
-  AllocationProfile::Node* node;
+  const AllocationProfile::Node* node;
 
  public:
   HeapNode(AllocationProfile::Node* node) : node(node) {}
@@ -41,12 +41,13 @@ class HeapNode : public Node {
   virtual int64_t columnNumber() const override { return node->column_number; }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
-                                      Profile* p) const override {
+                                      Profile* profile) const override {
     std::vector<Sample> samples;
     for (size_t i = 0; i < node->allocations.size(); i++) {
       AllocationProfile::Allocation allocation = node->allocations[i];
-      std::vector<Label> labels = {Label(
-          p->stringID("allocation"), 0, allocation.size, p->stringID("bytes"))};
+      std::vector<Label> labels = {Label(profile->stringID("allocation"), 0,
+                                         allocation.size,
+                                         profile->stringID("bytes"))};
       std::vector<int64_t> vals = {
           allocation.count,
           static_cast<int64_t>(allocation.size * allocation.count)};
@@ -83,7 +84,7 @@ class TimeNode : public Node {
   }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
-                                      Profile* p) const override {
+                                      Profile* profile) const override {
     std::vector<Sample> samples;
     int64_t hitCount = node->GetHitCount();
     std::vector<int64_t> vals = {hitCount, hitCount * samplingIntervalMicros};
@@ -107,10 +108,10 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
   int64_t durationNanos =
       (profile->GetEndTime() - profile->GetStartTime()) * 1000;
 
-  Profile p = Profile("wall", "microseconds", samplingIntervalMicros,
-                      startTimeNanos, durationNanos);
-  p.addSampleType("sample", "count");
-  p.addSampleType("wall", "microseconds");
+  Profile profile = Profile("wall", "microseconds", samplingIntervalMicros,
+                            startTimeNanos, durationNanos);
+  profile.addSampleType("sample", "count");
+  profile.addSampleType("wall", "microseconds");
 
   // Add root to entries
   const CpuProfileNode* root = profile->GetTopDownRoot();
@@ -129,7 +130,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
 
     std::unique_ptr<Node> node(
         new TimeNode(entry.node, samplingIntervalMicros));
-    p.addSample(node, &stack);
+    profile.addSample(node, &stack);
     int32_t count = entry.node->GetChildrenCount();
     if (count == 0) {
       for (int i = 0; i < entry.popCount; i++) {
@@ -148,7 +149,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
 
   // serialize profile
   std::vector<char>* b = new std::vector<char>();
-  p.encode(b);
+  profile.encode(b);
   return std::unique_ptr<std::vector<char>>(b);
 }
 
@@ -163,9 +164,9 @@ struct HeapEntry {
 std::unique_ptr<std::vector<char>> serializeHeapProfile(
     std::unique_ptr<AllocationProfile> profile, int64_t intervalBytes,
     int64_t startTimeNanos) {
-  Profile p = Profile("space", "bytes", intervalBytes, startTimeNanos);
-  p.addSampleType("objects", "count");
-  p.addSampleType("space", "bytes");
+  Profile profile = Profile("space", "bytes", intervalBytes, startTimeNanos);
+  profile.addSampleType("objects", "count");
+  profile.addSampleType("space", "bytes");
 
   // Add root to entries
   AllocationProfile::Node* root = profile->GetRootNode();
@@ -182,7 +183,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
     entries.pop_front();
 
     std::unique_ptr<Node> node(new HeapNode(entry.node));
-    p.addSample(node, &stack);
+    profile.addSample(node, &stack);
     int32_t count = entry.node->children.size();
     if (count == 0) {
       for (int i = 0; i < entry.popCount; i++) {
@@ -202,6 +203,6 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
 
   // serialize profile
   std::vector<char>* b = new std::vector<char>();
-  p.encode(b);
+  profile.encode(b);
   return std::unique_ptr<std::vector<char>>(b);
 }

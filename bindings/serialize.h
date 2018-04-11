@@ -31,7 +31,7 @@ class ValueType : public ProtoField {
   ValueType(int64_t typeX = 0, int64_t unitX = 0);
   int64_t getTypeX();
   int64_t getUnitX();
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Label defined in third_party/proto/profile.proto.
@@ -48,7 +48,7 @@ class Label : public ProtoField {
   int64_t getNum();
   int64_t getUnitX();
   Label(int64_t keyX = 0, int64_t strX = 0, int64_t num = 0, int64_t unitX = 0);
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Mapping defined in third_party/proto/profile.proto.
@@ -80,7 +80,7 @@ class Mapping : public ProtoField {
   bool getHasLineNumbers();
   bool getHasInlineFrames();
 
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Line defined in third_party/proto/profile.proto.
@@ -93,7 +93,7 @@ class Line : public ProtoField {
   Line(uint64_t functionID, int64_t line);
   uint64_t getFunctionID();
   int64_t getLine();
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Function defined in third_party/proto/profile.proto.
@@ -113,7 +113,7 @@ class ProfileFunction : public ProtoField {
   int64_t getSystemNameX();
   int64_t getFilenameX();
   int64_t getStartLine();
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Location defined in third_party/proto/profile.proto.
@@ -135,7 +135,7 @@ class ProfileLocation : public ProtoField {
   std::vector<Line> getLine();
   bool getIsFolded();
 
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Corresponds to Sample defined in third_party/proto/profile.proto.
@@ -151,7 +151,7 @@ class Sample : public ProtoField {
   std::vector<uint64_t> getLocationID();
   std::vector<int64_t> getValue();
   std::vector<Label> getLabel();
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 class Node;
@@ -227,7 +227,7 @@ class Profile : public ProtoField {
   int64_t getDropFramesX();
   int64_t getKeepFramesX();
 
-  virtual void encode(std::vector<char>* b) const;
+  virtual void encode(std::vector<char>* buffer) const;
 };
 
 // Abstract class describing a node structure which can be used to add a sample
@@ -240,7 +240,7 @@ class Node {
   virtual int64_t lineNumber() const = 0;
   virtual int64_t columnNumber() const = 0;
   virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
-                                      Profile* p) const = 0;
+                                      Profile* profile) const = 0;
 };
 
 #endif

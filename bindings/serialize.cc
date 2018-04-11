@@ -20,9 +20,9 @@
 ValueType::ValueType(int64_t typeX, int64_t unitX)
     : typeX(typeX), unitX(unitX) {}
 
-void ValueType::encode(std::vector<char>* b) const {
-  encodeInt64Opt(1, typeX, b);
-  encodeInt64Opt(2, unitX, b);
+void ValueType::encode(std::vector<char>* buffer) const {
+  encodeInt64Opt(1, typeX, buffer);
+  encodeInt64Opt(2, unitX, buffer);
 }
 
 int64_t ValueType::getTypeX() { return typeX; }
@@ -40,11 +40,11 @@ int64_t Label::getNum() { return num; }
 
 int64_t Label::getUnitX() { return unitX; }
 
-void Label::encode(std::vector<char>* b) const {
-  encodeInt64Opt(1, keyX, b);
-  encodeInt64Opt(2, strX, b);
-  encodeInt64Opt(3, num, b);
-  encodeInt64Opt(4, unitX, b);
+void Label::encode(std::vector<char>* buffer) const {
+  encodeInt64Opt(1, keyX, buffer);
+  encodeInt64Opt(2, strX, buffer);
+  encodeInt64Opt(3, num, buffer);
+  encodeInt64Opt(4, unitX, buffer);
 }
 
 Mapping::Mapping(uint64_t id, uint64_t start, uint64_t limit, uint64_t offset,
@@ -72,17 +72,17 @@ bool Mapping::getHasFilenames() { return hasFilenames; }
 bool Mapping::getHasLineNumbers() { return hasLineNumbers; }
 bool Mapping::getHasInlineFrames() { return hasInlineFrames; }
 
-void Mapping::encode(std::vector<char>* b) const {
-  encodeUint64Opt(1, id, b);
-  encodeUint64Opt(2, start, b);
-  encodeUint64Opt(3, limit, b);
-  encodeUint64Opt(4, offset, b);
-  encodeInt64Opt(5, fileX, b);
-  encodeInt64Opt(6, buildIDX, b);
-  encodeBoolOpt(7, hasFunctions, b);
-  encodeBoolOpt(8, hasFilenames, b);
-  encodeBoolOpt(9, hasLineNumbers, b);
-  encodeBoolOpt(10, hasInlineFrames, b);
+void Mapping::encode(std::vector<char>* buffer) const {
+  encodeUint64Opt(1, id, buffer);
+  encodeUint64Opt(2, start, buffer);
+  encodeUint64Opt(3, limit, buffer);
+  encodeUint64Opt(4, offset, buffer);
+  encodeInt64Opt(5, fileX, buffer);
+  encodeInt64Opt(6, buildIDX, buffer);
+  encodeBoolOpt(7, hasFunctions, buffer);
+  encodeBoolOpt(8, hasFilenames, buffer);
+  encodeBoolOpt(9, hasLineNumbers, buffer);
+  encodeBoolOpt(10, hasInlineFrames, buffer);
 }
 
 Line::Line(uint64_t functionID, int64_t line)
@@ -92,9 +92,9 @@ uint64_t Line::getFunctionID() { return functionID; }
 
 int64_t Line::getLine() { return line; }
 
-void Line::encode(std::vector<char>* b) const {
-  encodeUint64Opt(1, functionID, b);
-  encodeInt64Opt(2, line, b);
+void Line::encode(std::vector<char>* buffer) const {
+  encodeUint64Opt(1, functionID, buffer);
+  encodeInt64Opt(2, line, buffer);
 }
 
 ProfileFunction::ProfileFunction(uint64_t id, int64_t nameX,
@@ -112,12 +112,12 @@ int64_t ProfileFunction::getSystemNameX() { return systemNameX; }
 int64_t ProfileFunction::getFilenameX() { return filenameX; }
 int64_t ProfileFunction::getStartLine() { return startLine; }
 
-void ProfileFunction::encode(std::vector<char>* b) const {
-  encodeUint64Opt(1, id, b);
-  encodeInt64Opt(2, nameX, b);
-  encodeInt64Opt(3, systemNameX, b);
-  encodeInt64Opt(4, filenameX, b);
-  encodeInt64Opt(5, startLine, b);
+void ProfileFunction::encode(std::vector<char>* buffer) const {
+  encodeUint64Opt(1, id, buffer);
+  encodeInt64Opt(2, nameX, buffer);
+  encodeInt64Opt(3, systemNameX, buffer);
+  encodeInt64Opt(4, filenameX, buffer);
+  encodeInt64Opt(5, startLine, buffer);
 }
 
 ProfileLocation::ProfileLocation(uint64_t id, uint64_t mappingID,
@@ -139,12 +139,12 @@ std::vector<Line> ProfileLocation::getLine() { return line; }
 
 bool ProfileLocation::getIsFolded() { return isFolded; }
 
-void ProfileLocation::encode(std::vector<char>* b) const {
-  encodeUint64Opt(1, id, b);
-  encodeInt64Opt(2, mappingID, b);
-  encodeInt64Opt(3, address, b);
-  encodeRepeatedMessage<Line>(4, line, b);
-  encodeBoolOpt(5, isFolded, b);
+void ProfileLocation::encode(std::vector<char>* buffer) const {
+  encodeUint64Opt(1, id, buffer);
+  encodeInt64Opt(2, mappingID, buffer);
+  encodeInt64Opt(3, address, buffer);
+  encodeRepeatedMessage<Line>(4, line, buffer);
+  encodeBoolOpt(5, isFolded, buffer);
 }
 
 Sample::Sample(std::vector<uint64_t> locationID, std::vector<int64_t> value,
@@ -157,10 +157,10 @@ std::vector<int64_t> Sample::getValue() { return value; }
 
 std::vector<Label> Sample::getLabel() { return label; }
 
-void Sample::encode(std::vector<char>* b) const {
-  encodeUint64s(1, locationID, b);
-  encodeInt64s(2, value, b);
-  encodeRepeatedMessage<Label>(3, label, b);
+void Sample::encode(std::vector<char>* buffer) const {
+  encodeUint64s(1, locationID, buffer);
+  encodeInt64s(2, value, buffer);
+  encodeRepeatedMessage<Label>(3, label, buffer);
 }
 
 Profile::Profile(std::string periodType, std::string periodUnit, int64_t period,
@@ -270,21 +270,21 @@ int64_t Profile::getDropFramesX() { return dropFramesX; }
 
 int64_t Profile::getKeepFramesX() { return keepFramesX; }
 
-void Profile::encode(std::vector<char>* b) const {
-  encodeRepeatedMessage<ValueType>(1, sampleType, b);
-  encodeRepeatedMessage<Sample>(2, sample, b);
-  encodeRepeatedMessage<Mapping>(3, mapping, b);
-  encodeRepeatedMessage<ProfileLocation>(4, location, b);
-  encodeRepeatedMessage<ProfileFunction>(5, function, b);
-  encodeStrings(6, strings, b);
-  encodeInt64Opt(7, dropFramesX, b);
-  encodeInt64Opt(8, keepFramesX, b);
-  encodeInt64Opt(9, timeNanos, b);
-  encodeInt64Opt(10, durationNanos, b);
+void Profile::encode(std::vector<char>* buffer) const {
+  encodeRepeatedMessage<ValueType>(1, sampleType, buffer);
+  encodeRepeatedMessage<Sample>(2, sample, buffer);
+  encodeRepeatedMessage<Mapping>(3, mapping, buffer);
+  encodeRepeatedMessage<ProfileLocation>(4, location, buffer);
+  encodeRepeatedMessage<ProfileFunction>(5, function, buffer);
+  encodeStrings(6, strings, buffer);
+  encodeInt64Opt(7, dropFramesX, buffer);
+  encodeInt64Opt(8, keepFramesX, buffer);
+  encodeInt64Opt(9, timeNanos, buffer);
+  encodeInt64Opt(10, durationNanos, buffer);
   if (periodType.typeX != 0 || periodType.unitX != 0) {
-    encodeMessage(11, periodType, b);
+    encodeMessage(11, periodType, buffer);
   }
-  encodeInt64Opt(12, period, b);
-  encodeInt64s(13, commentX, b);
-  encodeInt64(14, defaultSampleTypeX, b);
+  encodeInt64Opt(12, period, buffer);
+  encodeInt64s(13, commentX, buffer);
+  encodeInt64(14, defaultSampleTypeX, buffer);
 }
