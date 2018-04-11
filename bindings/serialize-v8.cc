@@ -26,20 +26,20 @@ class HeapNode : public Node {
  public:
   HeapNode(AllocationProfile::Node *node) { this->node = node; }
 
-  virtual std::string name() { return *String::Utf8Value(node->name); }
+  virtual std::string name() const override { return *String::Utf8Value(node->name); }
 
-  virtual std::string filename() {
+  virtual std::string filename() const override {
     return *String::Utf8Value(node->script_name);
   }
 
-  virtual int64_t getFileID() { return node->script_id; }
+  virtual int64_t getFileID() const override { return node->script_id; }
 
-  virtual int64_t lineNumber() { return node->line_number; }
+  virtual int64_t lineNumber() const override { return node->line_number; }
 
-  virtual int64_t columnNumber() { return node->column_number; }
+  virtual int64_t columnNumber() const override { return node->column_number; }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) {
+                                      Profile *p) const override {
     std::vector<Sample> samples;
     for (size_t i = 0; i < node->allocations.size(); i++) {
       AllocationProfile::Allocation allocation = node->allocations[i];
@@ -66,22 +66,24 @@ class TimeNode : public Node {
     this->samplingIntervalMicros = samplingIntervalMicros;
   }
 
-  virtual std::string name() {
+  virtual std::string name() const override {
     return *String::Utf8Value(node->GetFunctionName());
   }
 
-  virtual std::string filename() {
+  virtual std::string filename() const override {
     return *String::Utf8Value(node->GetScriptResourceName());
   }
 
-  virtual int64_t getFileID() { return node->GetScriptId(); }
+  virtual int64_t getFileID() const override { return node->GetScriptId(); }
 
-  virtual int64_t lineNumber() { return node->GetLineNumber(); }
+  virtual int64_t lineNumber() const override { return node->GetLineNumber(); }
 
-  virtual int64_t columnNumber() { return node->GetColumnNumber(); }
+  virtual int64_t columnNumber() const override {
+    return node->GetColumnNumber();
+  }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) {
+                              Profile *p) const override {
     std::vector<Sample> samples;
     int64_t hitCount = node->GetHitCount();
     std::vector<int64_t> vals = {hitCount, hitCount * samplingIntervalMicros};

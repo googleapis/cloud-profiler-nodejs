@@ -234,13 +234,13 @@ class Profile : public ProtoField {
 // to a profile.
 class Node {
  public:
-  virtual std::string name() = 0;
-  virtual std::string filename() = 0;
-  virtual int64_t getFileID() = 0;
-  virtual int64_t lineNumber() = 0;
-  virtual int64_t columnNumber() = 0;
+  virtual std::string name() const = 0;
+  virtual std::string filename() const = 0;
+  virtual int64_t getFileID() const = 0;
+  virtual int64_t lineNumber() const = 0;
+  virtual int64_t columnNumber() const = 0;
   virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) = 0;
+                                      Profile *p) const = 0;
 };
 
 #endif
