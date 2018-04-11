@@ -64,15 +64,6 @@ NAN_METHOD(StartProfiling) {
   info.GetIsolate()->GetCpuProfiler()->StartProfiling(name, false);
 }
 
-NAN_METHOD(StopProfiling) {
-  Local<String> name = info[0].As<String>();
-  CpuProfile* profile =
-      info.GetIsolate()->GetCpuProfiler()->StopProfiling(name);
-  Local<Value> translated_profile = TranslateTimeProfile(profile);
-  profile->Delete();
-  info.GetReturnValue().Set(translated_profile);
-}
-
 void free_buffer_callback(char* data, void* buf) {
   delete reinterpret_cast<std::vector<char>*>(buf);
 }
@@ -105,9 +96,6 @@ NAN_METHOD(SetIdle) {
 NAN_MODULE_INIT(InitAll) {
   Nan::Set(target, Nan::New("startProfiling").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling))
-               .ToLocalChecked());
-  Nan::Set(target, Nan::New("stopProfiling").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling))
                .ToLocalChecked());
   Nan::Set(target, Nan::New("stopProfilingProto").ToLocalChecked(),
            Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfilingProto))

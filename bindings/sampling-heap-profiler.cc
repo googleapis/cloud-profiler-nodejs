@@ -71,13 +71,6 @@ NAN_METHOD(StopSamplingHeapProfiler) {
   info.GetIsolate()->GetHeapProfiler()->StopSamplingHeapProfiler();
 }
 
-NAN_METHOD(GetAllocationProfile) {
-  std::unique_ptr<v8::AllocationProfile> profile(
-      info.GetIsolate()->GetHeapProfiler()->GetAllocationProfile());
-  AllocationProfile::Node* root = profile->GetRootNode();
-  info.GetReturnValue().Set(TranslateAllocationProfile(root));
-}
-
 void free_buffer_callback(char* data, void* buf) {
   delete reinterpret_cast<std::vector<char>*>(buf);
 }
@@ -108,9 +101,6 @@ NAN_MODULE_INIT(InitAll) {
       target, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
       Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler))
           .ToLocalChecked());
-  Nan::Set(target, Nan::New("getAllocationProfile").ToLocalChecked(),
-           Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile))
-               .ToLocalChecked());
   Nan::Set(
       target, Nan::New("getAllocationProfileProto").ToLocalChecked(),
       Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfileProto))
