@@ -23,13 +23,13 @@
 // Returns a buffer with the input v8::AllocationProfile profile in
 // the profile.proto format.
 std::unique_ptr<std::vector<char>> serializeHeapProfile(
-    std::unique_ptr<v8::AllocationProfile> profile, int64_t intervalBytes,
+    std::unique_ptr<v8::AllocationProfile> profileTree, int64_t intervalBytes,
     int64_t startTimeNanos);
 
 // Returns a buffer with the input v8::CpuProfile profile in the profile.proto
 // format.
 std::unique_ptr<std::vector<char>> serializeTimeProfile(
-    v8::CpuProfile* profile, int64_t samplingIntervalMicros,
+    v8::CpuProfile* profileTree, int64_t samplingIntervalMicros,
     int64_t startTimeNanos);
 
 #endif

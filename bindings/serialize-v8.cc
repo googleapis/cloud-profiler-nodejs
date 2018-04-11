@@ -103,10 +103,10 @@ struct TimeEntry {
 };
 
 std::unique_ptr<std::vector<char>> serializeTimeProfile(
-    CpuProfile* profile, int64_t samplingIntervalMicros,
+    CpuProfile* profileTree, int64_t samplingIntervalMicros,
     int64_t startTimeNanos) {
   int64_t durationNanos =
-      (profile->GetEndTime() - profile->GetStartTime()) * 1000;
+      (profileTree->GetEndTime() - profileTree->GetStartTime()) * 1000;
 
   Profile profile = Profile("wall", "microseconds", samplingIntervalMicros,
                             startTimeNanos, durationNanos);
@@ -114,7 +114,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
   profile.addSampleType("wall", "microseconds");
 
   // Add root to entries
-  const CpuProfileNode* root = profile->GetTopDownRoot();
+  const CpuProfileNode* root = profileTree->GetTopDownRoot();
   std::deque<TimeEntry> entries;
   int32_t count = root->GetChildrenCount();
   for (int32_t i = 0; i < count; i++) {
@@ -162,14 +162,14 @@ struct HeapEntry {
 };
 
 std::unique_ptr<std::vector<char>> serializeHeapProfile(
-    std::unique_ptr<AllocationProfile> profile, int64_t intervalBytes,
+    std::unique_ptr<AllocationProfile> profileTree, int64_t intervalBytes,
     int64_t startTimeNanos) {
   Profile profile = Profile("space", "bytes", intervalBytes, startTimeNanos);
   profile.addSampleType("objects", "count");
   profile.addSampleType("space", "bytes");
 
   // Add root to entries
-  AllocationProfile::Node* root = profile->GetRootNode();
+  AllocationProfile::Node* root = profileTree->GetRootNode();
   std::deque<HeapEntry> entries;
   for (size_t i = 0; i < root->children.size(); i++) {
     HeapEntry entry = {root->children[i], 1};
