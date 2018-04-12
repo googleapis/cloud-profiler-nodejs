@@ -49,18 +49,18 @@ class TestNode : public Node {
         nodeColumnNumber(columnNumber),
         sampleValues(sampleValues){};
 
-  virtual std::string name() { return nodeName; }
+  virtual std::string name() const override { return nodeName; }
 
-  virtual std::string filename() { return nodeFilename; }
+  virtual std::string filename() const override { return nodeFilename; }
 
-  virtual int64_t getFileID() { return nodeFileID; }
+  virtual int64_t getFileID() const override { return nodeFileID; }
 
-  virtual int64_t lineNumber() { return nodeLineNumber; }
+  virtual int64_t lineNumber() const override { return nodeLineNumber; }
 
-  virtual int64_t columnNumber() { return nodeColumnNumber; }
+  virtual int64_t columnNumber() const override { return nodeColumnNumber; }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) {
+                                      Profile *p) const override {
     std::vector<Sample> samples;
     for (size_t i = 0; i < sampleValues.size(); i++) {
       SampleContents sc = sampleValues[i];

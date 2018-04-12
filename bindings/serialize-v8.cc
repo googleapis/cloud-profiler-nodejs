@@ -24,7 +24,7 @@ class HeapNode : public Node {
   const AllocationProfile::Node* node;
 
  public:
-  HeapNode(AllocationProfile::Node* node) : node(node) {}
+  HeapNode(const AllocationProfile::Node* node) : node(node) {}
 
   virtual std::string name() const override {
     return *String::Utf8Value(node->name);
@@ -108,7 +108,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
   int64_t durationNanos =
       (profileTree->GetEndTime() - profileTree->GetStartTime()) * 1000;
 
-  Profile profile = Profile("wall", "microseconds", samplingIntervalMicros,
+  Profile profile("wall", "microseconds", samplingIntervalMicros,
                             startTimeNanos, durationNanos);
   profile.addSampleType("sample", "count");
   profile.addSampleType("wall", "microseconds");
@@ -164,7 +164,7 @@ struct HeapEntry {
 std::unique_ptr<std::vector<char>> serializeHeapProfile(
     std::unique_ptr<AllocationProfile> profileTree, int64_t intervalBytes,
     int64_t startTimeNanos) {
-  Profile profile = Profile("space", "bytes", intervalBytes, startTimeNanos);
+  Profile profile("space", "bytes", intervalBytes, startTimeNanos);
   profile.addSampleType("objects", "count");
   profile.addSampleType("space", "bytes");
 
