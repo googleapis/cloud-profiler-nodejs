@@ -17,6 +17,7 @@
 import * as delay from 'delay';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
+import * as numeral from 'numeral';
 import * as path from 'path';
 import {normalize} from 'path';
 import * as pify from 'pify';
@@ -155,19 +156,50 @@ export async function startLocal(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
   profiler = new Profiler(normalizedConfig);
 
+  // Set up periodic logging.
+  const logger = new common.logger({
+    level: common.logger.LEVELS[normalizedConfig.logLevel],
+    tag: pjson.name
+  });
+  let heapProfileCount = 0;
+  let timeProfileCount = 0;
+  let prevLogTime = Date.now();
+
+  setInterval(() => {
+    const curTime = Date.now();
+    const {rss, heapTotal, heapUsed} = process.memoryUsage();
+    logger.debug(
+        new Date().toISOString(), 'rss', numeral(rss).format('0.0 ib'),
+        'heapTotal', numeral(heapTotal).format('0.0 ib'), 'heapUsed',
+        numeral(heapUsed).format('0.0 ib'));
+    logger.debug(
+        new Date().toISOString(), heapProfileCount,
+        'heap profiles collectin in', curTime - prevLogTime, 'ms');
+    logger.debug(
+        new Date().toISOString(), timeProfileCount,
+        'time profiles collectin in', curTime - prevLogTime, 'ms');
+
+    heapProfileCount = 0;
+    timeProfileCount = 0;
+    prevLogTime = curTime;
+  }, 10000);
+
+
   while (true) {
     if (!config.disableHeap) {
       const heap = await profiler.profile(
           {name: 'HEAP-Profile' + new Date(), profileType: 'HEAP'});
+      heapProfileCount++;
     }
     if (!config.disableTime) {
       const wall = await profiler.profile({
         name: 'Time-Profile' + new Date(),
         profileType: 'WALL',
-        duration: '10s'
+        duration: normalizedConfig.timeDurationMillis.toString() + 'ms'
       });
+      timeProfileCount++;
     }
-    await delay(1000);
+    await delay(normalizedConfig.profileCollectionPauseMillis);
   }
 }
 
