@@ -51,8 +51,8 @@ describe('initConfig', () => {
     backoffCapMillis: 60 * 60 * 1000,
     backoffMultiplier: 1.3,
     serverBackoffCapMillis: 2147483647,
-    profileCollectionPauseMillis: 1000,
-    timeDurationMillis: 1000,
+    localPauseMillis: 1000,
+    localTimeDurationMillis: 1000,
     baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
   };
 

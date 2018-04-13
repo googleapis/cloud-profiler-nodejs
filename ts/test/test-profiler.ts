@@ -17,7 +17,6 @@
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as nock from 'nock';
-import * as numeral from 'numeral';
 import * as pify from 'pify';
 import * as sinon from 'sinon';
 import {instance, mock, when} from 'ts-mockito';
@@ -59,8 +58,8 @@ const testConfig: ProfilerConfig = {
   backoffMultiplier: 1.3,
   serverBackoffCapMillis: parseDuration('7d'),
   baseApiUrl: API,
-  profileCollectionPauseMillis: 1000,
-  timeDurationMillis: 1000
+  localPauseMillis: 1000,
+  localTimeDurationMillis: 1000
 };
 
 

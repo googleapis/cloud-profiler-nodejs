@@ -17,7 +17,6 @@
 import * as delay from 'delay';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
-import * as numeral from 'numeral';
 import * as path from 'path';
 import {normalize} from 'path';
 import * as pify from 'pify';
@@ -169,15 +168,14 @@ export async function startLocal(config: Config = {}): Promise<void> {
     const curTime = Date.now();
     const {rss, heapTotal, heapUsed} = process.memoryUsage();
     logger.debug(
-        new Date().toISOString(), 'rss', numeral(rss).format('0.0 ib'),
-        'heapTotal', numeral(heapTotal).format('0.0 ib'), 'heapUsed',
-        numeral(heapUsed).format('0.0 ib'));
+        new Date().toISOString(), 'rss', rss, 'B', 'heapTotal', heapTotal, 'B',
+        'heapUsed', heapUsed, 'B');
     logger.debug(
         new Date().toISOString(), heapProfileCount,
-        'heap profiles collectin in', curTime - prevLogTime, 'ms');
+        'heap profiles collected in', curTime - prevLogTime, 'ms');
     logger.debug(
         new Date().toISOString(), timeProfileCount,
-        'time profiles collectin in', curTime - prevLogTime, 'ms');
+        'time profiles collected in', curTime - prevLogTime, 'ms');
 
     heapProfileCount = 0;
     timeProfileCount = 0;
@@ -195,11 +193,11 @@ export async function startLocal(config: Config = {}): Promise<void> {
       const wall = await profiler.profile({
         name: 'Time-Profile' + new Date(),
         profileType: 'WALL',
-        duration: normalizedConfig.timeDurationMillis.toString() + 'ms'
+        duration: normalizedConfig.localTimeDurationMillis.toString() + 'ms'
       });
       timeProfileCount++;
     }
-    await delay(normalizedConfig.profileCollectionPauseMillis);
+    await delay(normalizedConfig.localPauseMillis);
   }
 }
 

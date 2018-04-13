@@ -109,11 +109,11 @@ export interface Config extends AuthenticationConfig {
 
   // Time to pause between profile collection.
   // For testing with startLocal() only.
-  profileCollectionPauseMillis?: number;
+  localPauseMillis?: number;
 
   // Duration of time profiles collected when using startLocal().
   // For testing with startLocal() only.
-  timeDurationMillis?: number;
+  localTimeDurationMillis?: number;
 }
 
 // Interface for an initialized config.
@@ -133,8 +133,8 @@ export interface ProfilerConfig extends AuthenticationConfig {
   backoffMultiplier: number;
   serverBackoffCapMillis: number;
   baseApiUrl: string;
-  profileCollectionPauseMillis: number;
-  timeDurationMillis: number;
+  localPauseMillis: number;
+  localTimeDurationMillis: number;
 }
 
 // Default values for configuration for a profiler.
@@ -156,6 +156,6 @@ export const defaultConfig = {
   // https://nodejs.org/dist/latest-v9.x/docs/api/timers.html#timers_settimeout_callback_delay_args.
   serverBackoffCapMillis: 2147483647,
 
-  profileCollectionPauseMillis: 1000,
-  timeDurationMillis: 1000
+  localPauseMillis: 1000,
+  localTimeDurationMillis: 1000
 };
