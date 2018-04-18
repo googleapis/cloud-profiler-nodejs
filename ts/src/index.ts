@@ -153,7 +153,7 @@ function logError(msg: string, config: Config) {
  */
 export async function startLocal(config: Config = {}): Promise<void> {
   const normalizedConfig = await initConfig(config);
-  profiler = new Profiler(normalizedConfig);
+  const profiler = new Profiler(normalizedConfig);
 
   // Set up periodic logging.
   const logger = new common.logger({
@@ -168,27 +168,40 @@ export async function startLocal(config: Config = {}): Promise<void> {
     const curTime = Date.now();
     const {rss, heapTotal, heapUsed} = process.memoryUsage();
     logger.debug(
-        new Date().toISOString(), 'rss', rss, 'B', 'heapTotal', heapTotal, 'B',
-        'heapUsed', heapUsed, 'B');
-    logger.debug(
-        new Date().toISOString(), heapProfileCount,
-        'heap profiles collected in', curTime - prevLogTime, 'ms');
-    logger.debug(
-        new Date().toISOString(), timeProfileCount,
-        'time profiles collected in', curTime - prevLogTime, 'ms');
+        new Date().toISOString(),
+        'rss',
+        (rss / (1024 * 1024)).toFixed(3),
+        'MiB,',
+        'heap total',
+        (heapTotal / (1024 * 1024)).toFixed(3),
+        'MiB,',
+        'heap used',
+        (heapUsed / (1024 * 1024)).toFixed(3),
+        'MiB,',
+        'heap profile collection rate',
+        (heapProfileCount * 1000 / (curTime - prevLogTime)).toFixed(3),
+        'profiles/s,',
+        'time profile collection rate',
+        (timeProfileCount * 1000 / (curTime - prevLogTime)).toFixed(3),
+        'profiles/s',
+    );
 
     heapProfileCount = 0;
     timeProfileCount = 0;
     prevLogTime = curTime;
-  }, 10000);
+  }, normalizedConfig.localLogPeriodMillis);
 
-
-  while (true) {
+  // Periodic profiling
+  setInterval(async () => {
     if (!config.disableHeap) {
       const heap = await profiler.profile(
-          {name: 'HEAP-Profile' + new Date(), profileType: 'HEAP'});
+          {name: 'Heap-Profile' + new Date(), profileType: 'HEAP'});
       heapProfileCount++;
     }
+    await delay(
+        (normalizedConfig.localProfilingPeriodMillis -
+         normalizedConfig.localTimeDurationMillis) /
+        2);
     if (!config.disableTime) {
       const wall = await profiler.profile({
         name: 'Time-Profile' + new Date(),
@@ -197,8 +210,7 @@ export async function startLocal(config: Config = {}): Promise<void> {
       });
       timeProfileCount++;
     }
-    await delay(normalizedConfig.localPauseMillis);
-  }
+  }, normalizedConfig.localProfilingPeriodMillis);
 }
 
 // If the module was --require'd from the command line, start the agent.
