@@ -53,7 +53,7 @@ describe('initConfig', () => {
     serverBackoffCapMillis: 2147483647,
     localProfilingPeriodMillis: 1000,
     localTimeDurationMillis: 1000,
-    localLogPeriodMillis: 1000,
+    localLogPeriodMillis: 10000,
     baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
   };
 

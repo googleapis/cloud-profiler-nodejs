@@ -165,6 +165,6 @@ export const defaultConfig = {
   serverBackoffCapMillis: 2147483647,
 
   localProfilingPeriodMillis: 1000,
-  localLogPeriodMillis: 1000,
+  localLogPeriodMillis: 10000,
   localTimeDurationMillis: 1000
 };

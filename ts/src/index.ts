@@ -198,10 +198,7 @@ export async function startLocal(config: Config = {}): Promise<void> {
           {name: 'Heap-Profile' + new Date(), profileType: 'HEAP'});
       heapProfileCount++;
     }
-    await delay(
-        (normalizedConfig.localProfilingPeriodMillis -
-         normalizedConfig.localTimeDurationMillis) /
-        2);
+    await delay(normalizedConfig.localProfilingPeriodMillis / 2);
     if (!config.disableTime) {
       const wall = await profiler.profile({
         name: 'Time-Profile' + new Date(),
