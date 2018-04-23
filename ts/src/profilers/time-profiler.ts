@@ -41,7 +41,7 @@ export class TimeProfiler {
     const runName = 'stackdriver-profiler-' + startTime + '-' + Math.random();
     profiler.startProfiling(runName);
     await delay(durationMillis);
-    const b = profiler.stopProfilingProto(
+    const b = profiler.stopProfiling(
         runName, this.intervalMicros, startTime * 1000 * 1000);
     const gzBuf = await gzip(b);
     return gzBuf.toString('base64');

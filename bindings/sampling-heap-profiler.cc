@@ -20,36 +20,6 @@
 
 using namespace v8;
 
-Local<Value> TranslateAllocationProfile(AllocationProfile::Node* node) {
-  Local<Object> js_node = Nan::New<Object>();
-  js_node->Set(Nan::New<String>("name").ToLocalChecked(), node->name);
-  js_node->Set(Nan::New<String>("scriptName").ToLocalChecked(),
-               node->script_name);
-  js_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),
-               Nan::New<Integer>(node->script_id));
-  js_node->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
-               Nan::New<Integer>(node->line_number));
-  js_node->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
-               Nan::New<Integer>(node->column_number));
-  Local<Array> children = Nan::New<Array>(node->children.size());
-  for (size_t i = 0; i < node->children.size(); i++) {
-    children->Set(i, TranslateAllocationProfile(node->children[i]));
-  }
-  js_node->Set(Nan::New<String>("children").ToLocalChecked(), children);
-  Local<Array> allocations = Nan::New<Array>(node->allocations.size());
-  for (size_t i = 0; i < node->allocations.size(); i++) {
-    AllocationProfile::Allocation alloc = node->allocations[i];
-    Local<Object> js_alloc = Nan::New<Object>();
-    js_alloc->Set(Nan::New<String>("sizeBytes").ToLocalChecked(),
-                  Nan::New<Number>(alloc.size));
-    js_alloc->Set(Nan::New<String>("count").ToLocalChecked(),
-                  Nan::New<Number>(alloc.count));
-    allocations->Set(i, js_alloc);
-  }
-  js_node->Set(Nan::New<String>("allocations").ToLocalChecked(), allocations);
-  return js_node;
-}
-
 NAN_METHOD(StartSamplingHeapProfiler) {
   if (info.Length() == 2) {
     if (!info[0]->IsUint32()) {
@@ -75,7 +45,7 @@ void free_buffer_callback(char* data, void* buf) {
   delete reinterpret_cast<std::vector<char>*>(buf);
 }
 
-NAN_METHOD(GetAllocationProfileProto) {
+NAN_METHOD(GetAllocationProfile) {
   if (info.Length() != 2 || !info[0]->IsNumber() || !info[1]->IsNumber()) {
     return Nan::ThrowTypeError(
         "Expected exactly two arguments of type Integer.");
@@ -102,8 +72,8 @@ NAN_MODULE_INIT(InitAll) {
       Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler))
           .ToLocalChecked());
   Nan::Set(
-      target, Nan::New("getAllocationProfileProto").ToLocalChecked(),
-      Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfileProto))
+      target, Nan::New("getAllocationProfile").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile))
           .ToLocalChecked());
 }
 

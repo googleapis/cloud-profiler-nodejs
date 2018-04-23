@@ -45,7 +45,7 @@ export class HeapProfiler {
     }
     const startTimeNanos = Date.now() * 1000 * 1000;
     const b =
-        profiler.getAllocationProfileProto(startTimeNanos, this.intervalBytes);
+        profiler.getAllocationProfile(startTimeNanos, this.intervalBytes);
     const gzBuf = await gzip(b);
     return gzBuf.toString('base64');
   }
