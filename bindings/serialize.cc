@@ -218,8 +218,7 @@ uint64_t Profile::locationID(const Node& node) {
   lines.push_back(line(node));
   ProfileLocation l(id, 0, 0, lines, false);
   location.push_back(std::move(l));
-  locationIDMap.insert(locationIDMap.begin(),
-                       std::pair<LocationKey, int64_t>(key, id));
+  locationIDMap.insert({key, id});
   return id;
 }
 
@@ -240,8 +239,7 @@ int64_t Profile::functionID(const Node& node) {
   ProfileFunction f =
       ProfileFunction(id, nameX, nameX, filenameX, node.lineNumber());
   function.push_back(f);
-  functionIDMap.insert(functionIDMap.begin(),
-                       std::pair<FunctionKey, int64_t>(key, id));
+  functionIDMap.insert({key, id});
   return id;
 }
 
@@ -251,8 +249,7 @@ int64_t Profile::stringID(std::string s) {
     return pair->second;
   }
   int64_t id = strings.size();
-  stringIDMap.insert(stringIDMap.begin(),
-                     std::pair<std::string, int64_t>(s, id));
+  stringIDMap.insert({s, id});
   strings.push_back(s);
   return id;
 }
