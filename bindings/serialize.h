@@ -168,23 +168,35 @@ class Sample : public ProtoField {
 
 class Node;
 
+template <typename T>
+void hashCombine(size_t& combinedHash, T obj) {
+  combinedHash ^=
+      std::hash<T>{}(obj) + (combinedHash >> 5) + (combinedHash << 3);
+}
+
+template <typename T, typename... Objs>
+void hashCombine(size_t& combinedHash, T obj, Objs... objs) {
+  combinedHash ^=
+      std::hash<T>{}(obj) + (combinedHash >> 5) + (combinedHash << 3);
+  hashCombine(combinedHash, objs...);
+}
+
 typedef std::tuple<int64_t, int64_t, int64_t, std::string> LocationKey;
 struct locationKeyHash : public std::unary_function<LocationKey, size_t> {
   size_t operator()(const LocationKey& key) const {
-    result_type const h1(std::hash<int64_t>{}(std::get<0>(key)));
-    result_type const h2(std::hash<int64_t>{}(std::get<1>(key)));
-    result_type const h3(std::hash<int64_t>{}(std::get<2>(key)));
-    result_type const h4(std::hash<std::string>{}(std::get<3>(key)));
-    return h4 ^ (h3 << 1) ^ (h2 << 2) ^ (h1 << 4);
+    size_t combinedHash = 0;
+    hashCombine(combinedHash, std::get<0>(key), std::get<1>(key),
+                std::get<2>(key), std::get<3>(key));
+    return combinedHash;
   }
 };
 
 typedef std::tuple<int64_t, std::string> FunctionKey;
 struct functionKeyHash : public std::unary_function<FunctionKey, size_t> {
   size_t operator()(const FunctionKey& key) const {
-    result_type const h1(std::hash<int64_t>{}(std::get<0>(key)));
-    result_type const h2(std::hash<std::string>{}(std::get<1>(key)));
-    return h2 ^ (h1 << 1);
+    size_t combinedHash = 0;
+    hashCombine(combinedHash, std::get<0>(key), std::get<1>(key));
+    return combinedHash;
   }
 };
 
