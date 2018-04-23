@@ -21,30 +21,30 @@ using namespace v8;
 
 class HeapNode : public Node {
  private:
-  const AllocationProfile::Node* node;
+  const AllocationProfile::Node& node;
 
  public:
-  HeapNode(const AllocationProfile::Node* node) : node(node) {}
+  HeapNode(const AllocationProfile::Node& node) : node(node) {}
 
   virtual std::string name() const override {
-    return *String::Utf8Value(node->name);
+    return *String::Utf8Value(node.name);
   }
 
   virtual std::string filename() const override {
-    return *String::Utf8Value(node->script_name);
+    return *String::Utf8Value(node.script_name);
   }
 
-  virtual int64_t getFileID() const override { return node->script_id; }
+  virtual int64_t getFileID() const override { return node.script_id; }
 
-  virtual int64_t lineNumber() const override { return node->line_number; }
+  virtual int64_t lineNumber() const override { return node.line_number; }
 
-  virtual int64_t columnNumber() const override { return node->column_number; }
+  virtual int64_t columnNumber() const override { return node.column_number; }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
                                       Profile* profile) const override {
     std::vector<Sample> samples;
-    for (size_t i = 0; i < node->allocations.size(); i++) {
-      AllocationProfile::Allocation allocation = node->allocations[i];
+    for (size_t i = 0; i < node.allocations.size(); i++) {
+      AllocationProfile::Allocation allocation = node.allocations[i];
       std::vector<Label> labels = {Label(profile->stringID("allocation"), 0,
                                          allocation.size,
                                          profile->stringID("bytes"))};
@@ -52,7 +52,7 @@ class HeapNode : public Node {
           allocation.count,
           static_cast<int64_t>(allocation.size * allocation.count)};
       Sample s = Sample({stack.begin(), stack.end()}, vals, labels);
-      samples.push_back(s);
+      samples.push_back(std::move(s));
     }
     return samples;
   }
@@ -60,36 +60,36 @@ class HeapNode : public Node {
 
 class TimeNode : public Node {
  private:
-  const CpuProfileNode* node;
+  const CpuProfileNode& node;
   int samplingIntervalMicros;
 
  public:
-  TimeNode(const CpuProfileNode* node, int samplingIntervalMicros)
+  TimeNode(const CpuProfileNode& node, int samplingIntervalMicros)
       : node(node), samplingIntervalMicros(samplingIntervalMicros) {}
 
   virtual std::string name() const override {
-    return *String::Utf8Value(node->GetFunctionName());
+    return *String::Utf8Value(node.GetFunctionName());
   }
 
   virtual std::string filename() const override {
-    return *String::Utf8Value(node->GetScriptResourceName());
+    return *String::Utf8Value(node.GetScriptResourceName());
   }
 
-  virtual int64_t getFileID() const override { return node->GetScriptId(); }
+  virtual int64_t getFileID() const override { return node.GetScriptId(); }
 
-  virtual int64_t lineNumber() const override { return node->GetLineNumber(); }
+  virtual int64_t lineNumber() const override { return node.GetLineNumber(); }
 
   virtual int64_t columnNumber() const override {
-    return node->GetColumnNumber();
+    return node.GetColumnNumber();
   }
 
   virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
                                       Profile* profile) const override {
     std::vector<Sample> samples;
-    int64_t hitCount = node->GetHitCount();
+    int64_t hitCount = node.GetHitCount();
     std::vector<int64_t> vals = {hitCount, hitCount * samplingIntervalMicros};
     Sample s = Sample({stack.begin(), stack.end()}, vals, std::vector<Label>());
-    samples.push_back(s);
+    samples.push_back(std::move(s));
     return samples;
   }
 };
@@ -109,7 +109,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
       (profileTree->GetEndTime() - profileTree->GetStartTime()) * 1000;
 
   Profile profile("wall", "microseconds", samplingIntervalMicros,
-                            startTimeNanos, durationNanos);
+                  startTimeNanos, durationNanos);
   profile.addSampleType("sample", "count");
   profile.addSampleType("wall", "microseconds");
 
@@ -128,7 +128,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
     TimeEntry entry = entries.front();
     entries.pop_front();
 
-    TimeNode node(entry.node, samplingIntervalMicros);
+    TimeNode node(*entry.node, samplingIntervalMicros);
     profile.addSample(node, &stack);
     int32_t count = entry.node->GetChildrenCount();
     if (count == 0) {
@@ -181,7 +181,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
     HeapEntry entry = entries.front();
     entries.pop_front();
 
-    HeapNode node(entry.node);
+    HeapNode node(*entry.node);
     profile.addSample(node, &stack);
     int32_t count = entry.node->children.size();
     if (count == 0) {

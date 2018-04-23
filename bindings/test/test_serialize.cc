@@ -59,8 +59,8 @@ class TestNode : public Node {
 
   virtual int64_t columnNumber() const override { return nodeColumnNumber; }
 
-  virtual std::vector<Sample> samples(const std::deque<uint64_t> &stack,
-                                      Profile *p) const override {
+  virtual std::vector<Sample> samples(const std::deque<uint64_t>& stack,
+                                      Profile* p) const override {
     std::vector<Sample> samples;
     for (size_t i = 0; i < sampleValues.size(); i++) {
       SampleContents sc = sampleValues[i];
@@ -71,8 +71,8 @@ class TestNode : public Node {
                                tag.num, p->stringID(tag.unit)));
       }
       std::vector<int64_t> vals = sc.vals;
-      Sample s = Sample({stack.begin(), stack.end()}, vals, labels);
-      samples.push_back(s);
+      Sample s({stack.begin(), stack.end()}, vals, labels);
+      samples.push_back(std::move(s));
     }
     return samples;
   }
@@ -135,11 +135,11 @@ struct ExpectedProfile {
   std::string keepFrames;
 };
 
-void assertExpectedProfile(Profile p, ExpectedProfile e) {
+void assertExpectedProfile(const Profile& p, ExpectedProfile e) {
   std::vector<std::string> profileStrings = p.getStrings();
   ASSERT_EQ(e.strings, profileStrings);
 
-  std::vector<ValueType> sampleType = p.getSampleType();
+  const std::vector<ValueType>& sampleType = p.getSampleType();
   ASSERT_EQ(e.sampleType.size(), sampleType.size());
   for (size_t i = 0; i < sampleType.size(); i++) {
     std::tuple<std::string, std::string> expValueType = e.sampleType[i];
@@ -149,7 +149,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
               profileStrings[sampleType[i].getUnitX()]);
   }
 
-  std::vector<ProfileLocation> locations = p.getLocation();
+  const std::vector<ProfileLocation>& locations = p.getLocation();
   ASSERT_EQ(e.location.size(), locations.size());
   for (size_t i = 0; i < locations.size(); i++) {
     ExpectedLocation expLocation = e.location[i];
@@ -159,14 +159,14 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
     ASSERT_EQ(expLocation.isFolded, locations[i].getIsFolded());
   }
 
-  std::vector<Sample> samples = p.getSample();
+  const std::vector<Sample>& samples = p.getSample();
   ASSERT_EQ(e.sample.size(), samples.size());
   for (size_t i = 0; i < samples.size(); i++) {
     ExpectedSample expSample = e.sample[i];
     ASSERT_EQ(expSample.locationID, samples[i].getLocationID());
     ASSERT_EQ(expSample.value, samples[i].getValue());
 
-    std::vector<Label> labels = samples[i].getLabel();
+    const std::vector<Label>& labels = samples[i].getLabel();
     ASSERT_EQ(expSample.label.size(), labels.size());
     for (size_t j = 0; j < labels.size(); j++) {
       ExpectedLabel expLabel = expSample.label[i];
@@ -181,7 +181,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
     }
   }
 
-  std::vector<Mapping> mappings = p.getMapping();
+  const std::vector<Mapping>& mappings = p.getMapping();
   ASSERT_EQ(e.mapping.size(), mappings.size());
   for (size_t i = 0; i < mappings.size(); i++) {
     ExpectedMapping expMapping = e.mapping[i];
@@ -197,7 +197,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
     ASSERT_EQ(expMapping.hasInlineFrames, mappings[i].getHasInlineFrames());
   }
 
-  std::vector<ProfileFunction> functions = p.getFunction();
+  const std::vector<ProfileFunction>& functions = p.getFunction();
   ASSERT_EQ(e.function.size(), functions.size());
   for (size_t i = 0; i < mappings.size(); i++) {
     ExpectedFunction expFunction = e.function[i];
@@ -210,7 +210,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
     ASSERT_EQ(expFunction.startLine, functions[i].getStartLine());
   }
 
-  std::vector<int64_t> comments = p.getCommentX();
+  const std::vector<int64_t>& comments = p.getCommentX();
   ASSERT_EQ(e.comment.size(), comments.size());
   for (size_t i = 0; i < comments.size(); i++) {
     ASSERT_EQ(e.comment[i], profileStrings[comments[i]]);
@@ -220,7 +220,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
   ASSERT_EQ(e.durationNanos, p.getDurationNanos());
   ASSERT_EQ(e.defaultSampleTypeX, p.getDefaultSampleTypeX());
 
-  ValueType periodType = p.getPeriodType();
+  const ValueType& periodType = p.getPeriodType();
   ASSERT_EQ(std::get<0>(e.periodType), profileStrings[periodType.getTypeX()]);
   ASSERT_EQ(std::get<1>(e.periodType), profileStrings[periodType.getUnitX()]);
 
@@ -229,7 +229,7 @@ void assertExpectedProfile(Profile p, ExpectedProfile e) {
 }
 
 TEST(Profile, stringId) {
-  Profile p = Profile("space", "bytes", 512 * 1024, 0);
+  Profile p("space", "bytes", 512 * 1024, 0);
   std::vector<std::string> wantStrings = {"", "bytes", "space"};
   ASSERT_EQ(wantStrings, p.getStrings());
   ASSERT_EQ(0, p.stringID(""));
@@ -241,7 +241,7 @@ TEST(Profile, stringId) {
 }
 
 TEST(Profile, ConstructorMinimalArgs) {
-  Profile p = Profile("space", "bytes", 512 * 1024, 0);
+  Profile p("space", "bytes", 512 * 1024, 0);
   ExpectedProfile e = {};
   e.strings = {"", "bytes", "space"};
   e.period = 0;
@@ -255,8 +255,7 @@ TEST(Profile, ConstructorMinimalArgs) {
 }
 
 TEST(Profile, ConstructorAllArgs) {
-  Profile p =
-      Profile("space", "bytes", 512 * 1024, 1234567890, 1e10, "drop", "keep");
+  Profile p("space", "bytes", 512 * 1024, 1234567890, 1e10, "drop", "keep");
   ExpectedProfile e = {};
   e.strings = {"", "bytes", "space", "drop", "keep"};
   e.period = 512 * 1024;
@@ -270,15 +269,15 @@ TEST(Profile, ConstructorAllArgs) {
 }
 
 TEST(Profile, addSampleOnce) {
-  Profile p = Profile("time", "ms", 100, 0);
+  Profile p("time", "ms", 100, 0);
 
   int64_t fileID = 500;
   int64_t lineNumber = 400;
   int64_t columnNumber = 300;
   std::vector<SampleContents> sampleValues;
   sampleValues.push_back({{50, 200}, {}});
-  std::unique_ptr<Node> node(new TestNode(
-      "name", "filename", fileID, lineNumber, columnNumber, sampleValues));
+  TestNode node("name", "filename", fileID, lineNumber, columnNumber,
+                sampleValues);
 
   std::deque<uint64_t> stack = {};
   p.addSample(node, &stack);
@@ -316,15 +315,15 @@ TEST(Profile, addSampleOnce) {
 }
 
 TEST(Profile, addSampleTwice) {
-  Profile p = Profile("time", "ms", 100, 0);
+  Profile p("time", "ms", 100, 0);
 
   int64_t fileID = 500;
   int64_t lineNumber = 400;
   int64_t columnNumber = 300;
   std::vector<SampleContents> sampleValues;
   sampleValues.push_back({{50, 200}, {}});
-  std::unique_ptr<Node> node(new TestNode(
-      "name", "filename", fileID, lineNumber, columnNumber, sampleValues));
+  TestNode node("name", "filename", fileID, lineNumber, columnNumber,
+                sampleValues);
 
   std::deque<uint64_t> stack1 = {};
   std::deque<uint64_t> stack2 = {};
@@ -443,11 +442,11 @@ TEST(Line, encode) {
 }
 
 TEST(ProfileFunction, encode) {
-  ProfileFunction f = ProfileFunction(20,  // id
-                                      15,  // nameX
-                                      10,  // systemNameX
-                                      5,   // filenameX
-                                      50   // start line
+  ProfileFunction f(20,  // id
+                    15,  // nameX
+                    10,  // systemNameX
+                    5,   // filenameX
+                    50   // start line
   );
   std::vector<char> expected = {
       static_cast<char>(0x8),  static_cast<char>(20),  // id
@@ -463,11 +462,11 @@ TEST(ProfileFunction, encode) {
 }
 
 TEST(ProfileLocation, encode) {
-  ProfileLocation l = ProfileLocation(30,              // id
-                                      27,              // mappingId
-                                      29,              // address
-                                      {Line(6, 570)},  // line
-                                      false            // isFolded
+  ProfileLocation l(30,              // id
+                    27,              // mappingId
+                    29,              // address
+                    {Line(6, 570)},  // line
+                    false            // isFolded
   );
   std::vector<char> expected = {
       static_cast<char>(0x8),
@@ -494,15 +493,15 @@ TEST(ProfileLocation, encode) {
 }
 
 TEST(Sample, encode) {
-  Sample s = Sample({1, 2, 3, 4},  // location id
-                    {50, 100},     // value
+  Sample s({1, 2, 3, 4},  // location id
+           {50, 100},     // value
 
-                    // label
-                    {Label(5,  // key
-                           6,  // strX
-                           7,  // num
-                           8   // unitX
-                           )});
+           // label
+           {Label(5,  // key
+                  6,  // strX
+                  7,  // num
+                  8   // unitX
+                  )});
 
   std::vector<char> expected = {
       // location id
@@ -528,7 +527,7 @@ TEST(Sample, encode) {
 }
 
 TEST(Profile, encode) {
-  Profile p = Profile("time", "ms", 100, 25, 15);
+  Profile p("time", "ms", 100, 25, 15);
   p.addSampleType("time", "ms");
   p.addSampleType("samples", "count");
 
@@ -537,8 +536,8 @@ TEST(Profile, encode) {
   int64_t columnNumber = 100;
   std::vector<SampleContents> sampleValues;
   sampleValues.push_back({{50, 60}, {}});
-  std::unique_ptr<Node> node(new TestNode(
-      "name", "filename", fileID, lineNumber, columnNumber, sampleValues));
+  TestNode node("name", "filename", fileID, lineNumber, columnNumber,
+                sampleValues);
 
   std::deque<uint64_t> stack = {};
   p.addSample(node, &stack);

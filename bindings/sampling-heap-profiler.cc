@@ -71,10 +71,9 @@ NAN_MODULE_INIT(InitAll) {
       target, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
       Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler))
           .ToLocalChecked());
-  Nan::Set(
-      target, Nan::New("getAllocationProfile").ToLocalChecked(),
-      Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile))
-          .ToLocalChecked());
+  Nan::Set(target, Nan::New("getAllocationProfile").ToLocalChecked(),
+           Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile))
+               .ToLocalChecked());
 }
 
 NODE_MODULE(sampling_heap_profiler, InitAll);

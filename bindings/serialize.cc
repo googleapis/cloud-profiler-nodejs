@@ -25,20 +25,20 @@ void ValueType::encode(std::vector<char>* buffer) const {
   encodeInt64Opt(2, unitX, buffer);
 }
 
-int64_t ValueType::getTypeX() { return typeX; }
+int64_t ValueType::getTypeX() const { return typeX; }
 
-int64_t ValueType::getUnitX() { return unitX; }
+int64_t ValueType::getUnitX() const { return unitX; }
 
 Label::Label(int64_t keyX, int64_t strX, int64_t num, int64_t unitX)
     : keyX(keyX), strX(strX), num(num), unitX(unitX) {}
 
-int64_t Label::getKeyX() { return keyX; }
+int64_t Label::getKeyX() const { return keyX; }
 
-int64_t Label::getStrX() { return strX; }
+int64_t Label::getStrX() const { return strX; }
 
-int64_t Label::getNum() { return num; }
+int64_t Label::getNum() const { return num; }
 
-int64_t Label::getUnitX() { return unitX; }
+int64_t Label::getUnitX() const { return unitX; }
 
 void Label::encode(std::vector<char>* buffer) const {
   encodeInt64Opt(1, keyX, buffer);
@@ -61,16 +61,16 @@ Mapping::Mapping(uint64_t id, uint64_t start, uint64_t limit, uint64_t offset,
       hasLineNumbers(hasLineNumbers),
       hasInlineFrames(hasInlineFrames) {}
 
-uint64_t Mapping::getID() { return id; }
-uint64_t Mapping::getStart() { return start; }
-uint64_t Mapping::getLimit() { return limit; }
-uint64_t Mapping::getOffset() { return offset; }
-uint64_t Mapping::getFileX() { return fileX; }
-uint64_t Mapping::getBuildIDX() { return buildIDX; }
-bool Mapping::getHasFunctions() { return hasFunctions; }
-bool Mapping::getHasFilenames() { return hasFilenames; }
-bool Mapping::getHasLineNumbers() { return hasLineNumbers; }
-bool Mapping::getHasInlineFrames() { return hasInlineFrames; }
+uint64_t Mapping::getID() const { return id; }
+uint64_t Mapping::getStart() const { return start; }
+uint64_t Mapping::getLimit() const { return limit; }
+uint64_t Mapping::getOffset() const { return offset; }
+uint64_t Mapping::getFileX() const { return fileX; }
+uint64_t Mapping::getBuildIDX() const { return buildIDX; }
+bool Mapping::getHasFunctions() const { return hasFunctions; }
+bool Mapping::getHasFilenames() const { return hasFilenames; }
+bool Mapping::getHasLineNumbers() const { return hasLineNumbers; }
+bool Mapping::getHasInlineFrames() const { return hasInlineFrames; }
 
 void Mapping::encode(std::vector<char>* buffer) const {
   encodeUint64Opt(1, id, buffer);
@@ -88,9 +88,9 @@ void Mapping::encode(std::vector<char>* buffer) const {
 Line::Line(uint64_t functionID, int64_t line)
     : functionID(functionID), line(line) {}
 
-uint64_t Line::getFunctionID() { return functionID; }
+uint64_t Line::getFunctionID() const { return functionID; }
 
-int64_t Line::getLine() { return line; }
+int64_t Line::getLine() const { return line; }
 
 void Line::encode(std::vector<char>* buffer) const {
   encodeUint64Opt(1, functionID, buffer);
@@ -106,11 +106,11 @@ ProfileFunction::ProfileFunction(uint64_t id, int64_t nameX,
       filenameX(filenameX),
       startLine(startLine) {}
 
-uint64_t ProfileFunction::getID() { return id; }
-int64_t ProfileFunction::getNameX() { return nameX; }
-int64_t ProfileFunction::getSystemNameX() { return systemNameX; }
-int64_t ProfileFunction::getFilenameX() { return filenameX; }
-int64_t ProfileFunction::getStartLine() { return startLine; }
+uint64_t ProfileFunction::getID() const { return id; }
+int64_t ProfileFunction::getNameX() const { return nameX; }
+int64_t ProfileFunction::getSystemNameX() const { return systemNameX; }
+int64_t ProfileFunction::getFilenameX() const { return filenameX; }
+int64_t ProfileFunction::getStartLine() const { return startLine; }
 
 void ProfileFunction::encode(std::vector<char>* buffer) const {
   encodeUint64Opt(1, id, buffer);
@@ -129,15 +129,22 @@ ProfileLocation::ProfileLocation(uint64_t id, uint64_t mappingID,
       line(line),
       isFolded(isFolded) {}
 
-uint64_t ProfileLocation::getID() { return id; }
+ProfileLocation::ProfileLocation(ProfileLocation&& l)
+    : id(std::move(l.id)),
+      mappingID(l.mappingID),
+      address(std::move(l.address)),
+      line(std::move(l.line)),
+      isFolded(std::move(l.isFolded)) {}
 
-uint64_t ProfileLocation::getMappingID() { return mappingID; }
+uint64_t ProfileLocation::getID() const { return id; }
 
-uint64_t ProfileLocation::getAddress() { return address; }
+uint64_t ProfileLocation::getMappingID() const { return mappingID; }
 
-std::vector<Line> ProfileLocation::getLine() { return line; }
+uint64_t ProfileLocation::getAddress() const { return address; }
 
-bool ProfileLocation::getIsFolded() { return isFolded; }
+const std::vector<Line>& ProfileLocation::getLine() const { return line; }
+
+bool ProfileLocation::getIsFolded() const { return isFolded; }
 
 void ProfileLocation::encode(std::vector<char>* buffer) const {
   encodeUint64Opt(1, id, buffer);
@@ -151,11 +158,18 @@ Sample::Sample(std::vector<uint64_t> locationID, std::vector<int64_t> value,
                std::vector<Label> label)
     : locationID(locationID), value(value), label(label) {}
 
-std::vector<uint64_t> Sample::getLocationID() { return locationID; }
+Sample::Sample(Sample&& s)
+    : locationID(std::move(s.locationID)),
+      value(std::move(s.value)),
+      label(std::move(s.label)) {}
 
-std::vector<int64_t> Sample::getValue() { return value; }
+const std::vector<uint64_t>& Sample::getLocationID() const {
+  return locationID;
+}
 
-std::vector<Label> Sample::getLabel() { return label; }
+const std::vector<int64_t>& Sample::getValue() const { return value; }
+
+const std::vector<Label>& Sample::getLabel() const { return label; }
 
 void Sample::encode(std::vector<char>* buffer) const {
   encodeUint64s(1, locationID, buffer);
@@ -183,15 +197,16 @@ void Profile::addSampleType(std::string type, std::string unit) {
   sampleType.push_back(ValueType(typeX, unitX));
 }
 
-void Profile::addSample(const Node& node,
-                        std::deque<uint64_t>* stack) {
+void Profile::addSample(const Node& node, std::deque<uint64_t>* stack) {
   uint64_t loc = locationID(node);
   stack->push_front(loc);
   std::vector<Sample> nodeSamples = node.samples(*stack, this);
-  sample.insert(sample.end(), nodeSamples.begin(), nodeSamples.end());
+  for (size_t i = 0; i < nodeSamples.size(); i++) {
+    sample.push_back(std::move(nodeSamples[i]));
+  }
 }
 
-uint64_t Profile::locationID(const Node&node) {
+uint64_t Profile::locationID(const Node& node) {
   LocationKey key(node.getFileID(), node.lineNumber(), node.columnNumber(),
                   node.name());
   auto ids = locationIDMap.find(key);
@@ -201,8 +216,8 @@ uint64_t Profile::locationID(const Node&node) {
   uint64_t id = location.size() + 1;
   std::vector<Line> lines;
   lines.push_back(line(node));
-  ProfileLocation l = ProfileLocation(id, 0, 0, lines, false);
-  location.push_back(l);
+  ProfileLocation l(id, 0, 0, lines, false);
+  location.push_back(std::move(l));
   locationIDMap.insert(locationIDMap.begin(),
                        std::pair<LocationKey, int64_t>(key, id));
   return id;
@@ -242,33 +257,39 @@ int64_t Profile::stringID(std::string s) {
   return id;
 }
 
-std::vector<ValueType> Profile::getSampleType() { return sampleType; }
+const std::vector<ValueType>& Profile::getSampleType() const {
+  return sampleType;
+}
 
-std::vector<ProfileLocation> Profile::getLocation() { return location; }
+const std::vector<ProfileLocation>& Profile::getLocation() const {
+  return location;
+}
 
-std::vector<Sample> Profile::getSample() { return sample; }
+const std::vector<Sample>& Profile::getSample() const { return sample; }
 
-std::vector<Mapping> Profile::getMapping() { return mapping; }
+const std::vector<Mapping>& Profile::getMapping() const { return mapping; }
 
-std::vector<ProfileFunction> Profile::getFunction() { return function; }
+const std::vector<ProfileFunction>& Profile::getFunction() const {
+  return function;
+}
 
-std::vector<std::string> Profile::getStrings() { return strings; }
+const std::vector<std::string>& Profile::getStrings() const { return strings; }
 
-std::vector<int64_t> Profile::getCommentX() { return commentX; }
+const std::vector<int64_t>& Profile::getCommentX() const { return commentX; }
 
-int64_t Profile::getPeriod() { return period; }
+int64_t Profile::getPeriod() const { return period; }
 
-int64_t Profile::getTimeNanos() { return timeNanos; }
+int64_t Profile::getTimeNanos() const { return timeNanos; }
 
-int64_t Profile::getDurationNanos() { return durationNanos; }
+int64_t Profile::getDurationNanos() const { return durationNanos; }
 
-int64_t Profile::getDefaultSampleTypeX() { return defaultSampleTypeX; }
+int64_t Profile::getDefaultSampleTypeX() const { return defaultSampleTypeX; }
 
-ValueType Profile::getPeriodType() { return periodType; }
+const ValueType& Profile::getPeriodType() const { return periodType; }
 
-int64_t Profile::getDropFramesX() { return dropFramesX; }
+int64_t Profile::getDropFramesX() const { return dropFramesX; }
 
-int64_t Profile::getKeepFramesX() { return keepFramesX; }
+int64_t Profile::getKeepFramesX() const { return keepFramesX; }
 
 void Profile::encode(std::vector<char>* buffer) const {
   encodeRepeatedMessage<ValueType>(1, sampleType, buffer);

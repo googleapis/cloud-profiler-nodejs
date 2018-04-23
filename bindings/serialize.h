@@ -29,8 +29,8 @@ class ValueType : public ProtoField {
   int64_t typeX;  // Index into string table.
   int64_t unitX;  // Index into string table.
   ValueType(int64_t typeX = 0, int64_t unitX = 0);
-  int64_t getTypeX();
-  int64_t getUnitX();
+  int64_t getTypeX() const;
+  int64_t getUnitX() const;
   virtual void encode(std::vector<char>* buffer) const;
 };
 
@@ -43,11 +43,11 @@ class Label : public ProtoField {
   int64_t unitX;  // Index into string table.
 
  public:
-  int64_t getKeyX();
-  int64_t getStrX();
-  int64_t getNum();
-  int64_t getUnitX();
   Label(int64_t keyX = 0, int64_t strX = 0, int64_t num = 0, int64_t unitX = 0);
+  int64_t getKeyX() const;
+  int64_t getStrX() const;
+  int64_t getNum() const;
+  int64_t getUnitX() const;
   virtual void encode(std::vector<char>* buffer) const;
 };
 
@@ -69,16 +69,16 @@ class Mapping : public ProtoField {
   Mapping(uint64_t id, uint64_t start, uint64_t limit, uint64_t offset,
           uint64_t fileX, uint64_t buildIDX, bool hasFunctions,
           bool hasFilenames, bool hasLineNumbers, bool hasInlineFrames);
-  uint64_t getID();
-  uint64_t getStart();
-  uint64_t getLimit();
-  uint64_t getOffset();
-  uint64_t getFileX();
-  uint64_t getBuildIDX();
-  bool getHasFunctions();
-  bool getHasFilenames();
-  bool getHasLineNumbers();
-  bool getHasInlineFrames();
+  uint64_t getID() const;
+  uint64_t getStart() const;
+  uint64_t getLimit() const;
+  uint64_t getOffset() const;
+  uint64_t getFileX() const;
+  uint64_t getBuildIDX() const;
+  bool getHasFunctions() const;
+  bool getHasFilenames() const;
+  bool getHasLineNumbers() const;
+  bool getHasInlineFrames() const;
 
   virtual void encode(std::vector<char>* buffer) const;
 };
@@ -91,8 +91,8 @@ class Line : public ProtoField {
 
  public:
   Line(uint64_t functionID, int64_t line);
-  uint64_t getFunctionID();
-  int64_t getLine();
+  uint64_t getFunctionID() const;
+  int64_t getLine() const;
   virtual void encode(std::vector<char>* buffer) const;
 };
 
@@ -108,11 +108,11 @@ class ProfileFunction : public ProtoField {
  public:
   ProfileFunction(uint64_t id, int64_t nameX, int64_t systemNameX,
                   int64_t filenameX, int64_t startLine);
-  uint64_t getID();
-  int64_t getNameX();
-  int64_t getSystemNameX();
-  int64_t getFilenameX();
-  int64_t getStartLine();
+  uint64_t getID() const;
+  int64_t getNameX() const;
+  int64_t getSystemNameX() const;
+  int64_t getFilenameX() const;
+  int64_t getStartLine() const;
   virtual void encode(std::vector<char>* buffer) const;
 };
 
@@ -126,14 +126,20 @@ class ProfileLocation : public ProtoField {
   bool isFolded;
 
  public:
+  // disallow copying
+  ProfileLocation(const ProfileLocation&) = delete;
+
+  // allow moving
+  ProfileLocation(ProfileLocation&&);
+
   ProfileLocation(uint64_t id, uint64_t mappingID, uint64_t address,
                   std::vector<Line> line, bool isFolded);
 
-  uint64_t getID();
-  uint64_t getMappingID();
-  uint64_t getAddress();
-  std::vector<Line> getLine();
-  bool getIsFolded();
+  uint64_t getID() const;
+  uint64_t getMappingID() const;
+  uint64_t getAddress() const;
+  const std::vector<Line>& getLine() const;
+  bool getIsFolded() const;
 
   virtual void encode(std::vector<char>* buffer) const;
 };
@@ -146,11 +152,17 @@ class Sample : public ProtoField {
   std::vector<Label> label;
 
  public:
+  // disallow copying
+  Sample(const Sample&) = delete;
+
+  // allow moving
+  Sample(Sample&&);
+
   Sample(std::vector<uint64_t> locationID, std::vector<int64_t> value,
          std::vector<Label> label);
-  std::vector<uint64_t> getLocationID();
-  std::vector<int64_t> getValue();
-  std::vector<Label> getLabel();
+  const std::vector<uint64_t>& getLocationID() const;
+  const std::vector<int64_t>& getValue() const;
+  const std::vector<Label>& getLabel() const;
   virtual void encode(std::vector<char>* buffer) const;
 };
 
@@ -198,6 +210,9 @@ class Profile : public ProtoField {
   int64_t keepFramesX;  // Index into string table.
 
  public:
+  // disallow copying
+  Profile(const Profile&) = delete;
+
   Profile(std::string periodType, std::string periodUnit, int64_t period,
           int64_t timeNanos = 0, int64_t durationNanos = 0,
           std::string dropFrames = "", std::string keepFramesX = "");
@@ -206,26 +221,26 @@ class Profile : public ProtoField {
 
   // adds samples associated with the node to the profile, and pushes the
   // node's location ID to the front of the stack.
-  void addSample(const Node&node, std::deque<uint64_t>* stack);
-  uint64_t locationID(const Node&node);
-  Line line(const Node&node);
-  int64_t functionID(const Node&node);
+  void addSample(const Node& node, std::deque<uint64_t>* stack);
+  uint64_t locationID(const Node& node);
+  Line line(const Node& node);
+  int64_t functionID(const Node& node);
   int64_t stringID(std::string s);
 
-  std::vector<ValueType> getSampleType();
-  std::vector<ProfileLocation> getLocation();
-  std::vector<Sample> getSample();
-  std::vector<Mapping> getMapping();
-  std::vector<ProfileFunction> getFunction();
-  std::vector<std::string> getStrings();
-  std::vector<int64_t> getCommentX();
-  int64_t getPeriod();
-  int64_t getTimeNanos();
-  int64_t getDurationNanos();
-  int64_t getDefaultSampleTypeX();
-  ValueType getPeriodType();
-  int64_t getDropFramesX();
-  int64_t getKeepFramesX();
+  const std::vector<ValueType>& getSampleType() const;
+  const std::vector<ProfileLocation>& getLocation() const;
+  const std::vector<Sample>& getSample() const;
+  const std::vector<Mapping>& getMapping() const;
+  const std::vector<ProfileFunction>& getFunction() const;
+  const std::vector<std::string>& getStrings() const;
+  const std::vector<int64_t>& getCommentX() const;
+  int64_t getPeriod() const;
+  int64_t getTimeNanos() const;
+  int64_t getDurationNanos() const;
+  int64_t getDefaultSampleTypeX() const;
+  const ValueType& getPeriodType() const;
+  int64_t getDropFramesX() const;
+  int64_t getKeepFramesX() const;
 
   virtual void encode(std::vector<char>* buffer) const;
 };

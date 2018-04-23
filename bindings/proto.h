@@ -111,7 +111,7 @@ void encodeMessage(int tag, const ProtoField& m, std::vector<char>* buffer);
 // Encodes a vector of ProtoFields as a message, writing this encoding to
 // buffer.
 template <typename T>
-void encodeRepeatedMessage(int tag, const std::vector<T> elems,
+void encodeRepeatedMessage(int tag, const std::vector<T>& elems,
                            std::vector<char>* buffer) {
   for (size_t i = 0; i < elems.size(); i++) {
     encodeMessage(tag, elems[i], buffer);
