@@ -44,8 +44,7 @@ export class HeapProfiler {
       throw new Error('Heap profiler is not enabled.');
     }
     const startTimeNanos = Date.now() * 1000 * 1000;
-    const b =
-        profiler.getAllocationProfile(startTimeNanos, this.intervalBytes);
+    const b = profiler.getAllocationProfile(startTimeNanos, this.intervalBytes);
     const gzBuf = await gzip(b);
     return gzBuf.toString('base64');
   }
