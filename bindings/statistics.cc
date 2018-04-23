@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "v8.h"
 #include "nan.h"
+#include "v8.h"
 
 using namespace v8;
 
@@ -26,16 +26,17 @@ NAN_METHOD(GetHeapSpaceStatistics) {
     HeapSpaceStatistics space_stats;
     info.GetIsolate()->GetHeapSpaceStatistics(&space_stats, space);
     Local<Object> stats_elem = Nan::New<Object>();
-    stats_elem->Set(Nan::New<String>("name").ToLocalChecked(),
-      Nan::New<String>(space_stats.space_name()).ToLocalChecked());
+    stats_elem->Set(
+        Nan::New<String>("name").ToLocalChecked(),
+        Nan::New<String>(space_stats.space_name()).ToLocalChecked());
     stats_elem->Set(Nan::New<String>("spaceSize").ToLocalChecked(),
-      Nan::New<Number>(space_stats.space_size()));
+                    Nan::New<Number>(space_stats.space_size()));
     stats_elem->Set(Nan::New<String>("spaceUsedSize").ToLocalChecked(),
-      Nan::New<Number>(space_stats.space_used_size()));
+                    Nan::New<Number>(space_stats.space_used_size()));
     stats_elem->Set(Nan::New<String>("spaceAvailableSize").ToLocalChecked(),
-      Nan::New<Number>(space_stats.space_available_size()));
+                    Nan::New<Number>(space_stats.space_available_size()));
     stats_elem->Set(Nan::New<String>("physicalSpaceSize").ToLocalChecked(),
-      Nan::New<Number>(space_stats.physical_space_size()));
+                    Nan::New<Number>(space_stats.physical_space_size()));
     stats_array->Set(space, stats_elem);
   }
   info.GetReturnValue().Set(stats_array);
@@ -43,7 +44,8 @@ NAN_METHOD(GetHeapSpaceStatistics) {
 
 NAN_MODULE_INIT(InitAll) {
   Nan::Set(target, Nan::New("getHeapSpaceStatistics").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(GetHeapSpaceStatistics)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(GetHeapSpaceStatistics))
+               .ToLocalChecked());
 }
 
 NODE_MODULE(statistics, InitAll);

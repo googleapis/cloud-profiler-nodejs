@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {perftools} from '../../../proto/profile';
-import {serializeHeapProfile} from './profile-serializer';
+import {Buffer} from 'buffer';
+import * as pify from 'pify';
+import * as util from 'util';
+import * as zlib from 'zlib';
 
+import {perftools} from '../../../proto/profile';
+
+const gzip = pify(zlib.gzip);
 const profiler = require('bindings')('sampling_heap_profiler');
 
 export class HeapProfiler {
@@ -34,13 +39,14 @@ export class HeapProfiler {
    * Collects a heap profile when heapProfiler is enabled. Otherwise throws
    * an error.
    */
-  profile(): perftools.profiles.IProfile {
+  async profile(): Promise<string> {
     if (!this.enabled) {
       throw new Error('Heap profiler is not enabled.');
     }
-    const result = profiler.getAllocationProfile();
     const startTimeNanos = Date.now() * 1000 * 1000;
-    return serializeHeapProfile(result, startTimeNanos, this.intervalBytes);
+    const b = profiler.getAllocationProfile(startTimeNanos, this.intervalBytes);
+    const gzBuf = await gzip(b);
+    return gzBuf.toString('base64');
   }
 
   enable() {
