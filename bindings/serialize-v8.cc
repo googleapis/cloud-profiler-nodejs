@@ -128,8 +128,7 @@ std::unique_ptr<std::vector<char>> serializeTimeProfile(
     TimeEntry entry = entries.front();
     entries.pop_front();
 
-    std::unique_ptr<Node> node(
-        new TimeNode(entry.node, samplingIntervalMicros));
+    TimeNode node(entry.node, samplingIntervalMicros);
     profile.addSample(node, &stack);
     int32_t count = entry.node->GetChildrenCount();
     if (count == 0) {
@@ -182,7 +181,7 @@ std::unique_ptr<std::vector<char>> serializeHeapProfile(
     HeapEntry entry = entries.front();
     entries.pop_front();
 
-    std::unique_ptr<Node> node(new HeapNode(entry.node));
+    HeapNode node(entry.node);
     profile.addSample(node, &stack);
     int32_t count = entry.node->children.size();
     if (count == 0) {

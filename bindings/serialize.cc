@@ -183,17 +183,17 @@ void Profile::addSampleType(std::string type, std::string unit) {
   sampleType.push_back(ValueType(typeX, unitX));
 }
 
-void Profile::addSample(std::unique_ptr<Node>& node,
+void Profile::addSample(const Node& node,
                         std::deque<uint64_t>* stack) {
   uint64_t loc = locationID(node);
   stack->push_front(loc);
-  std::vector<Sample> nodeSamples = node->samples(*stack, this);
+  std::vector<Sample> nodeSamples = node.samples(*stack, this);
   sample.insert(sample.end(), nodeSamples.begin(), nodeSamples.end());
 }
 
-uint64_t Profile::locationID(std::unique_ptr<Node>& node) {
-  LocationKey key(node->getFileID(), node->lineNumber(), node->columnNumber(),
-                  node->name());
+uint64_t Profile::locationID(const Node&node) {
+  LocationKey key(node.getFileID(), node.lineNumber(), node.columnNumber(),
+                  node.name());
   auto ids = locationIDMap.find(key);
   if (ids != locationIDMap.end()) {
     return ids->second;
@@ -208,22 +208,22 @@ uint64_t Profile::locationID(std::unique_ptr<Node>& node) {
   return id;
 }
 
-Line Profile::line(std::unique_ptr<Node>& node) {
-  return Line(functionID(node), node->lineNumber());
+Line Profile::line(const Node& node) {
+  return Line(functionID(node), node.lineNumber());
 }
 
-int64_t Profile::functionID(std::unique_ptr<Node>& node) {
-  std::string name = node->name();
-  FunctionKey key(node->getFileID(), name);
+int64_t Profile::functionID(const Node& node) {
+  std::string name = node.name();
+  FunctionKey key(node.getFileID(), name);
   auto ids = functionIDMap.find(key);
   if (ids != functionIDMap.end()) {
     return ids->second;
   }
   int64_t nameX = stringID(name);
-  int64_t filenameX = stringID(node->filename());
+  int64_t filenameX = stringID(node.filename());
   int64_t id = function.size() + 1;
   ProfileFunction f =
-      ProfileFunction(id, nameX, nameX, filenameX, node->lineNumber());
+      ProfileFunction(id, nameX, nameX, filenameX, node.lineNumber());
   function.push_back(f);
   functionIDMap.insert(functionIDMap.begin(),
                        std::pair<FunctionKey, int64_t>(key, id));

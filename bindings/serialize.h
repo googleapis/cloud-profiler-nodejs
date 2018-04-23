@@ -206,10 +206,10 @@ class Profile : public ProtoField {
 
   // adds samples associated with the node to the profile, and pushes the
   // node's location ID to the front of the stack.
-  void addSample(std::unique_ptr<Node>& node, std::deque<uint64_t>* stack);
-  uint64_t locationID(std::unique_ptr<Node>& node);
-  Line line(std::unique_ptr<Node>& node);
-  int64_t functionID(std::unique_ptr<Node>& node);
+  void addSample(const Node&node, std::deque<uint64_t>* stack);
+  uint64_t locationID(const Node&node);
+  Line line(const Node&node);
+  int64_t functionID(const Node&node);
   int64_t stringID(std::string s);
 
   std::vector<ValueType> getSampleType();
