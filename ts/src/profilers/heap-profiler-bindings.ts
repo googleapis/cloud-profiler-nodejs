@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+import * as path from 'path';
+
 import {AllocationProfileNode} from '../v8-types';
-const profiler = require('bindings')('sampling_heap_profiler');
+
+const binary = require('node-pre-gyp');
+const bindingPath =
+    binary.find(path.resolve(path.join(__dirname, '../../../package.json')));
+const profiler = require(bindingPath);
 
 // Wrappers around native heap profiler functions.
 

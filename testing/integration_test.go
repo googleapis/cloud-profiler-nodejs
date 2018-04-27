@@ -39,6 +39,7 @@ var (
 	commit              = flag.String("commit", "", "git commit to test")
 	pr                  = flag.Int("pr", 0, "git pull request to test")
 	runOnlyV8CanaryTest = flag.Bool("run_only_v8_canary_test", false, "if true test will be run only with the v8-canary build, otherwise, no tests will be run with v8 canary")
+	binaryHost          = flag.String("binary_host", "", "host from which to download precompiled binaries; if no value is specified, binaries will be built from source.")
 
 	runID             = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
 	benchFinishString = "busybench finished profiling"
@@ -94,7 +95,12 @@ cd cloud-profiler-nodejs
 retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pull_branch
 git checkout pull_branch
 git reset --hard {{.Commit}}
-retry npm install --nodedir="$NODEDIR" >/dev/null
+{{if eq .BinaryHost ""}}
+retry npm install --nodedir="$NODEDIR" --build-from-source=cloud_profiler_nodejs >/dev/null
+{{else}}
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --cloud_profiler_nodejs_host_mirror={{.BinaryHost}} >/dev/null
+{{end}}
+
 npm run compile 
 npm pack --nodedir="$NODEDIR" >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
@@ -105,6 +111,7 @@ mkdir -p "$TESTDIR"
 cp -r "testing/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
+retry npm install node-pre-gyp
 retry npm install --nodedir="$NODEDIR" "$PROFILER" typescript gts >/dev/null
 npm run compile
 
@@ -144,6 +151,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 			Commit       string
 			FinishString string
 			ErrorString  string
+			BinaryHost   string
 		}{
 			Service:      tc.name,
 			NodeVersion:  tc.nodeVersion,
@@ -154,6 +162,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 			Commit:       *commit,
 			FinishString: benchFinishString,
 			ErrorString:  errorString,
+			BinaryHost:   *binaryHost,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to render startup script for %s: %v", tc.name, err)

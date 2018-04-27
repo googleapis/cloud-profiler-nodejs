@@ -18,6 +18,7 @@ import * as common from '@google-cloud/common';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as nock from 'nock';
+import * as path from 'path';
 import * as pify from 'pify';
 import * as sinon from 'sinon';
 import {instance, mock, reset, when} from 'ts-mockito';
@@ -31,7 +32,11 @@ import {TimeProfiler} from '../src/profilers/time-profiler';
 
 import {decodedHeapProfile, decodedTimeProfile, heapProfile, timeProfile} from './profiles-for-tests';
 
-const v8TimeProfiler = require('bindings')('time_profiler');
+const binary = require('node-pre-gyp');
+const bindingPath =
+    binary.find(path.resolve(path.join(__dirname, '../../package.json')));
+const v8TimeProfiler = require(bindingPath);
+
 const parseDuration: (str: string) => number = require('parse-duration');
 
 const fakeCredentials =

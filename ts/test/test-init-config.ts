@@ -16,13 +16,18 @@
 
 import * as assert from 'assert';
 import * as gcpMetadata from 'gcp-metadata';
+import * as path from 'path';
 import * as sinon from 'sinon';
 
 import {createProfiler, nodeVersionOkay} from '../src/index';
 import {Profiler} from '../src/profiler';
 import * as heapProfiler from '../src/profilers/heap-profiler';
 
-const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
+const binary = require('node-pre-gyp');
+const bindingPath =
+    binary.find(path.resolve(path.join(__dirname, '../../package.json')));
+const v8HeapProfiler = require(bindingPath);
+
 
 describe('nodeVersionOkay', () => {
   it('should accept alpha versions', () => {
