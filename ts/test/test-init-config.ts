@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import * as common from '@google-cloud/common';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
@@ -25,7 +26,7 @@ import * as heapProfiler from '../src/profilers/heap-profiler';
 
 const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
 
-describe('createProfiler', () => {
+describe('createProfiler', async () => {
   let savedEnv: NodeJS.ProcessEnv;
   let metadataStub: sinon.SinonStub|undefined;
   let startStub: sinon.SinonStub;
@@ -79,16 +80,10 @@ describe('createProfiler', () => {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
-    if (profiler === undefined) {
-      assert.ok(true, 'profiler should be created successfully.');
-      return;
-    }
-    const initializedConfig = profiler.config;
-    // remove interceptors_ field which is added to profiler.config.
-    // tslint:disable-next-line: no-any
-    delete (initializedConfig as any).interceptors_;
-    assert.deepEqual(initializedConfig, extend(config, internalConfigParams));
+    const profiler: Profiler = await createProfiler(config);
+    const expConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams, config));
+    assert.deepEqual(profiler.config, expConfig);
   });
 
   it('should not modify specified fields when on GCE', async () => {
@@ -107,16 +102,10 @@ describe('createProfiler', () => {
       zone: 'zone',
       projectId: 'fake-projectId'
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
-    if (profiler === undefined) {
-      assert.ok(true, 'profiler should be created successfully.');
-      return;
-    }
-    const initializedConfig = profiler.config;
-    // remove interceptors_ field which is added to profiler.config.
-    // tslint:disable-next-line: no-any
-    delete (initializedConfig as any).interceptors_;
-    assert.deepEqual(initializedConfig, extend(config, internalConfigParams));
+    const profiler: Profiler = await createProfiler(config);
+    const expConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams, config));
+    assert.deepEqual(profiler.config, expConfig);
   });
 
   it('should get zone and instance from GCE', async () => {
@@ -133,7 +122,7 @@ describe('createProfiler', () => {
       disableHeap: true,
       disableTime: true,
     };
-    const expConfig = {
+    const expConfigParams = {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: true,
@@ -142,17 +131,11 @@ describe('createProfiler', () => {
       zone: 'gce-zone',
       projectId: 'projectId'
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
-    if (profiler === undefined) {
-      assert.ok(true, 'profiler should be created successfully.');
-      return;
-    }
-    const initializedConfig = profiler.config;
-    // remove interceptors_ field which is added to profiler.config.
-    // tslint:disable-next-line: no-any
-    delete (initializedConfig as any).interceptors_;
-    assert.deepEqual(
-        initializedConfig, extend(expConfig, internalConfigParams));
+    const profiler: Profiler = await createProfiler(config);
+
+    const expConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams, expConfigParams));
+    assert.deepEqual(profiler.config, expConfig);
   });
 
   it('should not reject when not on GCE and no zone and instance found',
@@ -163,24 +146,17 @@ describe('createProfiler', () => {
          projectId: 'fake-projectId',
          serviceContext: {service: 'fake-service'}
        };
-       const expConfig = {
+       const expConfigParams = {
          logLevel: 2,
          serviceContext: {service: 'fake-service'},
          disableHeap: false,
          disableTime: false,
          projectId: 'fake-projectId',
        };
-       const profiler: Profiler|undefined = await createProfiler(config);
-       if (profiler === undefined) {
-         assert.ok(true, 'profiler should be created successfully.');
-         return;
-       }
-       const initializedConfig = profiler.config;
-       // remove interceptors_ field which is added to profiler.config.
-       // tslint:disable-next-line: no-any
-       delete (initializedConfig as any).interceptors_;
-       assert.deepEqual(
-           initializedConfig, extend(expConfig, internalConfigParams));
+       const profiler: Profiler = await createProfiler(config);
+       const expConfig = await common.util.normalizeArguments(
+           null, extend({}, internalConfigParams, expConfigParams));
+       assert.deepEqual(profiler.config, expConfig);
      });
 
   it('should reject when no service specified', async () => {
@@ -215,16 +191,10 @@ describe('createProfiler', () => {
       instance: 'instance',
       zone: 'zone'
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
-    if (profiler === undefined) {
-      assert.ok(true, 'profiler should be created successfully.');
-      return;
-    }
-    const initializedConfig = profiler.config;
-    // remove interceptors_ field which is added to profiler.config.
-    // tslint:disable-next-line: no-any
-    delete (initializedConfig as any).interceptors_;
-    assert.deepEqual(initializedConfig, extend(config, internalConfigParams));
+    const profiler: Profiler = await createProfiler(config);
+    const expConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams, config));
+    assert.deepEqual(profiler.config, expConfig);
   });
 
   it('should set baseApiUrl to non-default value', async () => {
@@ -235,26 +205,17 @@ describe('createProfiler', () => {
       serviceContext: {version: '', service: 'fake-service'},
       baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
     };
-    const expConfig = extend(
-        {
-          serviceContext: {version: '', service: 'fake-service'},
-          disableHeap: false,
-          disableTime: false,
-          logLevel: 2
-        },
-        internalConfigParams);
-    expConfig.baseApiUrl =
-        'https://test-cloudprofiler.sandbox.googleapis.com/v2';
-    const profiler: Profiler|undefined = await createProfiler(config);
-    if (profiler === undefined) {
-      assert.ok(true, 'profiler should be created successfully.');
-      return;
-    }
-    const initializedConfig = profiler.config;
-    // remove interceptors_ field which is added to profiler.config.
-    // tslint:disable-next-line: no-any
-    delete (initializedConfig as any).interceptors_;
-    assert.deepEqual(initializedConfig, expConfig);
+    const expConfigParams = {
+      serviceContext: {version: '', service: 'fake-service'},
+      disableHeap: false,
+      disableTime: false,
+      logLevel: 2,
+      baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
+    };
+    const expConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams, expConfigParams));
+    const profiler: Profiler = await createProfiler(config);
+    assert.deepEqual(profiler.config, expConfig);
   });
 
   it('should get values from from environment variable when not specified in config or environment variables',
@@ -271,7 +232,7 @@ describe('createProfiler', () => {
            .withArgs('zone')
            .resolves({data: 'projects/123456789012/zones/gce-zone'});
        const config = {};
-       const expConfig = {
+       const expConfigParams = {
          projectId: 'process-projectId',
          logLevel: 4,
          serviceContext:
@@ -281,17 +242,10 @@ describe('createProfiler', () => {
          instance: 'envConfig-instance',
          zone: 'envConfig-zone'
        };
-       const profiler: Profiler|undefined = await createProfiler(config);
-       if (profiler === undefined) {
-         assert.ok(true, 'profiler should be created successfully.');
-         return;
-       }
-       const initializedConfig = profiler.config;
-       // remove interceptors_ field which is added to profiler.config.
-       // tslint:disable-next-line: no-any
-       delete (initializedConfig as any).interceptors_;
-       assert.deepEqual(
-           initializedConfig, extend(expConfig, internalConfigParams));
+       const profiler: Profiler = await createProfiler(config);
+       const expConfig = await common.util.normalizeArguments(
+           null, extend({}, internalConfigParams, expConfigParams));
+       assert.deepEqual(profiler.config, expConfig);
      });
 
   it('should not get values from from environment variable when values specified in config',
@@ -317,17 +271,10 @@ describe('createProfiler', () => {
          instance: 'instance',
          zone: 'zone'
        };
-       const profiler: Profiler|undefined = await createProfiler(config);
-       if (profiler === undefined) {
-         assert.ok(true, 'profiler should be created successfully.');
-         return;
-       }
-       const initializedConfig = profiler.config;
-       // remove interceptors_ field which is added to profiler.config.
-       // tslint:disable-next-line: no-any
-       delete (initializedConfig as any).interceptors_;
-       assert.deepEqual(
-           initializedConfig, extend(config, internalConfigParams));
+       const profiler: Profiler = await createProfiler(config);
+       const expConfig = await common.util.normalizeArguments(
+           null, extend({}, internalConfigParams, config));
+       assert.deepEqual(profiler.config, expConfig);
      });
 
   it('should get values from from environment config when not specified in config or other environment variables',
@@ -337,7 +284,7 @@ describe('createProfiler', () => {
        process.env.GCLOUD_PROFILER_CONFIG =
            './ts/test/fixtures/test-config.json';
 
-       const expConfig = {
+       const expConfigParams = {
          logLevel: 3,
          serviceContext:
              {version: 'envConfig-version', service: 'envConfig-service'},
@@ -349,18 +296,10 @@ describe('createProfiler', () => {
        };
 
        const config = {};
-       const profiler: Profiler|undefined = await createProfiler(config);
-       if (profiler === undefined) {
-         assert.ok(true, 'profiler should be created successfully.');
-         return;
-       }
-       const initializedConfig = profiler.config;
-       // remove interceptors_ field which is added to profiler.config.
-       // tslint:disable-next-line: no-any
-       delete (initializedConfig as any).interceptors_;
-       assert.deepEqual(
-           initializedConfig,
-           Object.assign(extend(expConfig, internalConfigParams)));
+       const profiler: Profiler = await createProfiler(config);
+       const expConfig = await common.util.normalizeArguments(
+           null, extend({}, internalConfigParams, expConfigParams));
+       assert.deepEqual(profiler.config, expConfig);
      });
   it('should start heap profiler when disableHeap is not set', async () => {
     const config = {
@@ -369,7 +308,7 @@ describe('createProfiler', () => {
       instance: 'envConfig-instance',
       zone: 'envConfig-zone',
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
+    const profiler: Profiler = await createProfiler(config);
     assert.ok(
         startStub.calledWith(1024 * 512, 64),
         'expected heap profiler to be started');
@@ -382,7 +321,7 @@ describe('createProfiler', () => {
       instance: 'envConfig-instance',
       zone: 'envConfig-zone',
     };
-    const profiler: Profiler|undefined = await createProfiler(config);
+    const profiler: Profiler = await createProfiler(config);
     assert.ok(!startStub.called, 'expected heap profiler to not be started');
   });
 });
