@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as common from '@google-cloud/common';
 import {Logger, util} from '@google-cloud/common';
 import * as delay from 'delay';
 import * as extend from 'extend';
@@ -141,7 +140,7 @@ export async function start(config: Config = {}): Promise<void> {
 
 function logError(msg: string, config: Config) {
   const logger = new Logger(
-      {level: common.logger.LEVELS[config.logLevel || 2], tag: pjson.name});
+      {level: Logger.DEFAULT_OPTIONS.levels[config.logLevel || 2], tag: pjson.name});
   logger.error(msg);
 }
 
@@ -156,7 +155,7 @@ export async function startLocal(config: Config = {}): Promise<void> {
 
   // Set up periodic logging.
   const logger = new Logger({
-    level: common.logger.LEVELS[normalizedConfig.logLevel],
+    level: Logger.DEFAULT_OPTIONS.levels[normalizedConfig.logLevel],
     tag: pjson.name
   });
   let heapProfileCount = 0;
