@@ -15,6 +15,7 @@
  */
 
 import * as common from '@google-cloud/common';
+import {GlobalConfig} from '@google-cloud/common/build/src/util';
 import * as assert from 'assert';
 import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
@@ -26,12 +27,29 @@ import * as heapProfiler from '../src/profilers/heap-profiler';
 
 const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
 
-describe('createProfiler', async () => {
+describe('createProfiler', () => {
   let savedEnv: NodeJS.ProcessEnv;
   let metadataStub: sinon.SinonStub|undefined;
   let startStub: sinon.SinonStub;
 
-  before(() => {
+  const internalConfigParams = {
+    timeIntervalMicros: 1000,
+    heapIntervalBytes: 512 * 1024,
+    heapMaxStackDepth: 64,
+    initialBackoffMillis: 1000 * 60,
+    backoffCapMillis: 60 * 60 * 1000,
+    backoffMultiplier: 1.3,
+    serverBackoffCapMillis: 2147483647,
+    localProfilingPeriodMillis: 1000,
+    localTimeDurationMillis: 1000,
+    localLogPeriodMillis: 10000,
+    baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
+  };
+  let defaultConfig: GlobalConfig;
+
+  before(async () => {
+    defaultConfig = await common.util.normalizeArguments(
+        null, extend({}, internalConfigParams as GlobalConfig));
     startStub = sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler');
     savedEnv = process.env;
   });
@@ -53,20 +71,6 @@ describe('createProfiler', async () => {
     startStub.restore();
   });
 
-  const internalConfigParams = {
-    timeIntervalMicros: 1000,
-    heapIntervalBytes: 512 * 1024,
-    heapMaxStackDepth: 64,
-    initialBackoffMillis: 1000 * 60,
-    backoffCapMillis: 60 * 60 * 1000,
-    backoffMultiplier: 1.3,
-    serverBackoffCapMillis: 2147483647,
-    localProfilingPeriodMillis: 1000,
-    localTimeDurationMillis: 1000,
-    localLogPeriodMillis: 10000,
-    baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
-  };
-
   it('should not modify specified fields when not on GCE', async () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance')
                        .throwsException('cannot access metadata');
@@ -81,8 +85,7 @@ describe('createProfiler', async () => {
       projectId: 'fake-projectId'
     };
     const profiler: Profiler = await createProfiler(config);
-    const expConfig = await common.util.normalizeArguments(
-        null, extend({}, internalConfigParams, config));
+    const expConfig = Object.assign({}, defaultConfig, config);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -103,8 +106,7 @@ describe('createProfiler', async () => {
       projectId: 'fake-projectId'
     };
     const profiler: Profiler = await createProfiler(config);
-    const expConfig = await common.util.normalizeArguments(
-        null, extend({}, internalConfigParams, config));
+    const expConfig = Object.assign({}, defaultConfig, config);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -132,9 +134,7 @@ describe('createProfiler', async () => {
       projectId: 'projectId'
     };
     const profiler: Profiler = await createProfiler(config);
-
-    const expConfig = await common.util.normalizeArguments(
-        null, extend({}, internalConfigParams, expConfigParams));
+    const expConfig = Object.assign({}, defaultConfig, expConfigParams);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -154,8 +154,7 @@ describe('createProfiler', async () => {
          projectId: 'fake-projectId',
        };
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = await common.util.normalizeArguments(
-           null, extend({}, internalConfigParams, expConfigParams));
+       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
 
@@ -192,8 +191,7 @@ describe('createProfiler', async () => {
       zone: 'zone'
     };
     const profiler: Profiler = await createProfiler(config);
-    const expConfig = await common.util.normalizeArguments(
-        null, extend({}, internalConfigParams, config));
+    const expConfig = Object.assign({}, defaultConfig, config);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -212,8 +210,7 @@ describe('createProfiler', async () => {
       logLevel: 2,
       baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
     };
-    const expConfig = await common.util.normalizeArguments(
-        null, extend({}, internalConfigParams, expConfigParams));
+    const expConfig = Object.assign({}, defaultConfig, expConfigParams);
     const profiler: Profiler = await createProfiler(config);
     assert.deepEqual(profiler.config, expConfig);
   });
@@ -243,8 +240,7 @@ describe('createProfiler', async () => {
          zone: 'envConfig-zone'
        };
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = await common.util.normalizeArguments(
-           null, extend({}, internalConfigParams, expConfigParams));
+       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
 
@@ -272,8 +268,7 @@ describe('createProfiler', async () => {
          zone: 'zone'
        };
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = await common.util.normalizeArguments(
-           null, extend({}, internalConfigParams, config));
+       const expConfig = Object.assign({}, defaultConfig, config);
        assert.deepEqual(profiler.config, expConfig);
      });
 
@@ -297,8 +292,7 @@ describe('createProfiler', async () => {
 
        const config = {};
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = await common.util.normalizeArguments(
-           null, extend({}, internalConfigParams, expConfigParams));
+       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
   it('should start heap profiler when disableHeap is not set', async () => {
