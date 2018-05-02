@@ -208,6 +208,17 @@ func TestAgentIntegration(t *testing.T) {
 			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
 			nodeVersion:  "9",
 		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-node10-%d", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:         fmt.Sprintf("profiler-test-node10-%d-gce", runID),
+			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			nodeVersion:  "10",
+		},
 	}
 	for _, tc := range testcases {
 		tc := tc // capture range variable
@@ -240,7 +251,7 @@ func TestAgentIntegration(t *testing.T) {
 					continue
 				}
 				if err := pr.HasFunction(wantProfile.functionName); err != nil {
-					t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.profileType, wantProfile.functionName, err)
+					t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.functionName, wantProfile.profileType, err)
 				}
 			}
 		})
