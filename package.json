@@ -26,7 +26,6 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "@google-cloud/common": "^0.17.0",
     "bindings": "^1.2.1",
     "delay": "^2.0.0",
     "extend": "^3.0.1",
@@ -41,6 +40,7 @@
     "semver": "^5.5.0"
   },
   "devDependencies": {
+    "@google-cloud/common": "^0.18.3",
     "@types/delay": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/long": "^4.0.0",

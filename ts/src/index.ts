@@ -139,8 +139,10 @@ export async function start(config: Config = {}): Promise<void> {
 }
 
 function logError(msg: string, config: Config) {
-  const logger = new Logger(
-      {level: Logger.DEFAULT_OPTIONS.levels[config.logLevel || 2], tag: pjson.name});
+  const logger = new Logger({
+    level: Logger.DEFAULT_OPTIONS.levels[config.logLevel || 2],
+    tag: pjson.name
+  });
   logger.error(msg);
 }
 
