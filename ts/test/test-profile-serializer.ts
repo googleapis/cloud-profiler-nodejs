@@ -24,8 +24,16 @@ const assert = require('assert');
 
 describe('serializeTimeProfile', () => {
   let dateStub: sinon.SinonStub;
+  let memoryUsageStub: sinon.SinonStub;
+
   before(() => {
     dateStub = sinon.stub(Date, 'now').returns(0);
+    memoryUsageStub = sinon.stub(process, 'memoryUsage').returns({
+      external: 1024,
+      rss: 2048,
+      heapTotal: 4096,
+      heapUse: 2048,
+    });
   });
   after(() => {
     dateStub.restore();

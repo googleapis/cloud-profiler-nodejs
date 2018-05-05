@@ -30,12 +30,19 @@ describe('HeapProfiler', () => {
   let stopStub: sinon.SinonStub;
   let profileStub: sinon.SinonStub;
   let dateStub: sinon.SinonStub;
+  let memoryUsageStub: sinon.SinonStub;
   beforeEach(() => {
     startStub = sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler');
     stopStub = sinon.stub(v8HeapProfiler, 'stopSamplingHeapProfiler');
     profileStub = sinon.stub(v8HeapProfiler, 'getAllocationProfile')
                       .returns(v8HeapProfile);
     dateStub = sinon.stub(Date, 'now').returns(0);
+    memoryUsageStub = sinon.stub(process, 'memoryUsage').returns({
+      external: 1024,
+      rss: 2048,
+      heapTotal: 4096,
+      heapUse: 2048,
+    });
   });
 
   afterEach(() => {
@@ -44,6 +51,7 @@ describe('HeapProfiler', () => {
     stopStub.restore();
     profileStub.restore();
     dateStub.restore();
+    memoryUsageStub.restore();
   });
   describe('profile', () => {
     it('should return a profile equal to the expected profile', async () => {

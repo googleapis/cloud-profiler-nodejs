@@ -209,15 +209,16 @@ export const v8HeapProfile = {
 
 const heapLines = [
   {functionId: 1, line: 1}, {functionId: 2, line: 5}, {functionId: 3, line: 10},
-  {functionId: 4, line: 8}
+  {functionId: 4, line: 8}, {functionId: 5}
 ];
 
 const heapFunctions = [
   new perftools.profiles.Function({id: 1, name: 5, systemName: 5, filename: 5}),
   new perftools.profiles.Function({id: 2, name: 6, systemName: 6, filename: 7}),
   new perftools.profiles.Function({id: 3, name: 8, systemName: 8, filename: 7}),
+  new perftools.profiles.Function({id: 4, name: 9, systemName: 9, filename: 7}),
   new perftools.profiles.Function(
-      {id: 4, name: 9, systemName: 9, filename: 7})
+      {id: 5, name: 10, systemName: 10, filename: 0})
 ];
 
 const heapLocations = [
@@ -225,6 +226,7 @@ const heapLocations = [
   new perftools.profiles.Location({line: [heapLines[1]], id: 2}),
   new perftools.profiles.Location({line: [heapLines[2]], id: 3}),
   new perftools.profiles.Location({line: [heapLines[3]], id: 4}),
+  new perftools.profiles.Location({line: [heapLines[4]], id: 5}),
 ];
 
 export const heapProfile: perftools.profiles.IProfile = {
@@ -241,20 +243,14 @@ export const heapProfile: perftools.profiles.IProfile = {
         {locationId: [3, 2, 1], value: [15, 15 * 72], label: []}),
     new perftools.profiles.Sample(
         {locationId: [4, 2, 1], value: [5, 5 * 1024], label: []}),
+    new perftools.profiles.Sample(
+        {locationId: [5], value: [1, 1024], label: []}),
   ],
   location: heapLocations,
   function: heapFunctions,
   stringTable: [
-    '',
-    'objects',
-    'count',
-    'space',
-    'bytes',
-    'main',
-    'function1',
-    'script1',
-    'function3',
-    'function2',
+    '', 'objects', 'count', 'space', 'bytes', 'main', 'function1', 'script1',
+    'function3', 'function2', '(external)'
   ],
   timeNanos: 0,
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -289,14 +285,19 @@ export const v8AnonymousFunctionHeapProfile = {
 
 const anonymousFunctionHeapLines = [
   {functionId: 1, line: 1},
+  {functionId: 2},
 ];
 
 const anonymousFunctionHeapFunctions = [
   new perftools.profiles.Function({id: 1, name: 5, systemName: 5, filename: 6}),
+  new perftools.profiles.Function({id: 2, name: 7, systemName: 7, filename: 0}),
 ];
 
 const anonymousFunctionHeapLocations = [
-  new perftools.profiles.Location({line: [heapLines[0]], id: 1}),
+  new perftools.profiles.Location(
+      {line: [anonymousFunctionHeapLines[0]], id: 1}),
+  new perftools.profiles.Location(
+      {line: [anonymousFunctionHeapLines[1]], id: 2}),
 ];
 
 export const anonymousFunctionHeapProfile: perftools.profiles.IProfile = {
@@ -306,17 +307,14 @@ export const anonymousFunctionHeapProfile: perftools.profiles.IProfile = {
   ],
   sample: [
     new perftools.profiles.Sample({locationId: [1], value: [1, 5], label: []}),
+    new perftools.profiles.Sample(
+        {locationId: [2], value: [1, 1024], label: []}),
   ],
   location: anonymousFunctionHeapLocations,
   function: anonymousFunctionHeapFunctions,
   stringTable: [
-    '',
-    'objects',
-    'count',
-    'space',
-    'bytes',
-    '(anonymous)',
-    'main',
+    '', 'objects', 'count', 'space', 'bytes', '(anonymous)', 'main',
+    '(external)'
   ],
   timeNanos: 0,
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),

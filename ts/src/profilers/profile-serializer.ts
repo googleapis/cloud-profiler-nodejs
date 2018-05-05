@@ -80,7 +80,8 @@ class StringTable {
  */
 function serialize<T extends ProfileNode>(
     profile: perftools.profiles.IProfile, root: T,
-    appendToSamples: AppendEntryToSamples<T>, stringTable: StringTable) {
+    appendToSamples: AppendEntryToSamples<T>, stringTable: StringTable,
+    rootLevelNodes?: Map<string, number[]>) {
   const samples: perftools.profiles.Sample[] = [];
   const locations: perftools.profiles.Location[] = [];
   const functions: perftools.profiles.Function[] = [];
@@ -103,6 +104,18 @@ function serialize<T extends ProfileNode>(
     }
   }
 
+  if (rootLevelNodes) {
+    rootLevelNodes.forEach((value: number[], key: string) => {
+      const f = addFunction(`:${key}`, key, '');
+      const loc = addLocation(`:::${key}`, [new perftools.profiles.Line({
+                                functionId: f.id,
+                              })]);
+
+      samples.push(
+          new perftools.profiles.Sample({locationId: [loc.id], value}));
+    });
+  }
+
   profile.sample = samples;
   profile.location = locations;
   profile.function = functions;
@@ -111,15 +124,19 @@ function serialize<T extends ProfileNode>(
   function getLocation(node: ProfileNode): perftools.profiles.Location {
     const keyStr =
         `${node.scriptId}:${node.lineNumber}:${node.columnNumber}:${node.name}`;
-    let id = locationIdMap.get(keyStr);
+    const id = locationIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
       return locations[id - 1];
     }
-    id = locations.length + 1;
+    return addLocation(keyStr, [getLine(node)]);
+  }
+
+  function addLocation(keyStr: string, line: perftools.profiles.Line[]):
+      perftools.profiles.Location {
+    const id = locations.length + 1;
     locationIdMap.set(keyStr, id);
-    const location =
-        new perftools.profiles.Location({id, line: [getLine(node)]});
+    const location = new perftools.profiles.Location({id, line});
     locations.push(location);
     return location;
   }
@@ -133,19 +150,24 @@ function serialize<T extends ProfileNode>(
 
   function getFunction(node: ProfileNode): perftools.profiles.Function {
     const keyStr = `${node.scriptId}:${node.name}`;
-    let id = functionIdMap.get(keyStr);
+    const id = functionIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
       return functions[id - 1];
     }
-    id = functions.length + 1;
+    return addFunction(keyStr, node.name || '(anonymous)', node.scriptName);
+  }
+
+  function addFunction(keyStr: string, name: string, scriptName: string):
+      perftools.profiles.Function {
+    const id = functions.length + 1;
     functionIdMap.set(keyStr, id);
-    const nameId = stringTable.getIndexOrAdd(node.name || '(anonymous)');
+    const nameId = stringTable.getIndexOrAdd(name || '(anonymous)');
     const f = new perftools.profiles.Function({
       id,
       name: nameId,
       systemName: nameId,
-      filename: stringTable.getIndexOrAdd(node.scriptName)
+      filename: stringTable.getIndexOrAdd(scriptName)
     });
     functions.push(f);
     return f;
@@ -263,6 +285,7 @@ export function serializeHeapProfile(
         }
       };
 
+
   const stringTable = new StringTable();
   const sampleValueType = createObjectCountValueType(stringTable);
   const allocationValueType = createAllocationValueType(stringTable);
@@ -274,6 +297,10 @@ export function serializeHeapProfile(
     period: intervalBytes,
   };
 
-  serialize(profile, prof, appendHeapEntryToSamples, stringTable);
+  // tslint:disable-next-line: no-any
+  const memoryUsage: {external: number} = process.memoryUsage() as any;
+  serialize(
+      profile, prof, appendHeapEntryToSamples, stringTable,
+      new Map([['(external)', [1, memoryUsage.external]]]));
   return profile;
 }
