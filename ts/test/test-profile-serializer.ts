@@ -19,22 +19,14 @@ import {serializeHeapProfile, serializeTimeProfile} from '../src/profilers/profi
 import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
 import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile, timeProfile, v8AnonymousFunctionHeapProfile, v8AnonymousFunctionTimeProfile, v8HeapProfile, v8TimeProfile} from './profiles-for-tests';
-const copy = require('deep-copy');
 
 const assert = require('assert');
 
 describe('serializeTimeProfile', () => {
   let dateStub: sinon.SinonStub;
-  let memoryUsageStub: sinon.SinonStub;
 
   before(() => {
     dateStub = sinon.stub(Date, 'now').returns(0);
-    memoryUsageStub = sinon.stub(process, 'memoryUsage').returns({
-      external: 1024,
-      rss: 2048,
-      heapTotal: 4096,
-      heapUse: 2048,
-    });
   });
   after(() => {
     dateStub.restore();
@@ -52,13 +44,12 @@ describe('serializeTimeProfile', () => {
 
 describe('serializeHeapProfile', () => {
   it('should produce expected profile', () => {
-    const heapProfileOut =
-        serializeHeapProfile(copy(v8HeapProfile), 0, 512 * 1024);
+    const heapProfileOut = serializeHeapProfile(v8HeapProfile, 0, 512 * 1024);
     assert.deepEqual(heapProfileOut, heapProfile);
   });
   it('should produce expected profile when there is anyonmous function', () => {
-    const heapProfileOut = serializeHeapProfile(
-        copy(v8AnonymousFunctionHeapProfile), 0, 512 * 1024);
+    const heapProfileOut =
+        serializeHeapProfile(v8AnonymousFunctionHeapProfile, 0, 512 * 1024);
     assert.deepEqual(heapProfileOut, anonymousFunctionHeapProfile);
   });
 });

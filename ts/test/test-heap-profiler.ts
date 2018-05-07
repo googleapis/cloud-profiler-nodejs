@@ -20,7 +20,7 @@ import * as sinon from 'sinon';
 import {perftools} from '../../proto/profile';
 import * as heapProfiler from '../src/profilers/heap-profiler';
 
-import {heapProfile, v8HeapProfile} from './profiles-for-tests';
+import {heapProfileWithExternal, v8HeapProfile} from './profiles-for-tests';
 
 const copy = require('deep-copy');
 const assert = require('assert');
@@ -35,6 +35,9 @@ describe('HeapProfiler', () => {
   beforeEach(() => {
     startStub = sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler');
     stopStub = sinon.stub(v8HeapProfiler, 'stopSamplingHeapProfiler');
+
+    // returns copy of v8HeapProfile because heap profiler modifies the v8
+    // profile to add external memory usage.
     profileStub = sinon.stub(v8HeapProfiler, 'getAllocationProfile')
                       .returns(copy(v8HeapProfile));
     dateStub = sinon.stub(Date, 'now').returns(0);
@@ -60,7 +63,7 @@ describe('HeapProfiler', () => {
       const stackDepth = 32;
       heapProfiler.start(intervalBytes, stackDepth);
       const profile = heapProfiler.profile();
-      assert.deepEqual(heapProfile, profile);
+      assert.deepEqual(heapProfileWithExternal, profile);
     });
 
     it('should throw error when not started', () => {
