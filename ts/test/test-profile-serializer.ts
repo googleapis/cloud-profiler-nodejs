@@ -19,6 +19,7 @@ import {serializeHeapProfile, serializeTimeProfile} from '../src/profilers/profi
 import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
 import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile, timeProfile, v8AnonymousFunctionHeapProfile, v8AnonymousFunctionTimeProfile, v8HeapProfile, v8TimeProfile} from './profiles-for-tests';
+import {copy} from './test-helpers';
 
 const assert = require('assert');
 
@@ -39,24 +40,25 @@ describe('serializeTimeProfile', () => {
     dateStub.restore();
   });
   it('should produce expected profile', () => {
-    const timeProfileOut = serializeTimeProfile(v8TimeProfile, 1000);
+    const timeProfileOut = serializeTimeProfile(copy(v8TimeProfile), 1000);
     assert.deepEqual(timeProfileOut, timeProfile);
   });
   it('should produce expected profile when there is anyonmous function', () => {
     const heapProfileOut =
-        serializeTimeProfile(v8AnonymousFunctionTimeProfile, 1000);
+        serializeTimeProfile(copy(v8AnonymousFunctionTimeProfile), 1000);
     assert.deepEqual(heapProfileOut, anonymousFunctionTimeProfile);
   });
 });
 
 describe('serializeHeapProfile', () => {
   it('should produce expected profile', () => {
-    const heapProfileOut = serializeHeapProfile(v8HeapProfile, 0, 512 * 1024);
+    const heapProfileOut =
+        serializeHeapProfile(copy(v8HeapProfile), 0, 512 * 1024);
     assert.deepEqual(heapProfileOut, heapProfile);
   });
   it('should produce expected profile when there is anyonmous function', () => {
-    const heapProfileOut =
-        serializeHeapProfile(v8AnonymousFunctionHeapProfile, 0, 512 * 1024);
+    const heapProfileOut = serializeHeapProfile(
+        copy(v8AnonymousFunctionHeapProfile), 0, 512 * 1024);
     assert.deepEqual(heapProfileOut, anonymousFunctionHeapProfile);
   });
 });

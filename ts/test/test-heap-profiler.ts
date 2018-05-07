@@ -21,6 +21,7 @@ import {perftools} from '../../proto/profile';
 import * as heapProfiler from '../src/profilers/heap-profiler';
 
 import {heapProfile, v8HeapProfile} from './profiles-for-tests';
+import {copy} from './test-helpers';
 
 const assert = require('assert');
 const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
@@ -35,7 +36,7 @@ describe('HeapProfiler', () => {
     startStub = sinon.stub(v8HeapProfiler, 'startSamplingHeapProfiler');
     stopStub = sinon.stub(v8HeapProfiler, 'stopSamplingHeapProfiler');
     profileStub = sinon.stub(v8HeapProfiler, 'getAllocationProfile')
-                      .returns(v8HeapProfile);
+                      .returns(copy(v8HeapProfile));
     dateStub = sinon.stub(Date, 'now').returns(0);
     memoryUsageStub = sinon.stub(process, 'memoryUsage').returns({
       external: 1024,
