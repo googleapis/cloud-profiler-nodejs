@@ -21,7 +21,6 @@ import {perftools} from '../../proto/profile';
 import {TimeProfiler} from '../src/profilers/time-profiler';
 
 import {timeProfile, v8TimeProfile} from './profiles-for-tests';
-import {copy} from './test-helpers';
 
 const assert = require('assert');
 const v8TimeProfiler = require('bindings')('time_profiler');
@@ -31,8 +30,8 @@ describe('TimeProfiler', () => {
     const sinonStubs: sinon.SinonStub[] = new Array();
     before(() => {
       sinonStubs.push(sinon.stub(v8TimeProfiler, 'startProfiling'));
-      sinonStubs.push(sinon.stub(v8TimeProfiler, 'stopProfiling')
-                          .returns(copy(v8TimeProfile)));
+      sinonStubs.push(
+          sinon.stub(v8TimeProfiler, 'stopProfiling').returns(v8TimeProfile));
       sinonStubs.push(sinon.stub(v8TimeProfiler, 'setSamplingInterval'));
       sinonStubs.push(sinon.stub(Date, 'now').returns(0));
     });

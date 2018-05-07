@@ -19,7 +19,7 @@ import {serializeHeapProfile, serializeTimeProfile} from '../src/profilers/profi
 import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 
 import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile, timeProfile, v8AnonymousFunctionHeapProfile, v8AnonymousFunctionTimeProfile, v8HeapProfile, v8TimeProfile} from './profiles-for-tests';
-import {copy} from './test-helpers';
+const copy = require('deep-copy');
 
 const assert = require('assert');
 
@@ -40,13 +40,13 @@ describe('serializeTimeProfile', () => {
     dateStub.restore();
   });
   it('should produce expected profile', () => {
-    const timeProfileOut = serializeTimeProfile(copy(v8TimeProfile), 1000);
+    const timeProfileOut = serializeTimeProfile(v8TimeProfile, 1000);
     assert.deepEqual(timeProfileOut, timeProfile);
   });
   it('should produce expected profile when there is anyonmous function', () => {
-    const heapProfileOut =
-        serializeTimeProfile(copy(v8AnonymousFunctionTimeProfile), 1000);
-    assert.deepEqual(heapProfileOut, anonymousFunctionTimeProfile);
+    const timeProfileOut =
+        serializeTimeProfile(v8AnonymousFunctionTimeProfile, 1000);
+    assert.deepEqual(timeProfileOut, anonymousFunctionTimeProfile);
   });
 });
 

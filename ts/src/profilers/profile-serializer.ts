@@ -249,13 +249,15 @@ export function serializeHeapProfile(
     prof: AllocationProfileNode, startTimeNanos: number,
     intervalBytes: number): perftools.profiles.IProfile {
   // add node for external memory usage.
+  // Current type definitions do not have external.
+  // TODO: remove any once type definition is updated to include external.
   // tslint:disable-next-line: no-any
-  const memoryUsage: {external: number} = process.memoryUsage() as any;
+  const {external}: {external: number} = process.memoryUsage() as any;
   const externalNode: AllocationProfileNode = {
     name: '(external)',
     scriptName: '',
     children: [],
-    allocations: [{sizeBytes: memoryUsage.external, count: 1}],
+    allocations: [{sizeBytes: external, count: 1}],
   };
   prof.children.push(externalNode);
 

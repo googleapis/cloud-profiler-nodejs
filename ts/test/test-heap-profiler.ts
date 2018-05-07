@@ -21,8 +21,8 @@ import {perftools} from '../../proto/profile';
 import * as heapProfiler from '../src/profilers/heap-profiler';
 
 import {heapProfile, v8HeapProfile} from './profiles-for-tests';
-import {copy} from './test-helpers';
 
+const copy = require('deep-copy');
 const assert = require('assert');
 const v8HeapProfiler = require('bindings')('sampling_heap_profiler');
 
