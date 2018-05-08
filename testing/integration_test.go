@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"testing"
 	"text/template"
 	"time"
@@ -220,6 +221,10 @@ func TestAgentIntegration(t *testing.T) {
 			nodeVersion:  "10",
 		},
 	}
+
+	// Allow test cases to run in parallel.
+	runtime.GOMAXPROCS(len(testcases))
+
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
