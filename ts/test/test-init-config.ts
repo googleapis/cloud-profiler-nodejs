@@ -110,7 +110,7 @@ describe('createProfiler', () => {
     assert.deepEqual(profiler.config, expConfig);
   });
 
-  it('should get zone and instance from GCE', async () => {
+  it('should get zone and instance from metadata', async () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.withArgs('name')
         .resolves({data: 'gce-instance'})
@@ -131,6 +131,35 @@ describe('createProfiler', () => {
       disableTime: true,
       instance: 'gce-instance',
       zone: 'gce-zone',
+      projectId: 'projectId'
+    };
+    const profiler: Profiler = await createProfiler(config);
+    const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+    assert.deepEqual(profiler.config, expConfig);
+  });
+
+  it('should get service from metadata', async () => {
+    metadataStub = sinon.stub(gcpMetadata, 'instance');
+    metadataStub.withArgs('attributes/cluster-name').resolves({
+      data: 'gke-cluster'
+    });
+
+    const config = {
+      projectId: 'projectId',
+      logLevel: 2,
+      serviceContext: {},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
+    };
+    const expConfigParams = {
+      logLevel: 2,
+      serviceContext: {service: 'gke-cluster'},
+      disableHeap: true,
+      disableTime: true,
+      instance: 'instance',
+      zone: 'zone',
       projectId: 'projectId'
     };
     const profiler: Profiler = await createProfiler(config);
@@ -167,15 +196,13 @@ describe('createProfiler', () => {
       disableHeap: true,
       disableTime: true,
     };
-    createProfiler(config)
-        .then(() => {
-          assert.fail('expected error because no service in config');
-        })
-        .catch((e: Error) => {
-          assert.equal(
-              e.message,
-              'Could not start profiler: Error: Service must be specified in the configuration');
-        });
+    try {
+      await createProfiler(config);
+      assert.fail('expected error because no service in config');
+    } catch (e) {
+      assert.equal(
+          e.message, 'Service must be specified in the configuration.');
+    }
   });
 
   it('should get have no projectId when no projectId given', async () => {
