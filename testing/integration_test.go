@@ -64,7 +64,7 @@ set -eo pipefail
 set -x
 # Install git
 retry apt-get update >/dev/null
-retry apt-get -y -q install git build-essential  >/dev/null
+retry apt-get -y -q install git build-essential >/dev/null
 
 # Install desired version of Node.js
 retry curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash >/dev/null
@@ -84,8 +84,8 @@ retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pul
 git checkout pull_branch
 git reset --hard {{.Commit}}
 retry npm install >/dev/null
-retry npm run compile
-retry npm pack >/dev/null
+npm run compile
+npm pack >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
 PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
 
@@ -94,7 +94,7 @@ mkdir -p "$TESTDIR"
 cp "testing/busybench.js" "$TESTDIR"
 cd "$TESTDIR"
 
-retry npm install "$PROFILER" >/dev/null
+npm install "$PROFILER" >/dev/null
 
 # Run benchmark with agent
 GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --require @google-cloud/profiler busybench.js 600
