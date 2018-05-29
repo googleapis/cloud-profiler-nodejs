@@ -45,12 +45,33 @@ function hasService(config: Config):
       typeof config.serviceContext.service === 'string';
 }
 
+interface LocalProfilerConfig extends Config {
+  projectId?: string;
+  logLevel: number;
+  serviceContext: {service?: string; version?: string;};
+  instance?: string;
+  zone?: string;
+  disableTime: boolean;
+  disableHeap: boolean;
+  timeIntervalMicros: number;
+  heapIntervalBytes: number;
+  heapMaxStackDepth: number;
+  initialBackoffMillis: number;
+  backoffCapMillis: number;
+  backoffMultiplier: number;
+  serverBackoffCapMillis: number;
+  baseApiUrl: string;
+  localProfilingPeriodMillis: number;
+  localLogPeriodMillis: number;
+  localTimeDurationMillis: number;
+}
+
 /**
  * Sets unset values in the configuration to the value retrieved from
  * environment variables or specified in defaultConfig.
  * Throws error if value that must be set cannot be initialized.
  */
-function initConfigLocal(config: Config): ProfilerConfig {
+function initConfigLocal(config: Config): LocalProfilerConfig {
   config = util.normalizeArguments(null, config);
 
   const envConfig: Config = {
@@ -87,10 +108,6 @@ function initConfigLocal(config: Config): ProfilerConfig {
   const mergedConfig =
       extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
-  if (!hasService(mergedConfig)) {
-    throw new Error('Service must be specified in the configuration.');
-  }
-
   return mergedConfig;
 }
 
@@ -98,13 +115,14 @@ function initConfigLocal(config: Config): ProfilerConfig {
  * Sets unset values in the configuration which can be retrieved from GCP
  * metadata.
  */
-async function initConfigMetadata(config: ProfilerConfig):
+async function initConfigMetadata(config: LocalProfilerConfig):
     Promise<ProfilerConfig> {
   if (!config.zone || !config.instance) {
     const [instance, zone] =
         await Promise
             .all([
-              getMetadataInstanceField('name'), getMetadataInstanceField('zone')
+              getMetadataInstanceField('name'),
+              getMetadataInstanceField('zone'),
             ])
             .catch(
                 (err: Error) => {
@@ -118,6 +136,17 @@ async function initConfigMetadata(config: ProfilerConfig):
       config.instance = instance;
     }
   }
+  if (!config.serviceContext.service) {
+    try {
+      config.serviceContext.service =
+          await getMetadataInstanceField('attributes/cluster-name');
+    } catch (err) {
+      // ignore errors, which will occur when not on GKE.
+    }
+  }
+  if (!hasService(config)) {
+    throw new Error('Service must be specified in the configuration.');
+  }
   return config;
 }
 
@@ -129,20 +158,20 @@ async function initConfigMetadata(config: ProfilerConfig):
 export async function createProfiler(config: Config): Promise<Profiler> {
   if (!semver.satisfies(process.version, pjson.engines.node)) {
     throw new Error(
-        `Could not start profiler: node version ${process.version}` +
-        ` does not satisfies "${pjson.engines.node}"`);
+        `node version ${process.version} does not satisfies` +
+        ` "${pjson.engines.node}"`);
   }
 
-  let profilerConfig: ProfilerConfig = initConfigLocal(config);
+  const localConfig: LocalProfilerConfig = initConfigLocal(config);
 
   // Start the heap profiler if profiler config does not indicate heap profiling
   // is disabled. This must be done before any asynchronous calls are made so
   // all memory allocations made after start() is called can be captured.
-  if (!profilerConfig.disableHeap) {
+  if (!localConfig.disableHeap) {
     heapProfiler.start(
-        profilerConfig.heapIntervalBytes, profilerConfig.heapMaxStackDepth);
+        localConfig.heapIntervalBytes, localConfig.heapMaxStackDepth);
   }
-  profilerConfig = await initConfigMetadata(profilerConfig);
+  const profilerConfig: ProfilerConfig = await initConfigMetadata(localConfig);
   return new Profiler(profilerConfig);
 }
 
@@ -165,7 +194,7 @@ export async function start(config: Config = {}): Promise<void> {
   try {
     profiler = await createProfiler(config);
   } catch (e) {
-    logError(`${e}`, config);
+    logError(`Could not start profiler: ${e}`, config);
     return;
   }
   profiler.start();
@@ -189,7 +218,7 @@ export async function startLocal(config: Config = {}): Promise<void> {
   try {
     profiler = await createProfiler(config);
   } catch (e) {
-    logError(`${e}`, config);
+    logError(`Could not start profiler: ${e}`, config);
     return;
   }
 
