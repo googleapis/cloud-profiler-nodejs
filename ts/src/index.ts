@@ -128,9 +128,10 @@ async function initConfigMetadata(config: ProfilerConfig):
  */
 export async function createProfiler(config: Config): Promise<Profiler> {
   if (!semver.satisfies(process.version, pjson.engines.node)) {
-    throw new Error(
-        `Could not start profiler: node version ${process.version}` +
-        ` does not satisfies "${pjson.engines.node}"`);
+    logWarning(
+        `Node version ${process.version}` +
+            ` does not satisfies "${pjson.engines.node}"`,
+        config);
   }
 
   let profilerConfig: ProfilerConfig = initConfigLocal(config);
@@ -175,6 +176,14 @@ function logError(msg: string, config: Config) {
   const logger =
       new Logger({level: Logger.LEVELS[config.logLevel || 2], tag: pjson.name});
   logger.error(msg);
+}
+
+function logWarning(msg: string, config: Config) {
+  const logger = new Logger({
+    level: Logger.DEFAULT_OPTIONS.levels[config.logLevel || 2],
+    tag: pjson.name
+  });
+  logger.warn(msg);
 }
 
 
