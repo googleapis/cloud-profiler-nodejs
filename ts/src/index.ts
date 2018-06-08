@@ -127,11 +127,13 @@ async function initConfigMetadata(config: ProfilerConfig):
  * rejected promise.
  */
 export async function createProfiler(config: Config): Promise<Profiler> {
-  if (!semver.satisfies(process.version, pjson.engines.node)) {
-    logWarning(
-        `Node version ${process.version}` +
-            ` does not satisfies "${pjson.engines.node}"`,
-        config);
+  // Coerce version if possible, to remove any pre-release, alpha, beta, etc
+  // tags.
+  const version = semver.coerce(process.version) || process.version;
+  if (!semver.satisfies(version, pjson.engines.node)) {
+    throw new Error(
+        `Could not start profiler: node version ${process.version}` +
+        ` does not satisfies "${pjson.engines.node}"`);
   }
 
   let profilerConfig: ProfilerConfig = initConfigLocal(config);
@@ -177,15 +179,6 @@ function logError(msg: string, config: Config) {
       new Logger({level: Logger.LEVELS[config.logLevel || 2], tag: pjson.name});
   logger.error(msg);
 }
-
-function logWarning(msg: string, config: Config) {
-  const logger = new Logger({
-    level: Logger.DEFAULT_OPTIONS.levels[config.logLevel || 2],
-    tag: pjson.name
-  });
-  logger.warn(msg);
-}
-
 
 /**
  * For debugging purposes. Collects profiles and discards the collected
