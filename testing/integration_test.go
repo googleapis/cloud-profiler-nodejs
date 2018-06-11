@@ -74,9 +74,10 @@ export NVM_DIR="$HOME/.nvm" >/dev/null
 
 # nvm install writes to stderr and stdout on successful install, so both are
 # redirected.
-retry nvm install {{.NodeVersion}} &>/dev/null
+{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} &>/dev/null
 npm -v
 node -v
+NODEDIR=$(dirname $(dirname $(which node)))
 
 # Install agent
 retry git clone {{.Repo}}
@@ -84,9 +85,9 @@ cd cloud-profiler-nodejs
 retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pull_branch
 git checkout pull_branch
 git reset --hard {{.Commit}}
-retry npm install >/dev/null
-npm run compile
-npm pack >/dev/null
+retry npm install --nodedir="$NODEDIR" >/dev/null
+npm run compile 
+npm pack --nodedir="$NODEDIR" >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
 PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
 
@@ -95,7 +96,7 @@ mkdir -p "$TESTDIR"
 cp -r "testing/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
-retry npm install "$PROFILER" >/dev/null
+retry npm install --nodedir="$NODEDIR" "$PROFILER" >/dev/null
 retry npm install
 npm run compile
 
@@ -118,6 +119,7 @@ type nodeGCETestCase struct {
 	proftest.InstanceConfig
 	name         string
 	nodeVersion  string
+	nvmMirror    string
 	wantProfiles []profileSummary
 }
 
@@ -127,6 +129,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 		struct {
 			Service     string
 			NodeVersion string
+			NVMMirror   string
 			Repo        string
 			PR          int
 			Branch      string
@@ -134,6 +137,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 		}{
 			Service:     tc.name,
 			NodeVersion: tc.nodeVersion,
+			NVMMirror:   tc.nvmMirror,
 			Repo:        *repo,
 			PR:          *pr,
 			Branch:      *branch,
@@ -229,6 +233,18 @@ func TestAgentIntegration(t *testing.T) {
 			name:         fmt.Sprintf("profiler-test-node10-%s-gce", runID),
 			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
 			nodeVersion:  "10",
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-v8-canary-%s", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:         fmt.Sprintf("profiler-test-v8-canary-%s-gce", runID),
+			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			nodeVersion:  "node", // install latest version of node
+			nvmMirror:    "https://nodejs.org/download/v8-canary",
 		},
 	}
 

@@ -70,7 +70,7 @@ NAN_METHOD(StartProfiling) {
 
   // Sample counts and timestamps are not used, so we do not need to record
   // samples.
-  cpuProfiler->StartProfiling(name, false);
+  cpuProfiler->StartProfiling(name);
 }
 
 NAN_METHOD(StopProfiling) {
@@ -83,7 +83,11 @@ NAN_METHOD(StopProfiling) {
 }
 
 NAN_METHOD(SetSamplingInterval) {
+  #if NODE_MODULE_VERSION > NODE_10_0_MODULE_VERSION
+  int us = info[0].As<Integer>()->Value();
+  #else
   int us = info[0].As<Integer>()->IntegerValue();
+  #endif
   cpuProfiler->SetSamplingInterval(us);
 }
 
