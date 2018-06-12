@@ -73,27 +73,27 @@ workflows:
 jobs:
   node6:
     docker:
-      - image: node:6
+      - image: node:6@sha256:85a878cb14deb5a5a59944e906d43ef400e182e9fcc81a6beb18907f52309261
         user: node
     <<: *unit_tests
   node8:
     docker:
-      - image: node:8
+      - image: node:8@sha256:f10c8218e3f92b513af9120f5eda5fed35b651343f940881d696b958cc16ab43
         user: node
     <<: *unit_tests
   node9:
     docker:
-      - image: node:9
+      - image: node:9@sha256:ec1bc675cbcb0c5215af40c7c1b7a8ea9d5f17b084eaf7b4b4e69e0963a38f26
         user: node
     <<: *unit_tests
   node10:
     docker:
-      - image: node:10
+      - image: node:10@sha256:c00e4cb3acfb2a0c4997ddb0e809cba37f9f6cce43efa9a6e6f7f1a79e094ab5
         user: node
     <<: *unit_tests
   npmaudit:
     docker:
-      - image: node:10
+      - image: node:10@sha256:c00e4cb3acfb2a0c4997ddb0e809cba37f9f6cce43efa9a6e6f7f1a79e094ab5
         user: node
     dependencies:
       pre:
@@ -101,12 +101,12 @@ jobs:
     <<: *npmaudit
   gocheck:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.9@sha256:78d0c5082e4e811e44f6a0d35fc15aadf29aac6ed30956633154adb9e21fecbb
     <<: *gochecks
 
   publish_npm:
     docker:
-      - image: node:8
+      - image: node:8@sha256:f10c8218e3f92b513af9120f5eda5fed35b651343f940881d696b958cc16ab43
         user: node
     steps:
       - checkout
