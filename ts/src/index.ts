@@ -133,7 +133,9 @@ export async function createProfiler(config: Config): Promise<Profiler> {
   if (!semver.satisfies(version, pjson.engines.node)) {
     throw new Error(
         `Could not start profiler: node version ${process.version}` +
-        ` does not satisfies "${pjson.engines.node}"`);
+        ` does not satisfies "${pjson.engines.node}"` +
+        '\nSee https://github.com/GoogleCloudPlatform/cloud-profiler-nodejs#prerequisites' +
+        ' for details.');
   }
 
   let profilerConfig: ProfilerConfig = initConfigLocal(config);
