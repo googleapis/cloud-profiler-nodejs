@@ -74,7 +74,7 @@ export NVM_DIR="$HOME/.nvm" >/dev/null
 
 # nvm install writes to stderr and stdout on successful install, so both are
 # redirected.
-retry nvm install {{.NodeVersion}} &>/dev/null
+{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} &>/dev/null
 npm -v
 node -v
 
@@ -116,6 +116,7 @@ type nodeGCETestCase struct {
 	proftest.InstanceConfig
 	name         string
 	nodeVersion  string
+	nvmMirror    string
 	wantProfiles []profileSummary
 }
 
@@ -125,6 +126,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 		struct {
 			Service     string
 			NodeVersion string
+			NVMMirror   string
 			Repo        string
 			PR          int
 			Branch      string
@@ -132,6 +134,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 		}{
 			Service:     tc.name,
 			NodeVersion: tc.nodeVersion,
+			NVMMirror:   tc.nvmMirror,
 			Repo:        *repo,
 			PR:          *pr,
 			Branch:      *branch,
@@ -227,6 +230,18 @@ func TestAgentIntegration(t *testing.T) {
 			name:         fmt.Sprintf("profiler-test-node10-%s-gce", runID),
 			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
 			nodeVersion:  "10",
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-v8-canary-%d", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:         fmt.Sprintf("profiler-test-v8-canary-%d-gce", runID),
+			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			nodeVersion:  "node", // install latest version of node
+			nvmMirror:    "https://nodejs.org/download/v8-canary",
 		},
 	}
 
