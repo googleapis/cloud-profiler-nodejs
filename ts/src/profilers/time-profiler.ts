@@ -46,9 +46,9 @@ export class TimeProfiler {
     profiler.startProfiling(runName);
     await delay(durationMillis);
     const result = profiler.stopProfiling(runName);
-    const profile = serializeTimeProfile(result, this.intervalMicros);
     // tslint:disable-next-line no-any
     (process as any)._stopProfilerIdleNotifier();
+    const profile = serializeTimeProfile(result, this.intervalMicros);
     return profile;
   }
 }
