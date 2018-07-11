@@ -81,16 +81,16 @@ function getServerResponseBackoff(response: http.IncomingMessage): number|
     undefined {
   // tslint:disable-next-line: no-any
   const body = (response as any).body;
-  if (body && body.error && body.error.details &&
-      Array.isArray(body.error.details)) {
-    for (const item of body.error.details) {
-      if (typeof item === 'object' && item.retryDelay &&
-          typeof item.retryDelay === 'string') {
-        const backoffMillis = parseDuration(item.retryDelay);
-        if (backoffMillis > 0) {
-          return backoffMillis;
-        }
-      }
+
+  // The response currently does not have field containing the retry duration.
+  // As a work-around, response body's message is parsed to get the backoff 
+  // duration.
+  // TODO: Remove this work-around and get the retry delay from
+  // body.error.details.
+  if (body && body.message && typeof body.message === 'string') {
+    const backoffMillis = parseDuration(body.message);
+    if (backoffMillis > 0) {
+      return backoffMillis;
     }
   }
   return undefined;

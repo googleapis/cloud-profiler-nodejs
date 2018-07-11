@@ -637,7 +637,9 @@ describe('Profiler', () => {
                            .onCall(0)
                            .callsArgWith(1, undefined, undefined, {
                              statusCode: 409,
-                             body: {error: {details: [{retryDelay: '50s'}]}}
+                             body: {
+                               message: 'action throttled, backoff for 50s',
+                             }
                            });
 
          const profiler = new Profiler(testConfig);
@@ -792,12 +794,13 @@ describe('Profiler', () => {
            duration: '10s',
            labels: {instance: config.instance}
          };
-         requestStub = sinon.stub(common.ServiceObject.prototype, 'request')
-                           .onCall(0)
-                           .callsArgWith(1, undefined, undefined, {
-                             statusCode: 409,
-                             body: {error: {details: [{retryDelay: '50s'}]}}
-                           });
+         requestStub =
+             sinon.stub(common.ServiceObject.prototype, 'request')
+                 .onCall(0)
+                 .callsArgWith(1, undefined, undefined, {
+                   statusCode: 409,
+                   body: {message: 'action throttled, backoff for 50s'}
+                 });
          const profiler = new Profiler(testConfig);
          profiler.timeProfiler = instance(mockTimeProfiler);
          const delayMillis = await profiler.collectProfile();
@@ -817,7 +820,7 @@ describe('Profiler', () => {
                            .onCall(0)
                            .callsArgWith(1, undefined, undefined, {
                              statusCode: 409,
-                             body: {error: {details: [{retryDelay: ''}]}}
+                             body: {message: 'some message'},
                            });
          const profiler = new Profiler(testConfig);
          profiler.timeProfiler = instance(mockTimeProfiler);
@@ -825,7 +828,7 @@ describe('Profiler', () => {
          assert.equal(500, delayMillis);
        });
     it('should return backoff limit, when server specified backoff is greater' +
-           'then backoff limit',
+           ' then backoff limit',
        async () => {
          const config = extend(true, {}, testConfig);
          const requestProfileResponseBody = {
@@ -839,7 +842,7 @@ describe('Profiler', () => {
                  .onCall(0)
                  .callsArgWith(1, undefined, undefined, {
                    statusCode: 409,
-                   body: {error: {details: [{retryDelay: '1000h'}]}}
+                   body: {message: 'action throttled, backoff for 1000h'},
                  });
          const profiler = new Profiler(testConfig);
          profiler.timeProfiler = instance(mockTimeProfiler);
