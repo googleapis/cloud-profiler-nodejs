@@ -73,6 +73,9 @@ export interface RequestProfile {
   labels?: {instance?: string};
 }
 
+const BACKOFF_MSG_PAT =
+    /action throttled, backoff for ((?:([0-9]+)h)?(?:([0-9]+)m)?([0-9.]+)s)$/;
+
 /**
  * @return number indicated by backoff if the response indicates a backoff and
  * that backoff is greater than 0. Otherwise returns undefined.
@@ -82,13 +85,27 @@ function getServerResponseBackoff(response: http.IncomingMessage): number|
   // tslint:disable-next-line: no-any
   const body = (response as any).body;
 
-  // The response currently does not have field containing the retry duration.
-  // As a work-around, response body's message is parsed to get the backoff 
-  // duration.
-  // TODO: Remove this work-around and get the retry delay from
+  // The response currently does not have field containing the server-specified
+  // backoff. As a workaround, response body's message is parsed to get the
+  // backoff.
+  // TODO (issue #250): Remove this workaround and get the retry delay from
   // body.error.details.
   if (body && body.message && typeof body.message === 'string') {
-    const backoffMillis = parseDuration(body.message);
+    return parseBackoffDuration(body.message);
+  }
+  return undefined;
+}
+
+/**
+ * @return if the backoff duration can be parsed, then the backoff duration in
+ * ms, otherwise undefined.
+ *
+ * Public for testing.
+ */
+export function parseBackoffDuration(backoffStr: string): number|undefined {
+  const found = backoffStr.match(BACKOFF_MSG_PAT);
+  if (found && found.length >= 2 && typeof found[1] === 'string') {
+    const backoffMillis = parseDuration(found[1]);
     if (backoffMillis > 0) {
       return backoffMillis;
     }
