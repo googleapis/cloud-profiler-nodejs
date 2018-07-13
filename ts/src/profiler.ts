@@ -73,9 +73,6 @@ export interface RequestProfile {
   labels?: {instance?: string};
 }
 
-const BACKOFF_MSG_PAT =
-    /action throttled, backoff for ((?:([0-9]+)h)?(?:([0-9]+)m)?([0-9.]+)s)$/;
-
 /**
  * @return number indicated by backoff if the response indicates a backoff and
  * that backoff is greater than 0. Otherwise returns undefined.
@@ -102,10 +99,13 @@ function getServerResponseBackoff(response: http.IncomingMessage): number|
  *
  * Public for testing.
  */
-export function parseBackoffDuration(backoffStr: string): number|undefined {
-  const found = backoffStr.match(BACKOFF_MSG_PAT);
-  if (found && found.length >= 2 && typeof found[1] === 'string') {
-    const backoffMillis = parseDuration(found[1]);
+export function parseBackoffDuration(backoffMessage: string): number|undefined {
+  const backoffMessageRegex =
+      /action throttled, backoff for ((?:([0-9]+)h)?(?:([0-9]+)m)?([0-9.]+)s)$/;
+  const [, duration] =
+      backoffMessageRegex.exec(backoffMessage) || [undefined, undefined];
+  if (duration) {
+    const backoffMillis = parseDuration(duration);
     if (backoffMillis > 0) {
       return backoffMillis;
     }
