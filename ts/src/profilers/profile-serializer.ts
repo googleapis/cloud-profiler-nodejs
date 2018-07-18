@@ -35,6 +35,7 @@ type AppendEntryToSamples<T extends ProfileNode> =
  */
 interface Entry<T extends ProfileNode> {
   node: T;
+  parentFunction?: string;
   stack: Stack;
 }
 
@@ -88,6 +89,7 @@ class StringTable {
 function serialize<T extends ProfileNode>(
     profile: perftools.profiles.IProfile, root: T,
     appendToSamples: AppendEntryToSamples<T>, stringTable: StringTable,
+    hasLines: boolean, 
     ignoreSamplesPath?: string, sourceMapper?: SourceMapper) {
   const samples: perftools.profiles.Sample[] = [];
   const locations: perftools.profiles.Location[] = [];
@@ -106,11 +108,16 @@ function serialize<T extends ProfileNode>(
       continue;
     }
     const stack = entry.stack;
-    const location = getLocation(node, sourceMapper);
+    const location = getLocation(node, entry.parentFunction, sourceMapper);
     stack.unshift(location.id as number);
     appendToSamples(entry, samples);
     for (const child of node.children as T[]) {
-      entries.push({node: child, stack: stack.slice()});
+      var parentFunction: string | undefined;
+      if (hasLines) {
+        parentFunction = node.name
+      }
+      var e = {node: child, stack: stack.slice(), parentFunction: parentFunction}
+      entries.push(e);
     }
   }
 
@@ -119,13 +126,14 @@ function serialize<T extends ProfileNode>(
   profile.function = functions;
   profile.stringTable = stringTable.strings;
 
-  function getLocation(node: ProfileNode, sourceMapper?: SourceMapper):
+  function getLocation(node: ProfileNode, parentFunction?: string, sourceMapper?: SourceMapper):
       perftools.profiles.Location {
+    const name = parentFunction || node.name || '(anonymous)';
     let profLoc: SourceLocation = {
       file: node.scriptName || '',
       line: node.lineNumber,
       column: node.columnNumber,
-      name: node.name
+      name: name
     };
 
     if (profLoc.line) {
@@ -259,9 +267,8 @@ export function serializeTimeProfile(
     period: intervalMicros,
   };
 
-  serialize(
-      profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable,
-      undefined, sourceMapper);
+  serialize(profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable,
+    true,  undefined, sourceMapper);
 
   return profile;
 }
@@ -307,7 +314,7 @@ export function serializeHeapProfile(
   };
 
   serialize(
-      profile, prof, appendHeapEntryToSamples, stringTable, ignoreSamplesPath,
+      profile, prof, appendHeapEntryToSamples, stringTable, false, ignoreSamplesPath,
       sourceMapper);
   return profile;
 }
