@@ -70,6 +70,7 @@ describe('createProfiler', () => {
 
   const internalConfigParams = {
     timeIntervalMicros: 1000,
+    timeProfileLineNumbers: false,
     heapIntervalBytes: 512 * 1024,
     heapMaxStackDepth: 64,
     ignoreHeapSamplesPath: '@google-cloud/profiler',

@@ -162,6 +162,209 @@ const encodedTimeProfile =
 export const decodedTimeProfile =
     Object.freeze(perftools.profiles.Profile.decode(encodedTimeProfile));
 
+const lineNumberTimeLeafLine1A = {
+  name: '',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 6,
+  columnNumber: 0,
+  hitCount: 2,
+  children: []
+};
+
+const lineNumberTimeLeafLine1B = {
+  name: '',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 7,
+  columnNumber: 0,
+  hitCount: 3,
+  children: []
+};
+
+const lineNumberTimeLeafFunc1 = {
+  name: 'baz',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 2,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeLeafLine1A, lineNumberTimeLeafLine1B]
+};
+
+const lineNumberTimeLeafLine2A = {
+  name: '',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 6,
+  columnNumber: 0,
+  hitCount: 4,
+  children: []
+};
+
+const lineNumberTimeLeafLine2B = {
+  name: '',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 7,
+  columnNumber: 0,
+  hitCount: 5,
+  children: []
+};
+
+const lineNumberTimeLeafFunc2 = {
+  name: 'baz',
+  scriptName: 'funcs',
+  scriptId: 1,
+  lineNumber: 2,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeLeafLine2A, lineNumberTimeLeafLine2B]
+};
+const lineNumberTimeNode3 = {
+  name: 'foo',
+  scriptName: 'main',
+  scriptId: 0,
+  lineNumber: 7,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeLeafFunc2]
+};
+
+const lineNumberTimeNode2 = {
+  name: 'foo',
+  scriptName: 'main',
+  scriptId: 0,
+  lineNumber: 6,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeLeafFunc1]
+};
+
+const lineNumberTimeNode1 = {
+  name: 'bar',
+  scriptName: 'main',
+  scriptId: 0,
+  lineNumber: 2,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeNode2, lineNumberTimeNode3]
+};
+
+const lineNumberTimeMain = {
+  name: 'main',
+  scriptName: 'main',
+  scriptId: 0,
+  lineNumber: 1,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeNode1]
+};
+
+const lineNumberTimeRoot = {
+  name: '(root)',
+  scriptName: 'root',
+  scriptId: 0,
+  lineNumber: 0,
+  columnNumber: 0,
+  hitCount: 0,
+  children: [lineNumberTimeMain]
+};
+
+
+export const v8LineNumberTimeProfile: TimeProfile = Object.freeze({
+  startTime: 0,
+  endTime: 10 * 1000 * 1000,
+  topDownRoot: lineNumberTimeRoot,
+});
+
+const lineNumberTimeLines = [
+  {functionId: 1, line: 2},
+  {functionId: 2, line: 7},
+  {functionId: 3, line: 2},
+  {functionId: 4, line: 7},
+  {functionId: 4, line: 6},
+  {functionId: 2, line: 6},
+];
+
+const lineNumberTimeFunctions = [
+  new perftools.profiles.Function({id: 1, name: 5, systemName: 5, filename: 5}),
+  new perftools.profiles.Function({id: 2, name: 6, systemName: 6, filename: 5}),
+  new perftools.profiles.Function({id: 3, name: 7, systemName: 7, filename: 8}),
+  new perftools.profiles.Function({id: 4, name: 9, systemName: 9, filename: 8}),
+];
+
+const lineNumberTimeLocations = [
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[0]],
+    id: 1,
+  }),
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[1]],
+    id: 2,
+  }),
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[2]],
+    id: 3,
+  }),
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[3]],
+    id: 4,
+  }),
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[4]],
+    id: 5,
+  }),
+  new perftools.profiles.Location({
+    line: [lineNumberTimeLines[5]],
+    id: 6,
+  }),
+];
+
+export const lineNumberTimeProfile: perftools.profiles.IProfile =
+    Object.freeze({
+      sampleType: [
+        new perftools.profiles.ValueType({type: 1, unit: 2}),
+        new perftools.profiles.ValueType({type: 3, unit: 4}),
+      ],
+      sample: [
+        new perftools.profiles.Sample(
+            {locationId: [4, 3, 2, 1], value: [5, 5000], label: []}),
+        new perftools.profiles.Sample(
+            {locationId: [5, 3, 2, 1], value: [4, 4000], label: []}),
+        new perftools.profiles.Sample(
+            {locationId: [4, 3, 6, 1], value: [3, 3000], label: []}),
+        new perftools.profiles.Sample(
+            {locationId: [5, 3, 6, 1], value: [2, 2000], label: []}),
+      ],
+      location: lineNumberTimeLocations,
+      function: lineNumberTimeFunctions,
+      stringTable: [
+        '',
+        'sample',
+        'count',
+        'wall',
+        'microseconds',
+        'main',
+        'bar',
+        'foo',
+        'funcs',
+        'baz',
+      ],
+      timeNanos: 0,
+      durationNanos: 10 * 1000 * 1000 * 1000,
+      periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
+      period: 1000,
+    });
+
+// profile is encoded then decoded to convert numbers to longs, in
+// decodedTimeProfile
+const encodedLineNumberTimeProfile =
+    perftools.profiles.Profile.encode(timeProfile).finish();
+export const decodedLineNumberTimeProfile =
+    Object.freeze(perftools.profiles.Profile.decode(encodedTimeProfile));
+
+
 const heapLeaf1 = {
   name: 'function2',
   scriptName: 'script1',

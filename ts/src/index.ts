@@ -209,7 +209,7 @@ function logError(msg: string, config: Config) {
  * For debugging purposes. Collects profiles and discards the collected
  * profiles.
  */
-export async function startLocal(config: Config = {}, saveProfilesTo?:string): Promise<void> {
+export async function startLocal(config: Config = {}): Promise<void> {
   let profiler: Profiler;
   try {
     profiler = await createProfiler(config);
@@ -258,16 +258,6 @@ export async function startLocal(config: Config = {}, saveProfilesTo?:string): P
       const heap = await profiler.profile(
           {name: 'Heap-Profile' + new Date(), profileType: 'HEAP'});
       heapProfileCount++;
-      if (heap.profileBytes && saveProfilesTo) {
-        const buf = Buffer.from(heap.profileBytes, 'base64');
-        fs.writeFile(
-            path.join(saveProfilesTo, 'heap' + heapProfileCount + '.pb.gz'),
-            buf, 'binary', (err) => {
-              if (err) {
-                console.log(err);
-              }
-            });
-      }
     }
     await delay(profiler.config.localProfilingPeriodMillis / 2);
     if (!config.disableTime) {
@@ -277,19 +267,10 @@ export async function startLocal(config: Config = {}, saveProfilesTo?:string): P
         duration: profiler.config.localTimeDurationMillis.toString() + 'ms'
       });
       timeProfileCount++;
-      if (wall.profileBytes && saveProfilesTo) {
-        const buf = Buffer.from(wall.profileBytes, 'base64');
-        fs.writeFile(
-            path.join(saveProfilesTo, 'time' + timeProfileCount + '.pb.gz'),
-            buf, 'binary', (err) => {
-              if (err) {
-                console.log(err);
-              }
-            });
-      }
     }
   }, profiler.config.localProfilingPeriodMillis);
 }
+
 
 // If the module was --require'd from the command line, start the agent.
 if (module.parent && module.parent.id === 'internal/preload') {

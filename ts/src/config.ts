@@ -66,6 +66,12 @@ export interface Config extends GoogleAuthOptions {
   // Decreasing time between samples may increase overhead of profiling.
   timeIntervalMicros?: number;
 
+  // If this is true, the time profiler will collect a line number for every
+  // location in the stack for every sample.
+  // TODO(#19): Accurate line numbers are not yet supported. Setting this to
+  // to true will not enable this feature.
+  timeProfileLineNumbers?: boolean;
+
   // Average bytes between samples collected by heap profiler.
   // Increasing the bytes between samples will reduce quality of profiles by
   // reducing number of samples.
@@ -156,6 +162,7 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   disableTime: boolean;
   disableHeap: boolean;
   timeIntervalMicros: number;
+  timeProfileLineNumbers: boolean;
   heapIntervalBytes: number;
   heapMaxStackDepth: number;
   ignoreHeapSamplesPath: string;
@@ -178,6 +185,7 @@ export const defaultConfig = {
   disableHeap: false,
   disableTime: false,
   timeIntervalMicros: 1000,
+  timeProfileLineNumbers: false,
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
   ignoreHeapSamplesPath: '@google-cloud/profiler',

@@ -303,7 +303,8 @@ export class Profiler extends ServiceObject {
     this.profileTypes = [];
     if (!this.config.disableTime) {
       this.profileTypes.push(ProfileTypes.Wall);
-      this.timeProfiler = new TimeProfiler(this.config.timeIntervalMicros);
+      this.timeProfiler = new TimeProfiler(
+          this.config.timeIntervalMicros, config.timeProfileLineNumbers);
     }
     if (!this.config.disableHeap) {
       this.profileTypes.push(ProfileTypes.Heap);

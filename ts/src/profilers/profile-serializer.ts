@@ -89,8 +89,8 @@ class StringTable {
 function serialize<T extends ProfileNode>(
     profile: perftools.profiles.IProfile, root: T,
     appendToSamples: AppendEntryToSamples<T>, stringTable: StringTable,
-    hasLines: boolean, 
-    ignoreSamplesPath?: string, sourceMapper?: SourceMapper) {
+    hasLines: boolean, ignoreSamplesPath?: string,
+    sourceMapper?: SourceMapper) {
   const samples: perftools.profiles.Sample[] = [];
   const locations: perftools.profiles.Location[] = [];
   const functions: perftools.profiles.Function[] = [];
@@ -99,8 +99,26 @@ function serialize<T extends ProfileNode>(
   const functionIdMap = new Map<string, number>();
   const locationIdMap = new Map<string, number>();
 
-  const entries: Array<Entry<T>> =
-      (root.children as T[]).map((n: T) => ({node: n, stack: []}));
+  let entries: Array<Entry<T>>;
+  if (hasLines) {
+    // Children of root have line information refering to the first line of the
+    // function they represent. The detailed line information for these
+    // functions is in their children. Skip children of root when there is
+    // detailed line information.
+    entries = [];
+    for (let i = 0; i < root.children.length; i++) {
+      const node = root.children[i];
+      if (node) {
+        entries = entries.concat(
+            (node.children as T[])
+                .map(
+                    (n: T) =>
+                        ({node: n, stack: [], parentFunction: node.name})));
+      }
+    }
+  } else {
+    entries = (root.children as T[]).map((n: T) => ({node: n, stack: []}));
+  }
   while (entries.length > 0) {
     const entry = entries.pop()!;
     const node = entry.node;
@@ -112,12 +130,11 @@ function serialize<T extends ProfileNode>(
     stack.unshift(location.id as number);
     appendToSamples(entry, samples);
     for (const child of node.children as T[]) {
-      var parentFunction: string | undefined;
+      let parentFunction: string|undefined;
       if (hasLines) {
-        parentFunction = node.name
+        parentFunction = node.name;
       }
-      var e = {node: child, stack: stack.slice(), parentFunction: parentFunction}
-      entries.push(e);
+      entries.push({node: child, stack: stack.slice(), parentFunction});
     }
   }
 
@@ -126,14 +143,15 @@ function serialize<T extends ProfileNode>(
   profile.function = functions;
   profile.stringTable = stringTable.strings;
 
-  function getLocation(node: ProfileNode, parentFunction?: string, sourceMapper?: SourceMapper):
-      perftools.profiles.Location {
+  function getLocation(
+      node: ProfileNode, parentFunction?: string,
+      sourceMapper?: SourceMapper): perftools.profiles.Location {
     const name = parentFunction || node.name || '(anonymous)';
     let profLoc: SourceLocation = {
       file: node.scriptName || '',
       line: node.lineNumber,
       column: node.columnNumber,
-      name: name
+      name
     };
 
     if (profLoc.line) {
@@ -241,7 +259,7 @@ function createAllocationValueType(table: StringTable):
  * @param intervalMicros - average time (microseconds) between samples.
  */
 export function serializeTimeProfile(
-    prof: TimeProfile, intervalMicros: number,
+    prof: TimeProfile, intervalMicros: number, hasLines?: boolean,
     sourceMapper?: SourceMapper): perftools.profiles.IProfile {
   const appendTimeEntryToSamples: AppendEntryToSamples<TimeProfileNode> =
       (entry: Entry<TimeProfileNode>, samples: perftools.profiles.Sample[]) => {
@@ -267,8 +285,9 @@ export function serializeTimeProfile(
     period: intervalMicros,
   };
 
-  serialize(profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable,
-    true,  undefined, sourceMapper);
+  serialize(
+      profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable, true,
+      undefined, sourceMapper);
 
   return profile;
 }
@@ -314,7 +333,7 @@ export function serializeHeapProfile(
   };
 
   serialize(
-      profile, prof, appendHeapEntryToSamples, stringTable, false, ignoreSamplesPath,
-      sourceMapper);
+      profile, prof, appendHeapEntryToSamples, stringTable, false,
+      ignoreSamplesPath, sourceMapper);
   return profile;
 }

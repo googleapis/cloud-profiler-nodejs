@@ -28,7 +28,7 @@ describe('TimeProfiler', () => {
     it('should detect idle time', async () => {
       const durationMillis = 500;
       const intervalMicros = 1000;
-      const profiler = new TimeProfiler(intervalMicros);
+      const profiler = new TimeProfiler(intervalMicros, false);
       const profile = await profiler.profile(durationMillis);
       assert.ok(profile.stringTable);
       assert.notStrictEqual(profile.stringTable!.indexOf('(idle)'), -1);
@@ -55,7 +55,7 @@ describe('TimeProfiler', () => {
        async () => {
          const durationMillis = 500;
          const intervalMicros = 1000;
-         const profiler = new TimeProfiler(intervalMicros);
+         const profiler = new TimeProfiler(intervalMicros, false);
          let isProfiling = true;
          const profilePromise = profiler.profile(durationMillis).then(() => {
            isProfiling = false;
@@ -67,7 +67,7 @@ describe('TimeProfiler', () => {
     it('should return a profile equal to the expected profile', async () => {
       const durationMillis = 500;
       const intervalMicros = 1000;
-      const profiler = new TimeProfiler(intervalMicros);
+      const profiler = new TimeProfiler(intervalMicros, false);
       const profile = await profiler.profile(durationMillis);
       assert.deepEqual(timeProfile, profile);
     });

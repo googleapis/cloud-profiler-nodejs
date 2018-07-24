@@ -49,6 +49,7 @@ const testConfig: ProfilerConfig = {
   disableHeap: false,
   credentials: fakeCredentials,
   timeIntervalMicros: 1000,
+  timeProfileLineNumbers: false,
   heapIntervalBytes: 512 * 1024,
   heapMaxStackDepth: 64,
   ignoreHeapSamplesPath: '@google-cloud/profiler',

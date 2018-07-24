@@ -25,7 +25,7 @@ export class TimeProfiler {
   /**
    * @param intervalMicros - average time in microseconds between samples
    */
-  constructor(private intervalMicros: number) {
+  constructor(private intervalMicros: number, private detailedLineNumbers: boolean) {
     setSamplingInterval(this.intervalMicros);
   }
 
@@ -50,7 +50,7 @@ export class TimeProfiler {
     // tslint:disable-next-line no-any
     (process as any)._stopProfilerIdleNotifier();
     const profile =
-        serializeTimeProfile(result, this.intervalMicros, sourceMapper);
+        serializeTimeProfile(result, this.intervalMicros, this.detailedLineNumbers, sourceMapper);
     return profile;
   }
 }
