@@ -378,7 +378,8 @@ describe('Profiler', () => {
              nock(API).patch('/' + requestProf.name).once().reply(200);
          const profiler = new Profiler(testConfig);
          await profiler.profileAndUpload(requestProf);
-         assert.strictEqual(apiMock.isDone(), true, 'completed call to real API');
+         assert.strictEqual(
+             apiMock.isDone(), true, 'completed call to real API');
        });
     it('should send request to upload profile to non-default API without error.',
        async () => {
@@ -395,7 +396,8 @@ describe('Profiler', () => {
          config.baseApiUrl = TEST_API;
          const profiler = new Profiler(config);
          await profiler.profileAndUpload(requestProf);
-         assert.strictEqual(apiMock.isDone(), true, 'completed call to test API');
+         assert.strictEqual(
+             apiMock.isDone(), true, 'completed call to test API');
        });
   });
   describe('createProfile', () => {
