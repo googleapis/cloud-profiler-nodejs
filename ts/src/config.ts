@@ -78,8 +78,8 @@ export interface Config extends GoogleAuthOptions {
   // stack depth may increase overhead of profiling.
   heapMaxStackDepth?: number;
 
-  // Samples with stacks containing this substring will not be included in
-  // heap profiles.
+  // Samples with stacks with any location containing this as a substring
+  // in their file name will not be included in heap profiles.
   // By default this is set to "@google-cloud/profiler" to exclude samples from
   // the profiler.
   ignoreHeapSamplesPath?: string;
