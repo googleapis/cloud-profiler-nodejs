@@ -25,6 +25,7 @@ import {Config, defaultConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 import * as heapProfiler from './profilers/heap-profiler';
+import * as SourceMapper from './sourcemapper';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
@@ -100,9 +101,9 @@ function initConfigLocal(config: Config): ProfilerConfig {
 
 /**
  * Sets unset values in the configuration which can be retrieved from GCP
- * metadata.
+ * metadata and uses source map paths to initialize the source maps.
  */
-async function initConfigMetadata(config: ProfilerConfig):
+async function initConfigAsync(config: ProfilerConfig):
     Promise<ProfilerConfig> {
   if (!config.zone || !config.instance) {
     const [instance, zone] =
@@ -121,6 +122,9 @@ async function initConfigMetadata(config: ProfilerConfig):
     if (!config.instance && instance) {
       config.instance = instance;
     }
+  }
+  if (config.sourcemapPaths) {
+    config.sourcemap = await SourceMapper.create(config.sourcemapPaths);
   }
   return config;
 }
@@ -162,7 +166,7 @@ export async function createProfiler(config: Config): Promise<Profiler> {
     heapProfiler.start(
         profilerConfig.heapIntervalBytes, profilerConfig.heapMaxStackDepth);
   }
-  profilerConfig = await initConfigMetadata(profilerConfig);
+  profilerConfig = await initConfigAsync(profilerConfig);
   return new Profiler(profilerConfig);
 }
 

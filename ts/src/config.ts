@@ -15,6 +15,7 @@
  */
 
 import {GoogleAuthOptions} from '@google-cloud/common';
+import {SourceMapper} from './sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 
@@ -125,6 +126,9 @@ export interface Config extends GoogleAuthOptions {
   // Duration of time profiles collected when using startLocal().
   // For testing with startLocal() only.
   localTimeDurationMillis?: number;
+
+  // Array of paths to files containing source maps.
+  sourcemapPaths?: string[];
 }
 
 // Interface for an initialized config.
@@ -148,6 +152,8 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localProfilingPeriodMillis: number;
   localLogPeriodMillis: number;
   localTimeDurationMillis: number;
+  sourcemapPaths?: string[];
+  sourcemap?: SourceMapper;
 }
 
 // Default values for configuration for a profiler.

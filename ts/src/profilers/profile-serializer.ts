@@ -15,6 +15,7 @@
  */
 
 import {perftools} from '../../../proto/profile';
+import {SourceLocation, SourceMapper} from '../sourcemapper';
 import {AllocationProfileNode, ProfileNode, TimeProfile, TimeProfileNode} from '../v8-types';
 
 /**
@@ -81,7 +82,7 @@ class StringTable {
 function serialize<T extends ProfileNode>(
     profile: perftools.profiles.IProfile, root: T,
     appendToSamples: AppendEntryToSamples<T>, stringTable: StringTable,
-    ignoreSamplesPath?: string) {
+    ignoreSamplesPath?: string, sourceMapper?: SourceMapper) {
   const samples: perftools.profiles.Sample[] = [];
   const locations: perftools.profiles.Location[] = [];
   const functions: perftools.profiles.Function[] = [];
@@ -99,7 +100,7 @@ function serialize<T extends ProfileNode>(
       continue;
     }
     const stack = entry.stack;
-    const location = getLocation(node);
+    const location = getLocation(node, sourceMapper);
     stack.unshift(location.id as number);
     appendToSamples(entry, samples);
     for (const child of node.children as T[]) {
@@ -112,9 +113,19 @@ function serialize<T extends ProfileNode>(
   profile.function = functions;
   profile.stringTable = stringTable.strings;
 
-  function getLocation(node: ProfileNode): perftools.profiles.Location {
-    const keyStr =
-        `${node.scriptId}:${node.lineNumber}:${node.columnNumber}:${node.name}`;
+  function getLocation(node: ProfileNode, sourceMapper?: SourceMapper):
+      perftools.profiles.Location {
+    const profLoc = {
+      file: node.scriptName || '',
+      line: node.lineNumber || 0,
+      column: node.columnNumber || 0,
+      name: node.name
+    };
+    let l: SourceLocation = profLoc;
+    if (sourceMapper) {
+      l = sourceMapper.mappingInfo(profLoc);
+    }
+    const keyStr = `${node.scriptId}:${l.line}:${l.column}:${l.name}`;
     let id = locationIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
@@ -122,21 +133,24 @@ function serialize<T extends ProfileNode>(
     }
     id = locations.length + 1;
     locationIdMap.set(keyStr, id);
-    const location =
-        new perftools.profiles.Location({id, line: [getLine(node)]});
+    const line = getLine(node.scriptId, l.file, l.name, l.line);
+    const location = new perftools.profiles.Location({id, line: [line]});
     locations.push(location);
     return location;
   }
 
-  function getLine(node: ProfileNode): perftools.profiles.Line {
+  function getLine(
+      scriptId?: number, scriptName?: string, name?: string,
+      line?: number): perftools.profiles.Line {
     return new perftools.profiles.Line({
-      functionId: getFunction(node).id,
-      line: node.lineNumber,
+      functionId: getFunction(scriptId, scriptName, name).id,
+      line,
     });
   }
 
-  function getFunction(node: ProfileNode): perftools.profiles.Function {
-    const keyStr = `${node.scriptId}:${node.name}`;
+  function getFunction(scriptId?: number, scriptName?: string, name?: string):
+      perftools.profiles.Function {
+    const keyStr = `${scriptId}:${name}`;
     let id = functionIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
@@ -144,12 +158,12 @@ function serialize<T extends ProfileNode>(
     }
     id = functions.length + 1;
     functionIdMap.set(keyStr, id);
-    const nameId = stringTable.getIndexOrAdd(node.name || '(anonymous)');
+    const nameId = stringTable.getIndexOrAdd(name || '(anonymous)');
     const f = new perftools.profiles.Function({
       id,
       name: nameId,
       systemName: nameId,
-      filename: stringTable.getIndexOrAdd(node.scriptName)
+      filename: stringTable.getIndexOrAdd(scriptName || '')
     });
     functions.push(f);
     return f;
@@ -209,7 +223,8 @@ function createAllocationValueType(table: StringTable):
  * @param intervalMicros - average time (microseconds) between samples.
  */
 export function serializeTimeProfile(
-    prof: TimeProfile, intervalMicros: number): perftools.profiles.IProfile {
+    prof: TimeProfile, intervalMicros: number,
+    sourceMapper?: SourceMapper): perftools.profiles.IProfile {
   const appendTimeEntryToSamples: AppendEntryToSamples<TimeProfileNode> =
       (entry: Entry<TimeProfileNode>, samples: perftools.profiles.Sample[]) => {
         if (entry.node.hitCount > 0) {
@@ -234,7 +249,9 @@ export function serializeTimeProfile(
     period: intervalMicros,
   };
 
-  serialize(profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable);
+  serialize(
+      profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable,
+      undefined, sourceMapper);
 
   return profile;
 }
@@ -251,7 +268,8 @@ export function serializeTimeProfile(
  */
 export function serializeHeapProfile(
     prof: AllocationProfileNode, startTimeNanos: number, intervalBytes: number,
-    ignoreSamplesPath?: string): perftools.profiles.IProfile {
+    ignoreSamplesPath?: string,
+    sourceMapper?: SourceMapper): perftools.profiles.IProfile {
   const appendHeapEntryToSamples: AppendEntryToSamples<AllocationProfileNode> =
       (entry: Entry<AllocationProfileNode>,
        samples: perftools.profiles.Sample[]) => {
@@ -279,6 +297,7 @@ export function serializeHeapProfile(
   };
 
   serialize(
-      profile, prof, appendHeapEntryToSamples, stringTable, ignoreSamplesPath);
+      profile, prof, appendHeapEntryToSamples, stringTable, ignoreSamplesPath,
+      sourceMapper);
   return profile;
 }
