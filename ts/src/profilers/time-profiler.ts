@@ -16,7 +16,7 @@
 
 import delay from 'delay';
 import {perftools} from '../../../proto/profile';
-import {SourceMapper} from '../sourcemapper';
+import {SourceMapper} from '../../third_party/cloud-debug-nodejs/sourcemapper';
 
 import {serializeTimeProfile} from './profile-serializer';
 import {setSamplingInterval, startProfiling, stopProfiling} from './time-profiler-bindings';

@@ -25,7 +25,6 @@ import {Config, defaultConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 import * as heapProfiler from './profilers/heap-profiler';
-import * as SourceMapper from './sourcemapper';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
@@ -122,9 +121,6 @@ async function initConfigAsync(config: ProfilerConfig):
     if (!config.instance && instance) {
       config.instance = instance;
     }
-  }
-  if (config.sourcemapPaths) {
-    config.sourcemap = await SourceMapper.create(config.sourcemapPaths);
   }
   return config;
 }

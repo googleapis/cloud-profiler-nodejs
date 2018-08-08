@@ -15,7 +15,7 @@
  */
 
 import {perftools} from '../../../proto/profile';
-import {SourceLocation, SourceMapper} from '../sourcemapper';
+import {GeneratedLocation, SourceLocation, SourceMapper} from '../../third_party/cloud-debug-nodejs/sourcemapper';
 import {AllocationProfileNode, ProfileNode, TimeProfile, TimeProfileNode} from '../v8-types';
 
 /**
@@ -36,6 +36,11 @@ type AppendEntryToSamples<T extends ProfileNode> =
 interface Entry<T extends ProfileNode> {
   node: T;
   stack: Stack;
+}
+
+function hasLineAndColumnNumber(location: SourceLocation):
+    location is GeneratedLocation {
+  return location.column !== undefined && location.line !== undefined;
 }
 
 /**
@@ -117,12 +122,12 @@ function serialize<T extends ProfileNode>(
       perftools.profiles.Location {
     const profLoc = {
       file: node.scriptName || '',
-      line: node.lineNumber || 0,
-      column: node.columnNumber || 0,
+      line: node.lineNumber,
+      column: node.columnNumber,
       name: node.name
     };
     let l: SourceLocation = profLoc;
-    if (sourceMapper) {
+    if (sourceMapper && hasLineAndColumnNumber(profLoc)) {
       l = sourceMapper.mappingInfo(profLoc);
     }
     const keyStr = `${node.scriptId}:${l.line}:${l.column}:${l.name}`;

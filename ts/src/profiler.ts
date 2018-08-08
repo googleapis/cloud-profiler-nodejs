@@ -22,6 +22,7 @@ import {teenyRequest as request} from 'teeny-request';
 import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
+import {create, SourceMapper} from '../third_party/cloud-debug-nodejs/sourcemapper';
 
 import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
@@ -251,6 +252,7 @@ export class Profiler extends ServiceObject {
   private deployment: Deployment;
   private profileTypes: string[];
   private retryer: Retryer;
+  private sourcemap: SourceMapper|undefined;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -326,6 +328,9 @@ export class Profiler extends ServiceObject {
    * uploads profiles as requested.
    */
   async runLoop() {
+    if (this.config.sourcemapPaths) {
+      this.sourcemap = await create(this.config.sourcemapPaths);
+    }
     const delayMillis = await this.collectProfile();
     setTimeout(this.runLoop.bind(this), delayMillis).unref();
   }
@@ -486,8 +491,7 @@ export class Profiler extends ServiceObject {
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
           ` be parsed.`);
     }
-    const p =
-        await this.timeProfiler.profile(durationMillis, this.config.sourcemap);
+    const p = await this.timeProfiler.profile(durationMillis, this.sourcemap);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
@@ -502,8 +506,8 @@ export class Profiler extends ServiceObject {
     if (this.config.disableHeap) {
       throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
-    const p = heapProfiler.profile(
-        this.config.ignoreHeapSamplesPath, this.config.sourcemap);
+    const p =
+        heapProfiler.profile(this.config.ignoreHeapSamplesPath, this.sourcemap);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }

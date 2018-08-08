@@ -1,5 +1,5 @@
 /**
- * Copyright 2018 Google Inc. All Rights Reserved.
+ * Copyright 2016 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 import * as fs from 'fs';
-import * as _ from 'lodash';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
 const pify = require('pify');
@@ -55,7 +54,7 @@ async function processSourcemap(
     infoMap: Map<string, MapInfoCompiled>, mapPath: string) {
   // this handles the case when the path is undefined, null, or
   // the empty string
-  if (!mapPath || !_.endsWith(mapPath, MAP_EXT)) {
+  if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
     throw new Error(`The path ${mapPath} does not specify a sourcemap file`);
   }
   mapPath = path.normalize(mapPath);
@@ -93,6 +92,8 @@ async function processSourcemap(
   const outputBase =
       consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
   const parentDir = path.dirname(mapPath);
+
+  console.log('parent dir: ', parentDir);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
   infoMap.set(outputPath, {mapFile: mapPath, mapConsumer: consumer});
@@ -183,7 +184,7 @@ export class SourceMapper {
 
     const pos = consumer.originalPositionFor(generatedPos);
     if (pos.source === null) {
-      return {}
+      return location;
     }
 
     return {
@@ -209,5 +210,6 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
     throw new Error(
         'An error occurred while processing the sourcemap files' + err);
   }
+  console.log(mapper)
   return mapper;
 }

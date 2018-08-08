@@ -96,7 +96,7 @@ describe('Retryer', () => {
 describe('Profiler', () => {
   const sinonStubs: sinon.SinonStub[] = new Array();
   beforeEach(() => {
-    when(mockTimeProfiler.profile(10 * 1000))
+    when(mockTimeProfiler.profile(10 * 1000, undefined))
         .thenReturn(new Promise((resolve) => {
           resolve(timeProfile);
         }));

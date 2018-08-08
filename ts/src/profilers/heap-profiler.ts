@@ -15,7 +15,7 @@
  */
 
 import {perftools} from '../../../proto/profile';
-import {SourceMapper} from '../sourcemapper';
+import {SourceMapper} from '../../third_party/cloud-debug-nodejs/sourcemapper';
 import {AllocationProfileNode} from '../v8-types';
 import {getAllocationProfile, startSamplingHeapProfiler, stopSamplingHeapProfiler} from './heap-profiler-bindings';
 import {serializeHeapProfile} from './profile-serializer';

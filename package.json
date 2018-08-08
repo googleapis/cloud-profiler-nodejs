@@ -78,7 +78,7 @@
   },
   "files": [
     "out/src",
-    "out/third_party/types",
+    "out/third_party/cloud-debug-nodejs",
     "bindings",
     "proto",
     "binding.gyp",
