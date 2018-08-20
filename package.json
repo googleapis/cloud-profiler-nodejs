@@ -28,6 +28,7 @@
   "dependencies": {
     "@google-cloud/common": "^0.20.3",
     "bindings": "^1.2.1",
+    "console-log-level": "^1.4.0",
     "delay": "^3.0.0",
     "extend": "^3.0.1",
     "gcp-metadata": "^0.7.0",
@@ -36,11 +37,10 @@
     "pify": "^4.0.0",
     "pretty-ms": "^3.1.0",
     "protobufjs": "~6.8.6",
-    "request": "^2.83.0",
-    "retry-request": "^4.0.0",
     "semver": "^5.5.0"
   },
   "devDependencies": {
+    "@types/console-log-level": "^1.4.0",
     "@types/delay": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/long": "^4.0.0",
