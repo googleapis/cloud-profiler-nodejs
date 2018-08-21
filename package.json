@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "@types/console-log-level": "^1.4.0",
-    "@types/delay": "^2.0.0",
     "@types/extend": "^3.0.0",
     "@types/long": "^4.0.0",
     "@types/mocha": "^5.0.0",
