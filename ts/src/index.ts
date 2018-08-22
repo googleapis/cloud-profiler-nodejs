@@ -53,8 +53,6 @@ function hasService(config: Config):
  * Throws error if value that must be set cannot be initialized.
  */
 function initConfigLocal(config: Config): ProfilerConfig {
-  config = util.normalizeArguments(null, config);
-
   const envConfig: Config = {
     projectId: process.env.GCLOUD_PROJECT,
     serviceContext: {

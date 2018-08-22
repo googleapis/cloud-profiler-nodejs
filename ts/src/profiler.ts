@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {Service, ServiceObject, util} from '@google-cloud/common';
+import {Service, ServiceConfig, ServiceObject, util} from '@google-cloud/common';
 import * as consoleLogLevel from 'console-log-level';
 import * as http from 'http';
 import * as path from 'path';
 import * as pify from 'pify';
 import * as msToStr from 'pretty-ms';
+import * as request from 'request';
 import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
@@ -245,13 +246,18 @@ export class Profiler extends ServiceObject {
   config: ProfilerConfig;
 
   constructor(config: ProfilerConfig) {
-    config = util.normalizeArguments(null, config) as ProfilerConfig;
-    const serviceConfig = {
+    config = config || {} as ProfilerConfig;
+    const serviceConfig: ServiceConfig = {
       baseUrl: config.baseApiUrl,
       scopes: [SCOPE],
       packageJson: pjson,
+      requestModule: request,
     };
-    super({parent: new Service(serviceConfig, config), baseUrl: '/'});
+    super({
+      parent: new Service(serviceConfig, config),
+      baseUrl: '/',
+      requestModule: request
+    });
     this.config = config;
 
     this.logger = consoleLogLevel({
