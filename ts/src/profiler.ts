@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {Service, ServiceConfig, ServiceObject, util} from '@google-cloud/common';
+import {Service, ServiceConfig, ServiceObject} from '@google-cloud/common';
 import * as consoleLogLevel from 'console-log-level';
 import * as http from 'http';
-import * as path from 'path';
 import * as pify from 'pify';
 import * as msToStr from 'pretty-ms';
 import * as request from 'request';

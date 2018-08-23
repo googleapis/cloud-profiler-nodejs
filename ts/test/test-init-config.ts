@@ -15,11 +15,9 @@
  */
 
 import * as assert from 'assert';
-import * as extend from 'extend';
 import * as gcpMetadata from 'gcp-metadata';
 import * as sinon from 'sinon';
 
-import {ProfilerConfig} from '../src/config';
 import {createProfiler, nodeVersionOkay} from '../src/index';
 import {Profiler} from '../src/profiler';
 import * as heapProfiler from '../src/profilers/heap-profiler';
