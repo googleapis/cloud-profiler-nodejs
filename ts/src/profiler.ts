@@ -319,7 +319,10 @@ export class Profiler extends ServiceObject {
    * on the type of profile to be collected, this problem will be logged at the
    * error level and getting profile type will be retried.
    */
-  start() {
+  async start() {
+    if (this.config.sourcemapPaths) {
+      this.sourcemap = await create(this.config.sourcemapPaths);
+    }
     this.runLoop();
   }
 
@@ -328,9 +331,6 @@ export class Profiler extends ServiceObject {
    * uploads profiles as requested.
    */
   async runLoop() {
-    if (this.config.sourcemapPaths) {
-      this.sourcemap = await create(this.config.sourcemapPaths);
-    }
     const delayMillis = await this.collectProfile();
     setTimeout(this.runLoop.bind(this), delayMillis).unref();
   }

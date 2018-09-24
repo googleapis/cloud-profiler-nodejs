@@ -40,7 +40,8 @@ interface Entry<T extends ProfileNode> {
 
 function hasLineAndColumnNumber(location: SourceLocation):
     location is GeneratedLocation {
-  return location.column !== undefined && location.line !== undefined;
+  return location.column !== undefined && location.line !== undefined &&
+      location.line > 0;
 }
 
 /**
@@ -126,6 +127,9 @@ function serialize<T extends ProfileNode>(
       column: node.columnNumber,
       name: node.name
     };
+    if (profLoc.line === 0) {
+      profLoc.line = 1;
+    }
     let l: SourceLocation = profLoc;
     if (sourceMapper && hasLineAndColumnNumber(profLoc)) {
       l = sourceMapper.mappingInfo(profLoc);

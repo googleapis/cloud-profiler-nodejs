@@ -18,8 +18,11 @@ import delay from 'delay';
 import * as extend from 'extend';
 import * as fs from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
+import * as path from 'path';
 import * as semver from 'semver';
 import {SemVer} from 'semver';
+
+import {getMapFiles} from '../third_party/cloud-debug-nodejs/sourcemapper';
 
 import {Config, defaultConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
@@ -121,6 +124,16 @@ async function initConfigAsync(config: ProfilerConfig):
     if (!config.instance && instance) {
       config.instance = instance;
     }
+  }
+  if (!config.disableSourcemaps) {
+    const mapFiles = await getMapFiles(false, config.workingDirectory);
+    if (config.sourcemapPaths) {
+      mapFiles.concat(config.sourcemapPaths);
+    }
+    mapFiles.forEach((element, idx) => {
+      mapFiles[idx] = path.join(config.workingDirectory, element);
+    });
+    config.sourcemapPaths = mapFiles;
   }
   return config;
 }

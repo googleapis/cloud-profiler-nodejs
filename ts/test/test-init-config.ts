@@ -82,6 +82,10 @@ describe('createProfiler', () => {
     localLogPeriodMillis: 10000,
     baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
   };
+  const disableSourceMapParams = {
+    disableSourcemaps: true,
+    workingDirectory: 'workingDirectory',
+  };
   let defaultConfig: {};
 
   before(async () => {
@@ -112,15 +116,18 @@ describe('createProfiler', () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance')
                        .throwsException('cannot access metadata');
 
-    const config = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId'
-    };
+    const config = Object.assign(
+        {
+          logLevel: 2,
+          serviceContext: {version: 'fake-version', service: 'fake-service'},
+          disableHeap: true,
+          disableTime: true,
+          instance: 'instance',
+          zone: 'zone',
+          projectId: 'fake-projectId'
+        },
+        disableSourceMapParams);
+
     const profiler: Profiler = await createProfiler(config);
     const expConfig = Object.assign({}, defaultConfig, config);
     assert.deepEqual(profiler.config, expConfig);
@@ -133,15 +140,17 @@ describe('createProfiler', () => {
         .withArgs('zone')
         .resolves({data: 'projects/123456789012/zones/gce-zone'});
 
-    const config = {
-      logLevel: 2,
-      serviceContext: {version: 'fake-version', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone',
-      projectId: 'fake-projectId'
-    };
+    const config = Object.assign(
+        {
+          logLevel: 2,
+          serviceContext: {version: 'fake-version', service: 'fake-service'},
+          disableHeap: true,
+          disableTime: true,
+          instance: 'instance',
+          zone: 'zone',
+          projectId: 'fake-projectId'
+        },
+        disableSourceMapParams);
     const profiler: Profiler = await createProfiler(config);
     const expConfig = Object.assign({}, defaultConfig, config);
     assert.deepEqual(profiler.config, expConfig);
@@ -153,14 +162,15 @@ describe('createProfiler', () => {
         .resolves({data: 'gce-instance'})
         .withArgs('zone')
         .resolves({data: 'projects/123456789012/zones/gce-zone'});
-
-    const config = {
-      projectId: 'projectId',
-      logLevel: 2,
-      serviceContext: {version: '', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-    };
+    const config = Object.assign(
+        {
+          projectId: 'projectId',
+          logLevel: 2,
+          serviceContext: {version: '', service: 'fake-service'},
+          disableHeap: true,
+          disableTime: true,
+        },
+        disableSourceMapParams);
     const expConfigParams = {
       logLevel: 2,
       serviceContext: {version: '', service: 'fake-service'},
@@ -171,7 +181,8 @@ describe('createProfiler', () => {
       projectId: 'projectId'
     };
     const profiler: Profiler = await createProfiler(config);
-    const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+    const expConfig = Object.assign(
+        {}, defaultConfig, disableSourceMapParams, expConfigParams);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -179,10 +190,12 @@ describe('createProfiler', () => {
      async () => {
        metadataStub = sinon.stub(gcpMetadata, 'instance');
        metadataStub.throwsException('cannot access metadata');
-       const config = {
-         projectId: 'fake-projectId',
-         serviceContext: {service: 'fake-service'}
-       };
+       const config = Object.assign(
+           {
+             projectId: 'fake-projectId',
+             serviceContext: {service: 'fake-service'}
+           },
+           disableSourceMapParams);
        const expConfigParams = {
          logLevel: 2,
          serviceContext: {service: 'fake-service'},
@@ -191,26 +204,31 @@ describe('createProfiler', () => {
          projectId: 'fake-projectId',
        };
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+       const expConfig = Object.assign(
+           {}, defaultConfig, disableSourceMapParams, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
 
   it('should reject when no service specified', async () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.throwsException('cannot access metadata');
-    const config = {
-      logLevel: 2,
-      serviceContext: {version: ''},
-      disableHeap: true,
-      disableTime: true,
-    };
-    try {
-      await createProfiler(config);
-      assert.fail('expected an error because no service was specified');
-    } catch (e) {
-      assert.strictEqual(
-          e.message, 'Service must be specified in the configuration');
-    }
+    const config = Object.assign(
+        {
+          logLevel: 2,
+          serviceContext: {version: ''},
+          disableHeap: true,
+          disableTime: true,
+        },
+        disableSourceMapParams);
+    createProfiler(config)
+        .then(() => {
+          assert.fail('expected error because no service in config');
+        })
+        .catch((e: Error) => {
+          assert.strictEqual(
+              e.message,
+              'Could not start profiler: Error: Service must be specified in the configuration');
+        });
   });
 
   it('should reject when no service does not match service regular expression',
@@ -237,16 +255,19 @@ describe('createProfiler', () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.throwsException('cannot access metadata');
 
-    const config = {
-      logLevel: 2,
-      serviceContext: {version: '', service: 'fake-service'},
-      disableHeap: true,
-      disableTime: true,
-      instance: 'instance',
-      zone: 'zone'
-    };
+    const config = Object.assign(
+        {
+          logLevel: 2,
+          serviceContext: {version: '', service: 'fake-service'},
+          disableHeap: true,
+          disableTime: true,
+          instance: 'instance',
+          zone: 'zone'
+        },
+        disableSourceMapParams);
     const profiler: Profiler = await createProfiler(config);
-    const expConfig = Object.assign({}, defaultConfig, config);
+    const expConfig =
+        Object.assign({}, config, disableSourceMapParams, defaultConfig);
     assert.deepEqual(profiler.config, expConfig);
   });
 
@@ -254,10 +275,12 @@ describe('createProfiler', () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.throwsException('cannot access metadata');
 
-    const config = {
-      serviceContext: {version: '', service: 'fake-service'},
-      baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
-    };
+    const config = Object.assign(
+        {
+          serviceContext: {version: '', service: 'fake-service'},
+          baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
+        },
+        disableSourceMapParams);
     const expConfigParams = {
       serviceContext: {version: '', service: 'fake-service'},
       disableHeap: false,
@@ -265,7 +288,8 @@ describe('createProfiler', () => {
       logLevel: 2,
       baseApiUrl: 'https://test-cloudprofiler.sandbox.googleapis.com/v2'
     };
-    const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+    const expConfig = Object.assign(
+        {}, defaultConfig, disableSourceMapParams, expConfigParams);
     const profiler: Profiler = await createProfiler(config);
     assert.deepEqual(profiler.config, expConfig);
   });
@@ -283,7 +307,7 @@ describe('createProfiler', () => {
            .resolves({data: 'gce-instance'})
            .withArgs('zone')
            .resolves({data: 'projects/123456789012/zones/gce-zone'});
-       const config = {};
+       const config = disableSourceMapParams;
        const expConfigParams = {
          projectId: 'process-projectId',
          logLevel: 4,
@@ -295,7 +319,8 @@ describe('createProfiler', () => {
          zone: 'env_config_zone'
        };
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+       const expConfig =
+           Object.assign({}, config, defaultConfig, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
 
@@ -313,17 +338,20 @@ describe('createProfiler', () => {
            .withArgs('zone')
            .resolves({data: 'projects/123456789012/zones/gce-zone'});
 
-       const config = {
-         projectId: 'config-projectId',
-         logLevel: 1,
-         serviceContext: {version: 'config-version', service: 'config-service'},
-         disableHeap: false,
-         disableTime: false,
-         instance: 'instance',
-         zone: 'zone'
-       };
+       const config = Object.assign(
+           {
+             projectId: 'config-projectId',
+             logLevel: 1,
+             serviceContext:
+                 {version: 'config-version', service: 'config-service'},
+             disableHeap: false,
+             disableTime: false,
+             instance: 'instance',
+             zone: 'zone'
+           },
+           disableSourceMapParams);
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = Object.assign({}, defaultConfig, config);
+       const expConfig = Object.assign({}, config, defaultConfig);
        assert.deepEqual(profiler.config, expConfig);
      });
 
@@ -345,31 +373,36 @@ describe('createProfiler', () => {
          projectId: 'env_config_fake-projectId'
        };
 
-       const config = {};
+       const config = disableSourceMapParams;
        const profiler: Profiler = await createProfiler(config);
-       const expConfig = Object.assign({}, defaultConfig, expConfigParams);
+       const expConfig =
+           Object.assign({}, config, defaultConfig, expConfigParams);
        assert.deepEqual(profiler.config, expConfig);
      });
   it('should start heap profiler when disableHeap is not set', async () => {
-    const config = {
-      projectId: 'config-projectId',
-      serviceContext: {service: 'config-service'},
-      instance: 'env_config_instance',
-      zone: 'env_config_zone',
-    };
+    const config = Object.assign(
+        {
+          projectId: 'config-projectId',
+          serviceContext: {service: 'config-service'},
+          instance: 'envConfig-instance',
+          zone: 'envConfig-zone',
+        },
+        disableSourceMapParams);
     const profiler: Profiler = await createProfiler(config);
     assert.ok(
         startStub.calledWith(1024 * 512, 64),
         'expected heap profiler to be started');
   });
   it('should start not heap profiler when disableHeap is true', async () => {
-    const config = {
-      projectId: 'config-projectId',
-      serviceContext: {service: 'config-service'},
-      disableHeap: true,
-      instance: 'env_config_instance',
-      zone: 'env_config_zone',
-    };
+    const config = Object.assign(
+        {
+          projectId: 'config-projectId',
+          serviceContext: {service: 'config-service'},
+          disableHeap: true,
+          instance: 'envConfig-instance',
+          zone: 'envConfig-zone',
+        },
+        disableSourceMapParams);
     const profiler: Profiler = await createProfiler(config);
     assert.ok(!startStub.called, 'expected heap profiler to not be started');
   });

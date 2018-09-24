@@ -17,6 +17,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as sourceMap from 'source-map';
+import * as util from 'util';
+
+import * as scanner from './scanner';
+
 const pify = require('pify');
 const pLimit = require('p-limit');
 const readFile = pify(fs.readFile);
@@ -92,8 +96,6 @@ async function processSourcemap(
   const outputBase =
       consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
   const parentDir = path.dirname(mapPath);
-
-  console.log('parent dir: ', parentDir);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
   infoMap.set(outputPath, {mapFile: mapPath, mapConsumer: consumer});
@@ -186,7 +188,6 @@ export class SourceMapper {
     if (pos.source === null) {
       return location;
     }
-
     return {
       file: pos.source,
       line: pos.line,
@@ -210,6 +211,11 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
     throw new Error(
         'An error occurred while processing the sourcemap files' + err);
   }
-  console.log(mapper)
   return mapper;
+}
+
+export async function getMapFiles(shouldHash: boolean, baseDir: string) {
+  const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
+  const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
+  return mapFiles;
 }

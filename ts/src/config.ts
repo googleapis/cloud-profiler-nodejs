@@ -127,8 +127,17 @@ export interface Config extends GoogleAuthOptions {
   // For testing with startLocal() only.
   localTimeDurationMillis?: number;
 
+  // When true, source map support will be disabled.
+  disableSourcemaps?: boolean;
+
   // Array of paths to files containing source maps.
   sourcemapPaths?: string[];
+
+
+  // The working directory of the application being profiled. That is, the
+  // directory containing the application's package.json file.
+  // The default value is the value of process.cwd().
+  workingDirectory?: string;
 }
 
 // Interface for an initialized config.
@@ -152,7 +161,9 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localProfilingPeriodMillis: number;
   localLogPeriodMillis: number;
   localTimeDurationMillis: number;
+  disableSourcemaps: boolean;
   sourcemapPaths?: string[];
+  workingDirectory: string;
 }
 
 // Default values for configuration for a profiler.
@@ -177,5 +188,7 @@ export const defaultConfig = {
 
   localProfilingPeriodMillis: 1000,
   localLogPeriodMillis: 10000,
-  localTimeDurationMillis: 1000
+  localTimeDurationMillis: 1000,
+  disableSourcemaps: false,
+  workingDirectory: process.cwd()
 };

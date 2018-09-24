@@ -38,6 +38,7 @@
     "console-log-level": "^1.4.0",
     "delay": "^4.0.1",
     "extend": "^3.0.1",
+    "findit2": "^2.2.3",
     "gcp-metadata": "^0.9.0",
     "lodash.pickby": "^4.6.0",
     "nan": "^2.12.0",
@@ -49,6 +50,7 @@
     "protobufjs": "~6.8.6",
     "semver": "^5.5.0",
     "source-map": "^0.7.3",
+    "split": "^1.0.1",
     "teeny-request": "^3.3.0"
   },
   "devDependencies": {
