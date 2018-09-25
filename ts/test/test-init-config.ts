@@ -83,7 +83,7 @@ describe('createProfiler', () => {
     baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
   };
   const disableSourceMapParams = {
-    disableSourcemaps: true,
+    disableSourceMaps: true,
     workingDirectory: 'workingDirectory',
   };
   let defaultConfig: {};

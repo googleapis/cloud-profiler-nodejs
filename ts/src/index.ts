@@ -125,7 +125,7 @@ async function initConfigAsync(config: ProfilerConfig):
       config.instance = instance;
     }
   }
-  if (!config.disableSourcemaps) {
+  if (!config.disableSourceMaps) {
     const mapFiles = await getMapFiles(false, config.workingDirectory);
     if (config.sourcemapPaths) {
       mapFiles.concat(config.sourcemapPaths);
