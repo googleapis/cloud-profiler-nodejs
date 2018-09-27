@@ -48,7 +48,7 @@
     "pify": "^4.0.0",
     "pretty-ms": "^4.0.0",
     "protobufjs": "~6.8.6",
-    "semver": "^5.5.0",
+    "semver": "^5.5.1",
     "source-map": "^0.7.3",
     "split": "^1.0.1",
     "teeny-request": "^3.3.0"

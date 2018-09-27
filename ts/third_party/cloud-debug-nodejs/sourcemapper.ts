@@ -190,7 +190,7 @@ export class SourceMapper {
     }
     return {
       file: pos.source,
-      line: pos.line,
+      line: pos.line || undefined,
       name: pos.name || location.name,
       // TODO: The `sourceMap.Position` type definition has a `column`
       //       attribute and not a `col` attribute.  Determine if the type
