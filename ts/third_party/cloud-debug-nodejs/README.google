@@ -1,0 +1,11 @@
+URL:https://github.com/googleapis/cloud-debug-nodejs/tree/536e91f888e4261513eed07e52831f4e4d0016d8
+Version: 536e91f888e4261513eed07e52831f4e4d0016d8
+License: Apache 2.0
+License File: # LICENSE
+Description:
+       This module provides Stackdriver Debugger support for Node.js 
+       applications. Stackdriver Debugger is a feature of Google Cloud Platform
+       that lets you debug your applications in production without stopping or
+       pausing your application.
+Local Modifications:
+       All code except scanner.ts has been removed.
