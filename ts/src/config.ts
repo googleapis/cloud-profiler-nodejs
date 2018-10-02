@@ -15,7 +15,7 @@
  */
 
 import {GoogleAuthOptions} from '@google-cloud/common';
-import {SourceMapper} from '../third_party/cloud-debug-nodejs/sourcemapper';
+import {SourceMapper} from './sourcemapper/sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 

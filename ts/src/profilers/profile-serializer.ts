@@ -15,7 +15,7 @@
  */
 
 import {perftools} from '../../../proto/profile';
-import {GeneratedLocation, SourceLocation, SourceMapper} from '../../third_party/cloud-debug-nodejs/sourcemapper';
+import {GeneratedLocation, SourceLocation, SourceMapper} from '../sourcemapper/sourcemapper';
 import {AllocationProfileNode, ProfileNode, TimeProfile, TimeProfileNode} from '../v8-types';
 
 /**

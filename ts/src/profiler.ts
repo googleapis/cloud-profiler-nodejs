@@ -22,12 +22,12 @@ import {teenyRequest as request} from 'teeny-request';
 import * as zlib from 'zlib';
 
 import {perftools} from '../../proto/profile';
-import {create, SourceMapper} from '../third_party/cloud-debug-nodejs/sourcemapper';
 
 import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import * as heapProfiler from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
+import {create, SourceMapper} from './sourcemapper/sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');

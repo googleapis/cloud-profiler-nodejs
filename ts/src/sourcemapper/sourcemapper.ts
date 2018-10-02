@@ -14,32 +14,36 @@
  * limitations under the License.
  */
 
-// Originally copied from cloud-debug-nodejs's sourcemapper.ts from
-// https://github.com/googleapis/cloud-debug-nodejs/blob/7bdc2f1f62a3b45b7b53ea79f9444c8ed50e138b/src/agent/io/sourcemapper.ts
-// Modified to remove imports that will not be used after this file is modified
-// for the profiling agent.
-
 import * as fs from 'fs';
 import * as path from 'path';
-import * as promisify from 'pify';
 import * as sourceMap from 'source-map';
+import * as util from 'util';
 
-import pLimit = require('p-limit');
+import * as scanner from '../../third_party/cloud-debug-nodejs/scanner';
+
+const pify = require('pify');
+const pLimit = require('p-limit');
+const readFile = pify(fs.readFile);
 
 const CONCURRENCY = 10;
-const readFilep = promisify(fs.readFile);
+const MAP_EXT = '.map';
 
-/** @define {string} */ const MAP_EXT = '.map';
-
-export interface MapInfoInput {
-  outputFile: string;
+export interface MapInfoCompiled {
   mapFile: string;
   mapConsumer: sourceMap.RawSourceMap;
 }
 
-export interface MapInfoOutput {
+export interface GeneratedLocation {
   file: string;
+  name?: string;
   line: number;
+  column: number;
+}
+
+export interface SourceLocation {
+  file?: string;
+  name?: string;
+  line?: number;
   column?: number;
 }
 
@@ -51,7 +55,7 @@ export interface MapInfoOutput {
  * @private
  */
 async function processSourcemap(
-    infoMap: Map<string, MapInfoInput>, mapPath: string) {
+    infoMap: Map<string, MapInfoCompiled>, mapPath: string) {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
@@ -61,7 +65,7 @@ async function processSourcemap(
 
   let contents;
   try {
-    contents = await readFilep(mapPath, 'utf8');
+    contents = await readFile(mapPath, 'utf8');
   } catch (e) {
     throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
   }
@@ -90,35 +94,15 @@ async function processSourcemap(
    * file (with the .map extension removed) as the output file.
    */
   const outputBase =
-      consumer.file ? consumer.file : path.basename(mapPath, '.map');
+      consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
   const parentDir = path.dirname(mapPath);
   const outputPath = path.normalize(path.join(parentDir, outputBase));
 
-  const sources = Array.prototype.slice.call(consumer.sources)
-                      .filter((value: string) => {
-                        // filter out any empty string, null, or undefined
-                        // sources
-                        return !!value;
-                      })
-                      .map((relPath: string) => {
-                        // resolve the paths relative to the map file so that
-                        // they are relative to the process's current working
-                        // directory
-                        return path.normalize(path.join(parentDir, relPath));
-                      });
-
-  if (sources.length === 0) {
-    throw new Error('No sources listed in the sourcemap file ' + mapPath);
-  }
-  sources.forEach((src: string) => {
-    infoMap.set(
-        path.normalize(src),
-        {outputFile: outputPath, mapFile: mapPath, mapConsumer: consumer});
-  });
+  infoMap.set(outputPath, {mapFile: mapPath, mapConsumer: consumer});
 }
 
 export class SourceMapper {
-  infoMap: Map<string, MapInfoInput>;
+  infoMap: Map<string, MapInfoCompiled>;
 
   /**
    * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
@@ -138,14 +122,14 @@ export class SourceMapper {
    * path to exactly one output transpiled file.
    *
    * @param inputPath The (possibly relative) path to the original source file.
-   * @return The `MapInfoInput` object that describes the transpiled file
+   * @return The `MapInfoCompiled` object that describes the transpiled file
    *  associated with the specified input path.  `null` is returned if either
    *  zero files are associated with the input path or if more than one file
    *  could possibly be associated with the given input path.
    */
-  private getMappingInfo(inputPath: string): MapInfoInput|null {
+  private getMappingInfo(inputPath: string): MapInfoCompiled|null {
     if (this.infoMap.has(path.normalize(inputPath))) {
-      return this.infoMap.get(inputPath) as MapInfoInput;
+      return this.infoMap.get(inputPath) as MapInfoCompiled;
     }
 
     return null;
@@ -185,42 +169,33 @@ export class SourceMapper {
    *   and line information.
    *
    *   If the given input file does not have mapping information associated
-   *   with it then null is returned.
+   *   with it then the input location is returned.
    */
-  mappingInfo(inputPath: string, lineNumber: number, colNumber: number):
-      MapInfoOutput|null {
-    inputPath = path.normalize(inputPath);
+  mappingInfo(location: GeneratedLocation): SourceLocation {
+    const inputPath = path.normalize(location.file);
     const entry = this.getMappingInfo(inputPath);
     if (entry === null) {
-      return null;
+      return location;
     }
 
-    const sourcePos = {
-      source: path.relative(path.dirname(entry.mapFile), inputPath)
-                  .replace(/\\/g, '/'),
-      line: lineNumber + 1,  // the SourceMapConsumer expects the line number
-                             // to be one-based but expects the column number
-      column: colNumber      // to be zero-based
-    };
+    const generatedPos = {line: location.line, column: location.column};
 
     // TODO: Determine how to remove the explicit cast here.
     const consumer: sourceMap.SourceMapConsumer =
         entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
-    const allPos = consumer.allGeneratedPositionsFor(sourcePos);
 
-    const mappedPos: sourceMap.LineRange =
-        consumer.generatedPositionFor(sourcePos);
-
+    const pos = consumer.originalPositionFor(generatedPos);
+    if (pos.source === null) {
+      return location;
+    }
     return {
-      file: entry.outputFile,
-      line: mappedPos.line - 1,  // convert the one-based line numbers returned
-                                 // by the SourceMapConsumer to the expected
-                                 // zero-based output.
-      column: mappedPos.column   // SourceMapConsumer uses
-                                 // zero-based column
-                                 // numbers which is the
-                                 // same as the expected
-                                 // output
+      file: pos.source,
+      line: pos.line || undefined,
+      name: pos.name || location.name,
+      // TODO: The `sourceMap.Position` type definition has a `column`
+      //       attribute and not a `col` attribute.  Determine if the type
+      //       definition or this code is correct.
+      column: (pos as {} as {col: number}).col
     };
   }
 }
@@ -237,4 +212,10 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
         'An error occurred while processing the sourcemap files' + err);
   }
   return mapper;
+}
+
+export async function getMapFiles(shouldHash: boolean, baseDir: string) {
+  const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
+  const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
+  return mapFiles;
 }

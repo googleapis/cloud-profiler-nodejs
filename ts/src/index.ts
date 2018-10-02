@@ -22,12 +22,11 @@ import * as path from 'path';
 import * as semver from 'semver';
 import {SemVer} from 'semver';
 
-import {getMapFiles} from '../third_party/cloud-debug-nodejs/sourcemapper';
-
 import {Config, defaultConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 import * as heapProfiler from './profilers/heap-profiler';
+import {getMapFiles} from './sourcemapper/sourcemapper';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
