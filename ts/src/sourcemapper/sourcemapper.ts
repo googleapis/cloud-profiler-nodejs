@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as sourceMap from 'source-map';
 import * as util from 'util';
 
-import * as scanner from '../../third_party/cloud-debug-nodejs/scanner';
+import * as scanner from '../../third_party/cloud-debug-nodejs/src/agent/io/scanner';
 
 const pify = require('pify');
 const pLimit = require('p-limit');
