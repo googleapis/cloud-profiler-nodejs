@@ -34,12 +34,13 @@ import (
 )
 
 var (
-	repo        = flag.String("repo", "https://github.com/GoogleCloudPlatform/cloud-profiler-nodejs.git", "git repo to test")
-	branch      = flag.String("branch", "", "git branch to test")
-	commit      = flag.String("commit", "", "git commit to test")
-	pr          = flag.Int("pr", 0, "git pull request to test")
-	runID       = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
-	runV8Canary = flag.Bool("v8_canary", false, "if tests should be run with the v8 canary build")
+	repo               = flag.String("repo", "https://github.com/googleapis/cloud-profiler-nodejs.git", "git repo to test")
+	branch             = flag.String("branch", "", "git branch to test")
+	commit             = flag.String("commit", "", "git commit to test")
+	pr                 = flag.Int("pr", 0, "git pull request to test")
+	enableV8CanaryTest = flag.Bool("enable_v8_canary_test", false, "if tests run with the v8-canary build of node should be enabled")
+
+	runID = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
 )
 
 const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
@@ -151,7 +152,45 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 	return nil
 }
 
-func gceTestcases(projectID, zone string, runV8Canary bool) []nodeGCETestCase {
+func TestAgentIntegration(t *testing.T) {
+	projectID := os.Getenv("GCLOUD_TESTS_NODEJS_PROJECT_ID")
+	if projectID == "" {
+		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_PROJECT_ID) got empty string")
+	}
+
+	zone := os.Getenv("GCLOUD_TESTS_NODEJS_ZONE")
+	if zone == "" {
+		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_ZONE) got empty string")
+	}
+
+	if *commit == "" {
+		t.Fatal("commit flag is not set")
+	}
+
+	ctx := context.Background()
+
+	client, err := google.DefaultClient(ctx, cloudScope)
+	if err != nil {
+		t.Fatalf("failed to get default client: %v", err)
+	}
+
+	computeService, err := compute.New(client)
+	if err != nil {
+		t.Fatalf("failed to initialize compute Service: %v", err)
+	}
+
+	template, err := template.New("startupScript").Parse(startupTemplate)
+	if err != nil {
+		t.Fatalf("failed to parse startup script template: %v", err)
+	}
+
+	gceTr := proftest.GCETestRunner{
+		TestRunner: proftest.TestRunner{
+			Client: client,
+		},
+		ComputeService: computeService,
+	}
+
 	testcases := []nodeGCETestCase{
 		{
 			InstanceConfig: proftest.InstanceConfig{
@@ -198,64 +237,22 @@ func gceTestcases(projectID, zone string, runV8Canary bool) []nodeGCETestCase {
 			nodeVersion:  "10",
 		},
 	}
-	if !runV8Canary {
-		return testcases
-	}
-	v8CanaryTC := nodeGCETestCase{
-		InstanceConfig: proftest.InstanceConfig{
-			ProjectID:   projectID,
-			Zone:        zone,
-			Name:        fmt.Sprintf("profiler-test-v8-canary-%s", runID),
-			MachineType: "n1-standard-1",
-		},
-		name:         fmt.Sprintf("profiler-test-v8-canary-%s-gce", runID),
-		wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
-		nodeVersion:  "node", // install latest version of node
-		nvmMirror:    "https://nodejs.org/download/v8-canary",
-	}
-	return append(testcases, v8CanaryTC)
-}
-
-func TestAgentIntegration(t *testing.T) {
-	projectID := os.Getenv("GCLOUD_TESTS_NODEJS_PROJECT_ID")
-	if projectID == "" {
-		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_PROJECT_ID) got empty string")
+	if *enableV8CanaryTest {
+		testcases := append(testcases,
+			nodeGCETestCase{
+				InstanceConfig: proftest.InstanceConfig{
+					ProjectID:   projectID,
+					Zone:        zone,
+					Name:        fmt.Sprintf("profiler-test-v8-canary-%s", runID),
+					MachineType: "n1-standard-1",
+				},
+				name:         fmt.Sprintf("profiler-test-v8-canary-%s-gce", runID),
+				wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+				nodeVersion:  "node", // install latest version of node
+				nvmMirror:    "https://nodejs.org/download/v8-canary",
+			})
 	}
 
-	zone := os.Getenv("GCLOUD_TESTS_NODEJS_ZONE")
-	if zone == "" {
-		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_ZONE) got empty string")
-	}
-
-	if *commit == "" {
-		t.Fatal("commit flag is not set")
-	}
-
-	ctx := context.Background()
-
-	client, err := google.DefaultClient(ctx, cloudScope)
-	if err != nil {
-		t.Fatalf("failed to get default client: %v", err)
-	}
-
-	computeService, err := compute.New(client)
-	if err != nil {
-		t.Fatalf("failed to initialize compute Service: %v", err)
-	}
-
-	template, err := template.New("startupScript").Parse(startupTemplate)
-	if err != nil {
-		t.Fatalf("failed to parse startup script template: %v", err)
-	}
-
-	gceTr := proftest.GCETestRunner{
-		TestRunner: proftest.TestRunner{
-			Client: client,
-		},
-		ComputeService: computeService,
-	}
-
-	testcases := gceTestcases(projectID, zone, *runV8Canary)
 	// Allow test cases to run in parallel.
 	runtime.GOMAXPROCS(len(testcases))
 
