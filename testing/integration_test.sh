@@ -13,7 +13,7 @@ set -eo pipefail
 # Display commands being run.
 set -x
 
-# cd github/cloud-profiler-nodejs
+cd github/cloud-profiler-nodejs
 
 SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
 COMMIT=$(git rev-parse HEAD)
