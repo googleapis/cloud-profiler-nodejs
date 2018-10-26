@@ -15,7 +15,6 @@
  */
 
 import {GoogleAuthOptions} from '@google-cloud/common';
-import {SourceMapper} from './sourcemapper/sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 
@@ -126,13 +125,21 @@ export interface Config extends GoogleAuthOptions {
   localTimeDurationMillis?: number;
 
   // When true, source map support will be disabled.
+  //
   disableSourceMaps?: boolean;
 
-  // Array of paths to files containing source maps.
+  // Array of paths to files containing source maps. Source maps can be used to
+  // map javascript locations in transpiled code that is running to original
+  // locations in the source code.
+  // All .js.map files which are available in the runtime and within the
+  // application's working directory are added to this array. This can be used
+  // to specify source maps which are available in the runtime, but outside of
+  // the working directory.
   sourcemapPaths?: string[];
 
   // The working directory of the application being profiled. That is, the
   // directory containing the application's package.json file.
+  // This is the directory which the profiling agent searches for .js.map files
   // The default value is the value of process.cwd().
   workingDirectory?: string;
 }

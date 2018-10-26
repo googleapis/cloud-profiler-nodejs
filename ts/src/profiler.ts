@@ -27,7 +27,7 @@ import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import * as heapProfiler from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
-import {create, SourceMapper} from './sourcemapper/sourcemapper';
+import {create as createSourceMapper, SourceMapper} from './sourcemapper/sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
@@ -321,7 +321,7 @@ export class Profiler extends ServiceObject {
    */
   async start() {
     if (this.config.sourcemapPaths) {
-      this.sourcemap = await create(this.config.sourcemapPaths);
+      this.sourcemap = await createSourceMapper(this.config.sourcemapPaths);
     }
     this.runLoop();
   }

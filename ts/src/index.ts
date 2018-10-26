@@ -129,9 +129,7 @@ async function initConfigAsync(config: ProfilerConfig):
     if (config.sourcemapPaths) {
       mapFiles.concat(config.sourcemapPaths);
     }
-    mapFiles.forEach((element, idx) => {
-      mapFiles[idx] = path.join(config.workingDirectory, element);
-    });
+    mapFiles.map(element => path.join(config.workingDirectory, element));
     config.sourcemapPaths = mapFiles;
   }
   return config;

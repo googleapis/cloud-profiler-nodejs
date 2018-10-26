@@ -121,20 +121,20 @@ function serialize<T extends ProfileNode>(
 
   function getLocation(node: ProfileNode, sourceMapper?: SourceMapper):
       perftools.profiles.Location {
-    const profLoc = {
+    let profLoc: SourceLocation = {
       file: node.scriptName || '',
       line: node.lineNumber,
       column: node.columnNumber,
       name: node.name
     };
-    if (profLoc.line === 0) {
-      profLoc.line = 1;
+
+    if (profLoc.line) {
+      if (sourceMapper && hasLineAndColumnNumber(profLoc)) {
+        profLoc = sourceMapper.mappingInfo(profLoc);
+      }
     }
-    let l: SourceLocation = profLoc;
-    if (sourceMapper && hasLineAndColumnNumber(profLoc)) {
-      l = sourceMapper.mappingInfo(profLoc);
-    }
-    const keyStr = `${node.scriptId}:${l.line}:${l.column}:${l.name}`;
+    const keyStr =
+        `${node.scriptId}:${profLoc.line}:${profLoc.column}:${profLoc.name}`;
     let id = locationIdMap.get(keyStr);
     if (id !== undefined) {
       // id is index+1, since 0 is not valid id.
@@ -142,7 +142,8 @@ function serialize<T extends ProfileNode>(
     }
     id = locations.length + 1;
     locationIdMap.set(keyStr, id);
-    const line = getLine(node.scriptId, l.file, l.name, l.line);
+    const line =
+        getLine(node.scriptId, profLoc.file, profLoc.name, profLoc.line);
     const location = new perftools.profiles.Location({id, line: [line]});
     locations.push(location);
     return location;
