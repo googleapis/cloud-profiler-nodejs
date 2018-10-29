@@ -55,7 +55,7 @@ function initConfigLocal(config: Config): ProfilerConfig {
     serviceContext: {
       service: process.env.GAE_SERVICE,
       version: process.env.GAE_VERSION,
-    }
+    },
   };
 
   if (process.env.GCLOUD_PROFILER_LOGLEVEL !== undefined) {
@@ -132,7 +132,6 @@ async function initConfigMetadata(config: ProfilerConfig):
   }
   return config;
 }
-
 
 /**
  * Returns true if the version passed in satifised version requirements

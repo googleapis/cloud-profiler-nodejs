@@ -68,8 +68,7 @@ export interface Config extends GoogleAuthOptions {
 
   // If this is true, the time profiler will collect a line number for every
   // location in the stack for every sample.
-  // TODO(#19): Accurate line numbers are not yet supported. Setting this to
-  // to true will not enable this feature.
+  // Accurate line numbers are only supported in Node >=10.
   timeProfileLineNumbers?: boolean;
 
   // Average bytes between samples collected by heap profiler.
