@@ -125,7 +125,8 @@ export interface Config extends GoogleAuthOptions {
   localTimeDurationMillis?: number;
 
   // When true, source map support will be disabled.
-  //
+  // All locations in the profiler will reference locations in the running
+  // JavaScript.
   disableSourceMaps?: boolean;
 
   // Array of paths to files containing source maps. Source maps can be used to
