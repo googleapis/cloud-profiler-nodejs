@@ -55,11 +55,12 @@ export interface SourceLocation {
  * @private
  */
 async function processSourcemap(
-    infoMap: Map<string, MapInfoCompiled>, mapPath: string) {
+    infoMap: Map<string, MapInfoCompiled>, mapPath: string,
+    sourceDir: string): Promise<void> {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
-    throw new Error(`The path ${mapPath} does not specify a sourcemap file`);
+    throw new Error(`The path "${mapPath}" does not specify a sourcemap file`);
   }
   mapPath = path.normalize(mapPath);
 
@@ -95,8 +96,7 @@ async function processSourcemap(
    */
   const outputBase =
       consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
-  const parentDir = path.dirname(mapPath);
-  const outputPath = path.normalize(path.join(parentDir, outputBase));
+  const outputPath = path.normalize(path.join(sourceDir, outputBase));
 
   infoMap.set(outputPath, {mapFile: mapPath, mapConsumer: consumer});
 }
@@ -200,11 +200,14 @@ export class SourceMapper {
   }
 }
 
-export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
+export async function create(sourcemapPaths: Map<string, string>):
+    Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const promises = sourcemapPaths.map(
-      path => limit(() => processSourcemap(mapper.infoMap, path)));
+  const promises: Array<Promise<void>> = [];
+  sourcemapPaths.forEach((parentDir, path) => {
+    promises.push(processSourcemap(mapper.infoMap, path, parentDir));
+  });
   try {
     await Promise.all(promises);
   } catch (err) {
@@ -214,8 +217,14 @@ export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
   return mapper;
 }
 
-export async function getMapFiles(shouldHash: boolean, baseDir: string) {
+export async function getMapFiles(
+    shouldHash: boolean, baseDir: string): Promise<Map<string, string>> {
   const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
   const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-  return mapFiles;
+  const mapFilesAndLocs: Map<string, string> = new Map<string, string>();
+  mapFiles.forEach(mapPath => {
+    const parentDir = path.dirname(mapPath);
+    mapFilesAndLocs.set(mapPath, parentDir);
+  });
+  return mapFilesAndLocs;
 }

@@ -102,7 +102,7 @@ function initConfigLocal(config: Config): ProfilerConfig {
 
 /**
  * Sets unset values in the configuration which can be retrieved from GCP
- * metadata and uses source map paths to initialize the source maps.
+ * metadata and initialize source maps.
  */
 async function initConfigAsync(config: ProfilerConfig):
     Promise<ProfilerConfig> {
@@ -127,9 +127,10 @@ async function initConfigAsync(config: ProfilerConfig):
   if (!config.disableSourceMaps) {
     const mapFiles = await getMapFiles(false, config.workingDirectory);
     if (config.sourcemapPaths) {
-      mapFiles.concat(config.sourcemapPaths);
+      config.sourcemapPaths.forEach((mapFile: string, parentDir: string) => {
+        mapFiles.set(mapFile, path.resolve(parentDir));
+      });
     }
-    mapFiles.map(element => path.join(config.workingDirectory, element));
     config.sourcemapPaths = mapFiles;
   }
   return config;
