@@ -17,7 +17,7 @@
 import delay from 'delay';
 import {perftools} from '../../../proto/profile';
 import {serializeTimeProfile} from './profile-serializer';
-import {setSamplingInterval, startProfiling, stopProfiling} from './time-profiler-wrapper';
+import {setSamplingInterval, startProfiling, stopProfiling} from './time-profiler-bindings';
 
 export class TimeProfiler {
   /**

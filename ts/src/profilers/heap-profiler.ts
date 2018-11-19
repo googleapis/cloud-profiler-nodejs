@@ -16,7 +16,7 @@
 
 import {perftools} from '../../../proto/profile';
 import {AllocationProfileNode} from '../v8-types';
-import {getAllocationProfile, startSamplingHeapProfiler, stopSamplingHeapProfiler} from './heap-profiler-wrapper';
+import {getAllocationProfile, startSamplingHeapProfiler, stopSamplingHeapProfiler} from './heap-profiler-bindings';
 import {serializeHeapProfile} from './profile-serializer';
 
 let enabled = false;

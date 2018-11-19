@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-const heapProfiler = require('bindings')('sampling_heap_profiler');
-
 // Type Definitions based on implementation in bindings/
 
 export interface TimeProfile {
