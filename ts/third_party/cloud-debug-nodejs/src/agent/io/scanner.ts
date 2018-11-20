@@ -82,13 +82,7 @@ class ScanResultsImpl implements ScanResults {
    *  should be included in the returned results.
    */
   selectStats(regex: RegExp): ScanStats|{} {
-<<<<<<< HEAD
     return pickBy(this.stats, (_, key) => regex.test(key));
-=======
-    return _.pickBy(this.stats, (ignore, key) => {
-      return regex.test(key);
-    });
->>>>>>> Merge in cloud-debug-nodejs subtree
   }
 
   /**

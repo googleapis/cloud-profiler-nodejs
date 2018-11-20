@@ -26,9 +26,8 @@ import {TimeProfile, TimeProfileNode} from '../src/v8-types';
 import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile, heapSourceProfile, mapBaz, mapFoo, timeProfile, timeSourceProfile, v8AnonymousFunctionHeapProfile, v8AnonymousFunctionTimeProfile, v8HeapGeneratedProfile, v8HeapProfile, v8TimeGeneratedProfile, v8TimeProfile,} from './profiles-for-tests';
 
 const assert = require('assert');
-
 const tmpFile = pify(tmp.file);
-
+const writeFile = pify(fs.writeFile);
 
 describe('profile-serializer', () => {
   let dateStub: sinon.SinonStub;
@@ -71,13 +70,11 @@ describe('profile-serializer', () => {
     let bazMap: string;
     let sourceMapper: SourceMapper;
     before(async () => {
-      const fooTmp = tmp.fileSync({postfix: '.js.map'});
-      fooMap = fooTmp.name;
-      fs.writeFileSync(fooMap, mapFoo.toString());
+      fooMap = await tmpFile({postfix: '.js.map'});
+      await writeFile(fooMap, mapFoo.toString());
 
-      const bazTmp = tmp.fileSync({postfix: '.js.map'});
-      bazMap = bazTmp.name;
-      fs.writeFileSync(bazMap, mapBaz.toString());
+      bazMap = await tmpFile({postfix: '.js.map'});
+      await writeFile(bazMap, mapBaz.toString());
 
 
       const sourceMapFiles = new Map<string, string>();
