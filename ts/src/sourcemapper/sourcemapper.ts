@@ -223,7 +223,7 @@ export async function getMapFiles(
   const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
   const mapFilesAndLocs: Map<string, string> = new Map<string, string>();
   mapFiles.forEach(mapPath => {
-    const parentDir = path.dirname(mapPath);
+    const parentDir = path.resolve(path.dirname(mapPath));
     mapFilesAndLocs.set(mapPath, parentDir);
   });
   return mapFilesAndLocs;
