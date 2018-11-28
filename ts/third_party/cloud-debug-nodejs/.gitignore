@@ -1,0 +1,12 @@
+build
+coverage
+.coverage
+node_modules
+npm-debug.log
+.DS_Store
+.vscode
+yarn.lock
+google-cloud-debug-agent-*.tgz
+package-lock.json
+.nyc_output
+key.json
