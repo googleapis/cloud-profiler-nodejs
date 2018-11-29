@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+// Copied from cloud-debug-nodejs's sourcemapper.ts from
+// https://github.com/googleapis/cloud-debug-nodejs/blob/7bdc2f1f62a3b45b7b53ea79f9444c8ed50e138b/src/agent/io/sourcemapper.ts
+
 import * as fs from 'fs';
 import * as path from 'path';
 import * as promisify from 'pify';
