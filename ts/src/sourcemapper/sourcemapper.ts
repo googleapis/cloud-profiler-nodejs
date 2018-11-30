@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-// Copied from cloud-debug-nodejs's sourcemapper.ts from
+// Originally copied from cloud-debug-nodejs's sourcemapper.ts from
 // https://github.com/googleapis/cloud-debug-nodejs/blob/7bdc2f1f62a3b45b7b53ea79f9444c8ed50e138b/src/agent/io/sourcemapper.ts
+// Modified to remove imports that will not be used after this file is modified
+// for the profiling agent.
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -146,18 +148,6 @@ export class SourceMapper {
       return this.infoMap.get(inputPath) as MapInfoInput;
     }
 
-    // TODO(#268): Remove commented section of code.
-    // Following section of code has been commented because the
-    // findScriptsFuzzy() function will not be used after the sourcemapper
-    // is modified to be used by the profiling agent.
-    /*
-    const matches =
-        findScriptsFuzzy(inputPath, Array.from(this.infoMap.keys()));
-    if (matches.length === 1) {
-      return this.infoMap.get(matches[0]) as MapInfoInput;
-    }
-    */
-
     return null;
   }
 
@@ -217,20 +207,8 @@ export class SourceMapper {
     const consumer: sourceMap.SourceMapConsumer =
         entry.mapConsumer as {} as sourceMap.SourceMapConsumer;
     const allPos = consumer.allGeneratedPositionsFor(sourcePos);
-    /*
-     * Based on testing, it appears that the following code is needed to
-     * properly get the correct mapping information.
-     *
-     * In particular, the generatedPositionFor() alone doesn't appear to
-     * give the correct mapping information.
-     */
-    const mappedPos: sourceMap.Position = allPos && allPos.length > 0 ?
-        Array.prototype.reduce.call(
-            allPos,
-            (accumulator: sourceMap.Position,
-             value: sourceMap.Position /*, index, arr*/) => {
-              return value.line < accumulator.line ? value : accumulator;
-            }) :
+
+    const mappedPos: sourceMap.LineRange =
         consumer.generatedPositionFor(sourcePos);
 
     return {
@@ -238,14 +216,11 @@ export class SourceMapper {
       line: mappedPos.line - 1,  // convert the one-based line numbers returned
                                  // by the SourceMapConsumer to the expected
                                  // zero-based output.
-      // TODO: The `sourceMap.Position` type definition has a `column`
-      //       attribute and not a `col` attribute.  Determine if the type
-      //       definition or this code is correct.
-      column: (mappedPos as {} as {col: number}).col  // SourceMapConsumer uses
-                                                      // zero-based column
-                                                      // numbers which is the
-                                                      // same as the expected
-                                                      // output
+      column: mappedPos.column   // SourceMapConsumer uses
+                                 // zero-based column
+                                 // numbers which is the
+                                 // same as the expected
+                                 // output
     };
   }
 }
