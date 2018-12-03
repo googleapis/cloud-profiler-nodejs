@@ -18,9 +18,9 @@ unit_tests: &unit_tests
         command: npm run test
     - run:
         name: Submit coverage data to codecov.
-        command: npm run codecov
+        command: ./node_modules/nyc/bin/nyc.js report
         when: always
-  
+
 gochecks: &gochecks
   steps:
    - checkout
