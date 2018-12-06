@@ -4,10 +4,6 @@
       "target_name": "profiler",
       "sources": [ 
         "bindings/profiler.cc",
-        "bindings/sampling-heap-profiler.cc",
-        "bindings/sampling-heap-profiler.h",
-        "bindings/time-profiler.cc",
-        "bindings/time-profiler.h",
       ],
       "include_dirs": [ "<!(node -e \"require('nan')\")" ]
     },
