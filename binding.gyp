@@ -1,14 +1,26 @@
 {
   "targets": [
     {
-      "target_name": "time_profiler",
-      "sources": [ "bindings/time-profiler.cc" ],
+      "target_name": "profiler",
+      "sources": [ 
+        "bindings/profiler.cc",
+        "bindings/sampling-heap-profiler.cc",
+        "bindings/sampling-heap-profiler.h",
+        "bindings/time-profiler.cc",
+        "bindings/time-profiler.h",
+      ],
       "include_dirs": [ "<!(node -e \"require('nan')\")" ]
     },
     {
-      "target_name": "sampling_heap_profiler",
-      "sources": [ "bindings/sampling-heap-profiler.cc" ],
-      "include_dirs": [ "<!(node -e \"require('nan')\")" ]
+      "target_name": "action_after_build",
+      "type": "none",
+      "dependencies": [ "<(module_name)" ],
+      "copies": [
+        {
+          "files": [ "<(PRODUCT_DIR)/<(module_name).node" ],
+          "destination": "<(module_path)"
+        }
+      ]
     },
   ]
 }

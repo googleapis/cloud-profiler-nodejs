@@ -16,6 +16,8 @@
 
 #include "v8-profiler.h"
 #include "nan.h"
+#include "time-profiler.h"
+#include <memory>
 
 using namespace v8;
 
@@ -91,13 +93,15 @@ NAN_METHOD(SetSamplingInterval) {
   cpuProfiler->SetSamplingInterval(us);
 }
 
-NAN_MODULE_INIT(InitAll) {
-  Nan::Set(target, Nan::New("startProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling)).ToLocalChecked());
-  Nan::Set(target, Nan::New("stopProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling)).ToLocalChecked());
-  Nan::Set(target, Nan::New("setSamplingInterval").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval)).ToLocalChecked());
-}
+void TimeProfilerInit(Local<Object> target) {
+  Local<Object> timeProfiler = Nan::New<Object>();
 
-NODE_MODULE(time_profiler, InitAll);
+  Nan::Set(timeProfiler, Nan::New("startProfiling").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling)).ToLocalChecked());
+  Nan::Set(timeProfiler, Nan::New("stopProfiling").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling)).ToLocalChecked());
+  Nan::Set(timeProfiler, Nan::New("setSamplingInterval").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval)).ToLocalChecked());
+  
+  target->Set(Nan::New<String>("timeProfiler").ToLocalChecked(), timeProfiler);
+}

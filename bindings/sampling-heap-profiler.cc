@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include <memory>
 #include "v8-profiler.h"
 #include "nan.h"
+#include "sampling-heap-profiler.h"
+#include <memory>
 
 using namespace v8;
 
@@ -88,13 +89,15 @@ NAN_METHOD(GetAllocationProfile) {
   info.GetReturnValue().Set(TranslateAllocationProfile(root));
 }
 
-NAN_MODULE_INIT(InitAll) {
-  Nan::Set(target, Nan::New("startSamplingHeapProfiler").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StartSamplingHeapProfiler)).ToLocalChecked());
-  Nan::Set(target, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler)).ToLocalChecked());
-  Nan::Set(target, Nan::New("getAllocationProfile").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile)).ToLocalChecked());
-}
+void SamplingHeapProfilerInit(Local<Object> target) {
+  Local<Object> heapProfiler = Nan::New<Object>();
 
-NODE_MODULE(sampling_heap_profiler, InitAll);
+  Nan::Set(heapProfiler, Nan::New("startSamplingHeapProfiler").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(StartSamplingHeapProfiler)).ToLocalChecked());
+  Nan::Set(heapProfiler, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler)).ToLocalChecked());
+  Nan::Set(heapProfiler, Nan::New("getAllocationProfile").ToLocalChecked(),
+    Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile)).ToLocalChecked());
+
+  target->Set(Nan::New<String>("heapProfiler").ToLocalChecked(), heapProfiler);
+}
