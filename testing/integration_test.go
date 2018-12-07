@@ -39,6 +39,7 @@ var (
 	commit              = flag.String("commit", "", "git commit to test")
 	pr                  = flag.Int("pr", 0, "git pull request to test")
 	runOnlyV8CanaryTest = flag.Bool("run_only_v8_canary_test", false, "if true test will be run only with the v8-canary build, otherwise, no tests will be run with v8 canary")
+	binaryHost          = flag.String("binary_host", "", "host from which to download precompiled binaries; if no value is specified, binaries will be built from source.")
 
 	runID             = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
 	benchFinishString = "busybench finished profiling"
@@ -72,16 +73,18 @@ set -eo pipefail
 set -x
 # Install git
 retry apt-get update >/dev/null
-retry apt-get -y -q install git build-essential >/dev/null
+retry apt-get -y -q install git {{if eq .BinaryHost ""}}build-essential{{end}} >/dev/null
 
 # Install desired version of Node.js
 retry curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash >/dev/null
 export NVM_DIR="$HOME/.nvm" >/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" >/dev/null
 
-# nvm install writes to stderr and stdout on successful install, so both are
-# redirected.
-{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} &>/dev/null
+# nvm install writes to stderr and stdout on successful install, so some
+# output will appear on successful installs. To reduce the amount of output, 
+# while maintaining error messages printed when nvm install fails, output to
+# stdout is redirected to /dev/null.
+{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} >/dev/null
 npm -v
 node -v
 NODEDIR=$(dirname $(dirname $(which node)))
@@ -92,7 +95,12 @@ cd cloud-profiler-nodejs
 retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pull_branch
 git checkout pull_branch
 git reset --hard {{.Commit}}
-retry npm install --nodedir="$NODEDIR" >/dev/null
+
+{{if eq .BinaryHost ""}}
+retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
+{{else}}
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
+{{end}}
 
 # TODO: remove this workaround.
 # For v8-canary tests, we need to use the version of NAN on github, which 
@@ -110,7 +118,13 @@ mkdir -p "$TESTDIR"
 cp -r "testing/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
-retry npm install --nodedir="$NODEDIR" "$PROFILER" typescript gts >/dev/null
+retry npm install node-pre-gyp
+{{if eq .BinaryHost ""}}
+retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
+{{else}}
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
+{{end}}
+
 npm run compile
 
 # Run benchmark with agent
@@ -150,6 +164,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 			Commit       string
 			FinishString string
 			ErrorString  string
+			BinaryHost   string
 		}{
 			Service:      tc.name,
 			NodeVersion:  tc.nodeVersion,
@@ -160,6 +175,7 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 			Commit:       *commit,
 			FinishString: benchFinishString,
 			ErrorString:  errorString,
+			BinaryHost:   *binaryHost,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to render startup script for %s: %v", tc.name, err)

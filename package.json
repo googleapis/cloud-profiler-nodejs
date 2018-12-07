@@ -6,7 +6,7 @@
   "main": "out/src/index.js",
   "types": "out/src/index.d.ts",
   "scripts": {
-    "install": "node-pre-gyp install --build-from-source",
+    "install": "node-pre-gyp install --fallback-to-build",
     "test": "nyc mocha  out/test/test-*.js",
     "system-test": "nyc --no-clean mocha out/system-test/test-*.js --timeout=60000",
     "samples-test": "echo 'no sample tests'",
