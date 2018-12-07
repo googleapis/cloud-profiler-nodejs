@@ -101,8 +101,7 @@ CpuProfiler* cpuProfiler = CpuProfiler::New(v8::Isolate::GetCurrent());
 CpuProfiler* cpuProfiler = v8::Isolate::GetCurrent()->GetCpuProfiler();
 #endif
 
-
-Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
+Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node, bool hasLines) {
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("name").ToLocalChecked(),
     node->GetFunctionName());
@@ -117,21 +116,55 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node) {
   js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
     Nan::New<Integer>(node->GetHitCount()));
   int32_t count = node->GetChildrenCount();
-  Local<Array> children = Nan::New<Array>(count);
-  for (int32_t i = 0; i < count; i++) {
-    children->Set(i, TranslateTimeProfileNode(node->GetChild(i)));
+
+  unsigned int index = 0;
+  Local<Array>  children;
+
+  // Add nodes corresponding to lines within the node's function.
+  unsigned int hitLineCount = node->GetHitLineCount();
+  std::vector<CpuProfileNode::LineTick> entries(hitLineCount);
+  if (hasLines && node->GetLineTicks(&entries[0], hitLineCount)) {
+    children = Nan::New<Array>(count + entries.size());
+    js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
+      Nan::New<Integer>(0));
+    for (const CpuProfileNode::LineTick entry: entries) {
+      Local<Object> js_node_hit = Nan::New<Object>();
+      js_node_hit->Set(Nan::New<String>("name").ToLocalChecked(),
+        Nan::New<String>("").ToLocalChecked());
+      js_node_hit->Set(Nan::New<String>("scriptName").ToLocalChecked(),
+        node->GetScriptResourceName());
+      js_node_hit->Set(Nan::New<String>("scriptId").ToLocalChecked(),
+        Nan::New<Integer>(node->GetScriptId()));
+      js_node_hit->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
+        Nan::New<Integer>(entry.line));
+      js_node_hit->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
+        Nan::New<Integer>(0));
+      js_node_hit->Set(Nan::New<String>("hitCount").ToLocalChecked(),
+        Nan::New<Integer>(entry.hit_count));
+      js_node_hit->Set(Nan::New<String>("children").ToLocalChecked(),
+        Nan::New<Array>(0));
+      children->Set(index++, js_node_hit);
+    }
+  } else {
+    children = Nan::New<Array>(count);
   }
+
+  // Add nodes corresponding to functions called by the node's function.
+  for (int32_t i = 0; i < count; i++) {
+    children->Set(index++, TranslateTimeProfileNode(node->GetChild(i), hasLines));
+  }
+
   js_node->Set(Nan::New<String>("children").ToLocalChecked(),
     children);
   return js_node;
 }
 
-Local<Value> TranslateTimeProfile(const CpuProfile* profile) {
+Local<Value> TranslateTimeProfile(const CpuProfile* profile, bool hasLines) {
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
     profile->GetTitle());
   js_profile->Set(Nan::New<String>("topDownRoot").ToLocalChecked(),
-    TranslateTimeProfileNode(profile->GetTopDownRoot()));
+    TranslateTimeProfileNode(profile->GetTopDownRoot(), hasLines));
   js_profile->Set(Nan::New<String>("startTime").ToLocalChecked(),
     Nan::New<Number>(profile->GetStartTime()));
   js_profile->Set(Nan::New<String>("endTime").ToLocalChecked(),
@@ -144,14 +177,24 @@ NAN_METHOD(StartProfiling) {
 
   // Sample counts and timestamps are not used, so we do not need to record
   // samples.
+   #if NODE_MODULE_VERSION >  NODE_10_0_MODULE_VERSION
+  bool includeLineInfo = info[1].As<Boolean>()->BooleanValue();
+  if (includeLineInfo) {
+    cpuProfiler->StartProfiling(name, CpuProfilingMode::kCallerLineNumbers, false);
+  } else {
+    cpuProfiler->StartProfiling(name, false);
+  }
+  #else
   cpuProfiler->StartProfiling(name, false);
+  #endif
 }
 
 NAN_METHOD(StopProfiling) {
   Local<String> name = info[0].As<String>();
+  bool includedLineInfo = info[1].As<Boolean>()->BooleanValue();
   CpuProfile* profile =
     cpuProfiler->StopProfiling(name);
-  Local<Value> translated_profile = TranslateTimeProfile(profile);
+  Local<Value> translated_profile = TranslateTimeProfile(profile, includedLineInfo);
   profile->Delete();
   info.GetReturnValue().Set(translated_profile);
 }
