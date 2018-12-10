@@ -9,6 +9,7 @@
     "install": "node-pre-gyp install --build-from-source",
     "test": "nyc mocha  out/test/test-*.js",
     "system-test": "nyc --no-clean mocha out/system-test/test-*.js --timeout=60000",
+    "samples-test": "echo 'no sample tests'",
     "check": "gts check",
     "clean": "gts clean",
     "codecov": "nyc report --reporter=json && codecov -f coverage/*.json",
