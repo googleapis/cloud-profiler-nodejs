@@ -14,6 +14,7 @@
     "compile": "tsc -p .",
     "fix": "gts fix",
     "lint": "gts check",
+    "docs": "echo 'no docs yet'",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run check && npm run license-check",
