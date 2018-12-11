@@ -85,6 +85,9 @@ class StringTable {
  * @param appendToSamples - function which converts entry to sample(s)  and
  * appends these to end of an array of samples.
  * @param stringTable - string table for the existing profile.
+ * @param hasLines - if profile has sub-function level line information.
+ * @param ignoreSamplesPath - if a any fram in a sample has a file name
+ * including this substring, the sample will be discarded.
  */
 function serialize<T extends ProfileNode>(
     profile: perftools.profiles.IProfile, root: T,
@@ -257,6 +260,7 @@ function createAllocationValueType(table: StringTable):
  *
  * @param prof - profile to be converted.
  * @param intervalMicros - average time (microseconds) between samples.
+ * @param hasLines - if profile has sub-function level line information.
  */
 export function serializeTimeProfile(
     prof: TimeProfile, intervalMicros: number, hasLines?: boolean,

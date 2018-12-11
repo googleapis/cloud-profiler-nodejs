@@ -24,6 +24,8 @@ import {setSamplingInterval, startProfiling, stopProfiling} from './time-profile
 export class TimeProfiler {
   /**
    * @param intervalMicros - average time in microseconds between samples
+   * @param profileLineNumbers - if true, sub-function-level line information
+   * will be included in collected profiles.
    */
   constructor(
       private intervalMicros: number, private profileLineNumbers: boolean) {
