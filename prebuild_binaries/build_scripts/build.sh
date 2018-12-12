@@ -15,11 +15,6 @@
 
 set -ex
 
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-nvm install 10 >/dev/null
-nvm use 10
-npm install -g npm >/dev/null
-
 arch_list=( ia32 x64 )
 node_versions=( 6.0.0 8.0.0 10.0.0 11.0.0 )
 
