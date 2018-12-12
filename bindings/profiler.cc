@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "v8-profiler.h"
-#include "nan.h"
 #include <memory>
+#include "nan.h"
+#include "v8-profiler.h"
 
 using namespace v8;
 
@@ -24,34 +24,31 @@ using namespace v8;
 
 Local<Value> TranslateAllocationProfile(AllocationProfile::Node* node) {
   Local<Object> js_node = Nan::New<Object>();
-  js_node->Set(Nan::New<String>("name").ToLocalChecked(),
-    node->name);
+  js_node->Set(Nan::New<String>("name").ToLocalChecked(), node->name);
   js_node->Set(Nan::New<String>("scriptName").ToLocalChecked(),
-    node->script_name);
+               node->script_name);
   js_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),
-    Nan::New<Integer>(node->script_id));
+               Nan::New<Integer>(node->script_id));
   js_node->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->line_number));
+               Nan::New<Integer>(node->line_number));
   js_node->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->column_number));
+               Nan::New<Integer>(node->column_number));
   Local<Array> children = Nan::New<Array>(node->children.size());
   for (size_t i = 0; i < node->children.size(); i++) {
     children->Set(i, TranslateAllocationProfile(node->children[i]));
   }
-  js_node->Set(Nan::New<String>("children").ToLocalChecked(),
-    children);
+  js_node->Set(Nan::New<String>("children").ToLocalChecked(), children);
   Local<Array> allocations = Nan::New<Array>(node->allocations.size());
   for (size_t i = 0; i < node->allocations.size(); i++) {
     AllocationProfile::Allocation alloc = node->allocations[i];
     Local<Object> js_alloc = Nan::New<Object>();
     js_alloc->Set(Nan::New<String>("sizeBytes").ToLocalChecked(),
-      Nan::New<Number>(alloc.size));
+                  Nan::New<Number>(alloc.size));
     js_alloc->Set(Nan::New<String>("count").ToLocalChecked(),
-      Nan::New<Number>(alloc.count));
+                  Nan::New<Number>(alloc.count));
     allocations->Set(i, js_alloc);
   }
-  js_node->Set(Nan::New<String>("allocations").ToLocalChecked(),
-    allocations);
+  js_node->Set(Nan::New<String>("allocations").ToLocalChecked(), allocations);
   return js_node;
 }
 
@@ -72,8 +69,8 @@ NAN_METHOD(StartSamplingHeapProfiler) {
     int stack_depth = info[1].As<Integer>()->IntegerValue();
 #endif
 
-    info.GetIsolate()->GetHeapProfiler()->
-      StartSamplingHeapProfiler(sample_interval, stack_depth);
+    info.GetIsolate()->GetHeapProfiler()->StartSamplingHeapProfiler(
+        sample_interval, stack_depth);
   } else {
     info.GetIsolate()->GetHeapProfiler()->StartSamplingHeapProfiler();
   }
@@ -85,40 +82,40 @@ NAN_METHOD(StopSamplingHeapProfiler) {
 
 NAN_METHOD(GetAllocationProfile) {
   std::unique_ptr<v8::AllocationProfile> profile(
-    info.GetIsolate()->GetHeapProfiler()->GetAllocationProfile());
+      info.GetIsolate()->GetHeapProfiler()->GetAllocationProfile());
   AllocationProfile::Node* root = profile->GetRootNode();
   info.GetReturnValue().Set(TranslateAllocationProfile(root));
 }
 
-
 // Time profiler
 
 #if NODE_MODULE_VERSION > NODE_8_0_MODULE_VERSION
-// This profiler exists for the lifetime of the program. Not calling 
+// This profiler exists for the lifetime of the program. Not calling
 // CpuProfiler::Dispose() is intentional.
 CpuProfiler* cpuProfiler = CpuProfiler::New(v8::Isolate::GetCurrent());
 #else
 CpuProfiler* cpuProfiler = v8::Isolate::GetCurrent()->GetCpuProfiler();
 #endif
 
-Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node, bool hasLines) {
+Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node,
+                                      bool hasLines) {
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("name").ToLocalChecked(),
-    node->GetFunctionName());
+               node->GetFunctionName());
   js_node->Set(Nan::New<String>("scriptName").ToLocalChecked(),
-    node->GetScriptResourceName());
+               node->GetScriptResourceName());
   js_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),
-    Nan::New<Integer>(node->GetScriptId()));
+               Nan::New<Integer>(node->GetScriptId()));
   js_node->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->GetLineNumber()));
+               Nan::New<Integer>(node->GetLineNumber()));
   js_node->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
-    Nan::New<Integer>(node->GetColumnNumber()));
+               Nan::New<Integer>(node->GetColumnNumber()));
   js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
-    Nan::New<Integer>(node->GetHitCount()));
+               Nan::New<Integer>(node->GetHitCount()));
   int32_t count = node->GetChildrenCount();
 
   unsigned int index = 0;
-  Local<Array>  children;
+  Local<Array> children;
 
   // Add nodes corresponding to lines within the node's function.
   unsigned int hitLineCount = node->GetHitLineCount();
@@ -126,23 +123,23 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node, bool hasLines)
   if (hasLines && node->GetLineTicks(&entries[0], hitLineCount)) {
     children = Nan::New<Array>(count + entries.size());
     js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
-      Nan::New<Integer>(0));
-    for (const CpuProfileNode::LineTick entry: entries) {
+                 Nan::New<Integer>(0));
+    for (const CpuProfileNode::LineTick entry : entries) {
       Local<Object> js_node_hit = Nan::New<Object>();
       js_node_hit->Set(Nan::New<String>("name").ToLocalChecked(),
-        Nan::New<String>("").ToLocalChecked());
+                       Nan::New<String>("").ToLocalChecked());
       js_node_hit->Set(Nan::New<String>("scriptName").ToLocalChecked(),
-        node->GetScriptResourceName());
+                       node->GetScriptResourceName());
       js_node_hit->Set(Nan::New<String>("scriptId").ToLocalChecked(),
-        Nan::New<Integer>(node->GetScriptId()));
+                       Nan::New<Integer>(node->GetScriptId()));
       js_node_hit->Set(Nan::New<String>("lineNumber").ToLocalChecked(),
-        Nan::New<Integer>(entry.line));
+                       Nan::New<Integer>(entry.line));
       js_node_hit->Set(Nan::New<String>("columnNumber").ToLocalChecked(),
-        Nan::New<Integer>(0));
+                       Nan::New<Integer>(0));
       js_node_hit->Set(Nan::New<String>("hitCount").ToLocalChecked(),
-        Nan::New<Integer>(entry.hit_count));
+                       Nan::New<Integer>(entry.hit_count));
       js_node_hit->Set(Nan::New<String>("children").ToLocalChecked(),
-        Nan::New<Array>(0));
+                       Nan::New<Array>(0));
       children->Set(index++, js_node_hit);
     }
   } else {
@@ -151,50 +148,76 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node, bool hasLines)
 
   // Add nodes corresponding to functions called by the node's function.
   for (int32_t i = 0; i < count; i++) {
-    children->Set(index++, TranslateTimeProfileNode(node->GetChild(i), hasLines));
+    children->Set(index++,
+                  TranslateTimeProfileNode(node->GetChild(i), hasLines));
   }
 
-  js_node->Set(Nan::New<String>("children").ToLocalChecked(),
-    children);
+  js_node->Set(Nan::New<String>("children").ToLocalChecked(), children);
   return js_node;
 }
 
 Local<Value> TranslateTimeProfile(const CpuProfile* profile, bool hasLines) {
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
-    profile->GetTitle());
-  js_profile->Set(Nan::New<String>("topDownRoot").ToLocalChecked(),
-    TranslateTimeProfileNode(profile->GetTopDownRoot(), hasLines));
+                  profile->GetTitle());
+  js_profile->Set(
+      Nan::New<String>("topDownRoot").ToLocalChecked(),
+      TranslateTimeProfileNode(profile->GetTopDownRoot(), hasLines));
   js_profile->Set(Nan::New<String>("startTime").ToLocalChecked(),
-    Nan::New<Number>(profile->GetStartTime()));
+                  Nan::New<Number>(profile->GetStartTime()));
   js_profile->Set(Nan::New<String>("endTime").ToLocalChecked(),
-    Nan::New<Number>(profile->GetEndTime()));
+                  Nan::New<Number>(profile->GetEndTime()));
   return js_profile;
 }
 
 NAN_METHOD(StartProfiling) {
-  Local<String> name = info[0].As<String>();
+  if (info.Length() != 2) {
+    return Nan::ThrowTypeError("StartProfling must have two arguments.");
+  }
+  if (!info[0]->IsString()) {
+    return Nan::ThrowTypeError("First argument type must be a string.");
+  }
+  if (!info[1]->IsBoolean()) {
+    return Nan::ThrowTypeError("First argument type must be a boolean.");
+  }
 
-  // Sample counts and timestamps are not used, so we do not need to record
-  // samples.
-   #if NODE_MODULE_VERSION >  NODE_10_0_MODULE_VERSION
-  bool includeLineInfo = info[1].As<Boolean>()->BooleanValue();
+  Local<String> name =
+      Nan::MaybeLocal<String>(info[0].As<String>()).ToLocalChecked();
+  bool includeLineInfo =
+      Nan::MaybeLocal<Boolean>(info[1].As<Boolean>()).ToLocalChecked()->Value();
+
+// Sample counts and timestamps are not used, so we do not need to record
+// samples.
+#if NODE_MODULE_VERSION > NODE_10_0_MODULE_VERSION
   if (includeLineInfo) {
-    cpuProfiler->StartProfiling(name, CpuProfilingMode::kCallerLineNumbers, false);
+    cpuProfiler->StartProfiling(name, CpuProfilingMode::kCallerLineNumbers,
+                                false);
   } else {
     cpuProfiler->StartProfiling(name, false);
   }
-  #else
+#else
   cpuProfiler->StartProfiling(name, false);
-  #endif
+#endif
 }
 
 NAN_METHOD(StopProfiling) {
-  Local<String> name = info[0].As<String>();
-  bool includedLineInfo = info[1].As<Boolean>()->BooleanValue();
-  CpuProfile* profile =
-    cpuProfiler->StopProfiling(name);
-  Local<Value> translated_profile = TranslateTimeProfile(profile, includedLineInfo);
+  if (info.Length() != 2) {
+    return Nan::ThrowTypeError("StopProfling must have two arguments.");
+  }
+  if (!info[0]->IsString()) {
+    return Nan::ThrowTypeError("First argument type must be a string.");
+  }
+  if (!info[1]->IsBoolean()) {
+    return Nan::ThrowTypeError("First argument type must be a boolean.");
+  }
+  Local<String> name =
+      Nan::MaybeLocal<String>(info[0].As<String>()).ToLocalChecked();
+  bool includedLineInfo =
+      Nan::MaybeLocal<Boolean>(info[1].As<Boolean>()).ToLocalChecked()->Value();
+
+  CpuProfile* profile = cpuProfiler->StopProfiling(name);
+  Local<Value> translated_profile =
+      TranslateTimeProfile(profile, includedLineInfo);
   profile->Delete();
   info.GetReturnValue().Set(translated_profile);
 }
@@ -208,24 +231,31 @@ NAN_METHOD(SetSamplingInterval) {
   cpuProfiler->SetSamplingInterval(us);
 }
 
-
 NAN_MODULE_INIT(InitAll) {
   Local<Object> timeProfiler = Nan::New<Object>();
   Nan::Set(timeProfiler, Nan::New("startProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(StartProfiling))
+               .ToLocalChecked());
   Nan::Set(timeProfiler, Nan::New("stopProfiling").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(StopProfiling))
+               .ToLocalChecked());
   Nan::Set(timeProfiler, Nan::New("setSamplingInterval").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(SetSamplingInterval))
+               .ToLocalChecked());
   target->Set(Nan::New<String>("timeProfiler").ToLocalChecked(), timeProfiler);
 
   Local<Object> heapProfiler = Nan::New<Object>();
-  Nan::Set(heapProfiler, Nan::New("startSamplingHeapProfiler").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StartSamplingHeapProfiler)).ToLocalChecked());
-  Nan::Set(heapProfiler, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler)).ToLocalChecked());
+  Nan::Set(
+      heapProfiler, Nan::New("startSamplingHeapProfiler").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<FunctionTemplate>(StartSamplingHeapProfiler))
+          .ToLocalChecked());
+  Nan::Set(
+      heapProfiler, Nan::New("stopSamplingHeapProfiler").ToLocalChecked(),
+      Nan::GetFunction(Nan::New<FunctionTemplate>(StopSamplingHeapProfiler))
+          .ToLocalChecked());
   Nan::Set(heapProfiler, Nan::New("getAllocationProfile").ToLocalChecked(),
-    Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile)).ToLocalChecked());
+           Nan::GetFunction(Nan::New<FunctionTemplate>(GetAllocationProfile))
+               .ToLocalChecked());
   target->Set(Nan::New<String>("heapProfiler").ToLocalChecked(), heapProfiler);
 }
 
