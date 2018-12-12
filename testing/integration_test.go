@@ -40,6 +40,7 @@ var (
 	pr                  = flag.Int("pr", 0, "git pull request to test")
 	runOnlyV8CanaryTest = flag.Bool("run_only_v8_canary_test", false, "if true test will be run only with the v8-canary build, otherwise, no tests will be run with v8 canary")
 	binaryHost          = flag.String("binary_host", "", "host from which to download precompiled binaries; if no value is specified, binaries will be built from source.")
+	gcsLocation         = flag.String("gcs_location", "", "location in GCS where binaries should be saved")
 
 	runID             = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
 	benchFinishString = "busybench finished profiling"
@@ -48,13 +49,14 @@ var (
 
 const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
 
-const startupTemplate = `
+var startupTemplate = template.Must(template.New("").Parse(`
+{{ define "prologue" -}}
 #! /bin/bash
 
+(
 # Signal any unexpected error.
 trap 'echo "{{.ErrorString}}"' ERR
 
-(
 # Shut down the VM in 5 minutes after this script exits
 # to stop accounting the VM for billing and cores quota.
 trap "sleep 300 && poweroff" EXIT
@@ -71,9 +73,10 @@ set -eo pipefail
 
 # Display commands being run
 set -x
-# Install git
+
+# Install git 
 retry apt-get update >/dev/null
-retry apt-get -y -q install git {{if eq .BinaryHost ""}}build-essential{{end}} >/dev/null
+retry apt-get -y -q install git
 
 # Install desired version of Node.js
 retry curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash >/dev/null
@@ -89,15 +92,55 @@ npm -v
 node -v
 NODEDIR=$(dirname $(dirname $(which node)))
 
-# Install agent
+# Download agent code
 retry git clone {{.Repo}}
 cd cloud-profiler-nodejs
 retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pull_branch
 git checkout pull_branch
 git reset --hard {{.Commit}}
-{{if eq .BinaryHost ""}}
+
+cd ..
+{{- end }}
+
+{{ define "epilogue" -}}
+# Indicate script finished
+echo "{{.FinishString}}"
+
+# Write output to serial port 2 with timestamp.
+) 2>&1 | while read line; do echo "$(date): ${line}"; done >/dev/ttyS1
+{{- end }}
+
+
+{{ define "compile-linux" -}}
+{{- template "prologue" . }}
+
+# Install components needed to compile Linux
+retry apt-get update >/dev/null
+retry apt-get -y -q install build-essential >/dev/null
+retry curl -fsSL get.docker.com | bash >/dev/null
+
+# Build binaries
+sudo -s
+base_dir=$(pwd)
+BUILD_SCRIPT="${base_dir}/cloud-profiler-nodejs/prebuild_binaries/build_scripts/build.sh"
+DOCKER="${base_dir}/cloud-profiler-nodejs/prebuild_binaries/native"
+chmod 755 "${BUILD_SCRIPT}"
+docker build -t kokoro-image "${DOCKER}" >/dev/null
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir kokoro-image "${BUILD_SCRIPT}"
+
+# Upload to GCS
+gsutil cp -r "${base_dir}/artifacts/." "gs://${GCS_LOCATION}/" >/dev/null
+
+{{- template "epilogue" . }}
+{{- end}}
+
+{{ define "test-linux" -}}
+{{- template "prologue" . }}
+cd cloud-profiler-nodejs
+{{if eq .GCSLocation ""}}
 retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
 {{else}}
+BINARY_HOST="https://storage.googleapis.com/{{.GCSLocation}}"
 retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
 {{end}}
 
@@ -112,10 +155,11 @@ cp -r "testing/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
 retry npm install node-pre-gyp
-{{if eq .BinaryHost ""}}
+{{if eq .GCSLocation ""}}
 retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
 {{else}}
-retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
+BINARY_HOST="https://storage.googleapis.com/{{.GCSLocation}}"
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror="$BINARY_HOST" "$PROFILER" typescript gts >/dev/null
 {{end}}
 
 npm run compile
@@ -123,12 +167,9 @@ npm run compile
 # Run benchmark with agent
 GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js 600
 
-# Indicate to test that script has finished running
-echo "{{.FinishString}}"
-
-# Write output to serial port 2 with timestamp.
-) 2>&1 | while read line; do echo "$(date): ${line}"; done >/dev/ttyS1
-`
+{{- template "epilogue" . }}
+{{- end}}
+`))
 
 type profileSummary struct {
 	profileType  string
@@ -203,16 +244,44 @@ func TestAgentIntegration(t *testing.T) {
 		t.Fatalf("failed to initialize compute Service: %v", err)
 	}
 
-	template, err := template.New("startupScript").Parse(startupTemplate)
-	if err != nil {
-		t.Fatalf("failed to parse startup script template: %v", err)
-	}
-
 	gceTr := proftest.GCETestRunner{
 		TestRunner: proftest.TestRunner{
 			Client: client,
 		},
 		ComputeService: computeService,
+	}
+
+	// Compile binary
+	createBinaryCfg := nodeGCETestCase{
+		InstanceConfig: proftest.InstanceConfig{
+			ProjectID:   projectID,
+			Zone:        zone,
+			Name:        fmt.Sprintf("nodejs-compile-%s", runID),
+			MachineType: "n1-standard-1",
+		},
+		name:        fmt.Sprintf("nodejs-compile-%s-gce", runID),
+		nodeVersion: "6",
+	}
+
+	template := startupTemplate.Lookup("compile-linux")
+	if template == nil {
+		t.Fatalf("failed to lookup prober VM startup script for 'test-linux'")
+	}
+	if err := createBinaryCfg.initializeStartUpScript(template); err != nil {
+		t.Fatalf("failed to initialize startup script: %v", err)
+	}
+
+	gceTr.StartInstance(ctx, &createBinaryCfg.InstanceConfig)
+	defer func() {
+		if gceTr.DeleteInstance(ctx, &createBinaryCfg.InstanceConfig); err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute*25)
+	defer cancel()
+	if err := gceTr.PollForSerialOutput(timeoutCtx, &createBinaryCfg.InstanceConfig, benchFinishString, errorString); err != nil {
+		t.Fatal(err)
 	}
 
 	testcases := []nodeGCETestCase{
@@ -279,10 +348,16 @@ func TestAgentIntegration(t *testing.T) {
 	// Allow test cases to run in parallel.
 	runtime.GOMAXPROCS(len(testcases))
 
+	template = startupTemplate.Lookup("test-linux")
+	if template == nil {
+		t.Fatalf("failed to lookup prober VM startup script for 'test-linux'")
+	}
+
 	for _, tc := range testcases {
 		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
 			if err := tc.initializeStartUpScript(template); err != nil {
 				t.Fatalf("failed to initialize startup script: %v", err)
 			}

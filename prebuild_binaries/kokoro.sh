@@ -38,22 +38,7 @@ esac
 cd $(dirname $0)/..
 base_dir=$(pwd)
 
-BUILD_SCRIPT="${base_dir}/prebuild_binaries/build_scripts/build.sh"
-chmod 755 "${BUILD_SCRIPT}"
-docker build -t kokoro-image prebuild_binaries/native
-docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir kokoro-image "${BUILD_SCRIPT}"
-
-# Upload the agent binaries to GCS
-SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
-
-GCS_LOCATION="cloud-profiler-nodejs-artifacts/nodejs/kokoro/${BUILD_TYPE}/${KOKORO_BUILD_NUMBER}"
-
-gcloud auth activate-service-account --key-file="${SERVICE_KEY}"
-gsutil cp -r "${base_dir}/artifacts/." "gs://${GCS_LOCATION}/"
-
-# Test the agent
-export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
-
+export GCS_LOCATION="cloud-profiler-nodejs-artifacts/nodejs/kokoro/${BUILD_TYPE}/${KOKORO_BUILD_NUMBER}"
 INTEGRATION_TEST="${base_dir}/testing/integration_test.sh"
 chmod 755 "${INTEGRATION_TEST}"
 sh "${INTEGRATION_TEST}"
