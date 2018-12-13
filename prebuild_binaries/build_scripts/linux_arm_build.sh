@@ -15,6 +15,10 @@
 
 set -ex
 
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+nvm install 10
+nvm use 10
+
 arch_list=( ia32 x64 )
 node_versions=( 6.0.0 8.0.0 10.0.0 11.0.0 )
 
@@ -27,14 +31,21 @@ mkdir -p "${ARTIFACTS_OUT}"
 
 npm install
 
-for arch in ${arch_list[@]}
+for version in ${node_versions[@]}
 do
-  for version in ${node_versions[@]}
-  do
-    ./node_modules/.bin/node-pre-gyp configure rebuild package \
-        --target=$version --target_arch=$arch
-    cp -r build/stage/* "${ARTIFACTS_OUT}"/
-  done
+  # Cross compile for ARM on x64
+  # Requires debian or ubuntu packages "g++-aarch64-linux-gnu" and "g++-arm-linux-gnueabihf".
+  CC=arm-linux-gnueabihf-gcc CXX=arm-linux-gnueabihf-g++ \
+    LD=arm-linux-gnueabihf-g++ ./node_modules/.bin/node-pre-gyp \
+    configure rebuild package testpackage --target=$version --target_arch=arm \
+    >/dev/null
+  cp -r build/stage/* "${ARTIFACTS_OUT}"/
+
+  CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ LD=aarch64-linux-gnu-g++ \
+    ./node_modules/.bin/node-pre-gyp configure rebuild package testpackage \
+    --target=$version --target_arch=arm64 >/dev/null
+  cp -r build/stage/* "${ARTIFACTS_OUT}"/
 done
+
 
 rm -rf build || true

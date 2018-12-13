@@ -38,10 +38,21 @@ esac
 cd $(dirname $0)/..
 base_dir=$(pwd)
 
-BUILD_SCRIPT="${base_dir}/prebuild_binaries/build_scripts/build.sh"
-chmod 755 "${BUILD_SCRIPT}"
-docker build -t kokoro-image prebuild_binaries/native
-docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir kokoro-image "${BUILD_SCRIPT}"
+# Create binaries for Linux
+LINUX_BUILD_SCRIPT="${base_dir}/prebuild_binaries/build_scripts/linux_build.sh"
+chmod 755 "${LINUX_BUILD_SCRIPT}"
+docker build -t linux-image prebuild_binaries/native >/dev/null
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-image "${LINUX_BUILD_SCRIPT}"
+
+# Create binaries for Linux Arm
+LINUX_ARM_BUILD_SCRIPT="${base_dir}/prebuild_binaries/build_scripts/linux_arm_build.sh"
+chmod 755 "${LINUX_ARM_BUILD_SCRIPT}"
+docker build -t linux-arm-image prebuild_binaries/arm >/dev/null
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-arm-image "${LINUX_ARM_BUILD_SCRIPT}"
+
+# Create binaries for Linux Alpine
+docker build -t linux-alpine-image prebuild_binaries/alpine >/dev/null
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-alpine-image "${LINUX_BUILD_SCRIPT}" --with-alpine
 
 # Upload the agent binaries to GCS
 SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
