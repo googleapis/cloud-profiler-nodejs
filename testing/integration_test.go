@@ -73,7 +73,7 @@ set -eo pipefail
 set -x
 # Install git
 retry apt-get update >/dev/null
-retry apt-get -y -q install git {{if eq .BinaryHost ""}}build-essential{{end}} >/dev/null
+retry apt-get -y -q install git {{if not .BinaryHost}}build-essential{{end}} >/dev/null
 
 # Install desired version of Node.js
 retry curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash >/dev/null
@@ -96,10 +96,10 @@ retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pul
 git checkout pull_branch
 git reset --hard {{.Commit}}
 
-{{if eq .BinaryHost ""}}
-retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
-{{else}}
+{{if.BinaryHost}}
 retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
+{{else}}
+retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
 {{end}}
 
 # TODO: remove this workaround.
@@ -119,10 +119,10 @@ cp -r "testing/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
 retry npm install node-pre-gyp
-{{if eq .BinaryHost ""}}
-retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
-{{else}}
+{{if .BinaryHost}}
 retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
+{{else}}
+retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
 {{end}}
 
 npm run compile

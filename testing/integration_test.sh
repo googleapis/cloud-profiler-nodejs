@@ -7,6 +7,9 @@ retry() {
   return 1
 }
 
+# Fail on any error.
+set -eo pipefail
+
 # Display commands being run.
 set -x
 

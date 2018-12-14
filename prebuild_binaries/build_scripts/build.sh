@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -ex
+# Fail on any error.
+set -e pipefail
 
-arch_list=( x64 )
+# Display commands
+set -x
+
 node_versions=( 6.0.0 8.0.0 10.0.0 11.0.0 )
 
-cd $(dirname $0)
 cd $(dirname $0)/../..
 base_dir=$(pwd)
 
@@ -27,14 +29,11 @@ mkdir -p "${ARTIFACTS_OUT}"
 
 npm install
 
-for arch in ${arch_list[@]}
+for version in ${node_versions[@]}
 do
-  for version in ${node_versions[@]}
-  do
-    ./node_modules/.bin/node-pre-gyp configure rebuild package \
-        --target=$version --target_arch=$arch
-    cp -r build/stage/* "${ARTIFACTS_OUT}"/
-  done
+  ./node_modules/.bin/node-pre-gyp configure rebuild package \
+      --target=$version --target_arch="x64"
+  cp -r build/stage/* "${ARTIFACTS_OUT}"/
 done
 
 rm -rf build || true
