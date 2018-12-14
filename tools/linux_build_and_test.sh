@@ -39,7 +39,6 @@ cd $(dirname $0)/..
 base_dir=$(pwd)
 
 BUILD_SCRIPT="${base_dir}/tools/build_scripts/build.sh"
-chmod 755 "${BUILD_SCRIPT}"
 docker build -t kokoro-image tools/linux
 docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir kokoro-image "${BUILD_SCRIPT}"
 
@@ -56,6 +55,5 @@ gsutil cp -r "${base_dir}/artifacts/." "gs://${GCS_LOCATION}/"
 export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
 
 INTEGRATION_TEST="${base_dir}/testing/integration_test.sh"
-chmod 755 "${INTEGRATION_TEST}"
 "${INTEGRATION_TEST}"
 
