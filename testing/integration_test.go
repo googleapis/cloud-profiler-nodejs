@@ -14,23 +14,24 @@
 
 // +build integration,go1.7
 
-package testing
+package proftest
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 	"strings"
 	"testing"
 	"text/template"
 	"time"
 
-	"github.com/GoogleCloudPlatform/google-cloud-go/profiler/proftest"
+	"cloud.google.com/go/storage"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	compute "google.golang.org/api/compute/v1"
+	container "google.golang.org/api/container/v1"
 )
 
 var (
@@ -41,12 +42,28 @@ var (
 	runOnlyV8CanaryTest = flag.Bool("run_only_v8_canary_test", false, "if true test will be run only with the v8-canary build, otherwise, no tests will be run with v8 canary")
 	binaryHost          = flag.String("binary_host", "", "host from which to download precompiled binaries; if no value is specified, binaries will be built from source.")
 
-	runID             = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
+	runID             = strings.Replace(time.Now().Format("2006-01-02-15-04-05-0700"), ".", "-", -1)
 	benchFinishString = "busybench finished profiling"
 	errorString       = "failed to set up or run the benchmark"
 )
 
 const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
+
+const dockerfileTemplate = `FROM node:{{.NodeVersion}}-alpine
+RUN apt-get update
+RUN apt-get install git
+RUN git clone {{.Repo}} && cd cloud-profiler-nodejs \
+		&& git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pull_branch \
+		&& git checkout pull_branch && git reset --hard {{.Commit}} \
+		&& npm run compile  && npm pack
+ENV VERSION=$(node -e "console.log(require('./package.json').version);")
+ENV PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
+RUN cd testing/busybench-ts \
+		&& npm install --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts \
+		&& npm run compile \
+		&& GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js 600
+RUN echo {{.FinishString}}
+`
 
 const startupTemplate = `
 #! /bin/bash
@@ -136,11 +153,47 @@ type profileSummary struct {
 }
 
 type nodeGCETestCase struct {
-	proftest.InstanceConfig
+	InstanceConfig
 	name         string
 	nodeVersion  string
 	nvmMirror    string
 	wantProfiles []profileSummary
+}
+
+type nodeGKETestCase struct {
+	GKETestRunner
+	ClusterConfig
+	service     string
+	nodeVersion string
+}
+
+func (ktc *nodeGKETestCase) initializeDockerfile(template *template.Template) error {
+	var buf bytes.Buffer
+	err := template.Execute(&buf,
+		struct {
+			Service      string
+			NodeVersion  string
+			Repo         string
+			PR           int
+			Branch       string
+			Commit       string
+			FinishString string
+			BinaryHost   string
+		}{
+			Service:      ktc.service,
+			NodeVersion:  ktc.nodeVersion,
+			Repo:         *repo,
+			PR:           *pr,
+			Branch:       *branch,
+			Commit:       *commit,
+			FinishString: benchFinishString,
+			BinaryHost:   *binaryHost,
+		})
+	if err != nil {
+		return fmt.Errorf("failed to render startup script for %s: %v", ktc.service, err)
+	}
+	ktc.GKETestRunner.Dockerfile = buf.String()
+	return nil
 }
 
 func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) error {
@@ -176,6 +229,116 @@ func (tc *nodeGCETestCase) initializeStartUpScript(template *template.Template) 
 	return nil
 }
 
+func tokenFromFile(file string) (*oauth2.Token, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
+	return tok, err
+}
+
+func TestAgentIntegration(t *testing.T) {
+	projectID := os.Getenv("GCLOUD_TESTS_NODEJS_PROJECT_ID")
+	if projectID == "" {
+		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_PROJECT_ID) got empty string")
+	}
+
+	zone := os.Getenv("GCLOUD_TESTS_NODEJS_ZONE")
+	if zone == "" {
+		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_ZONE) got empty string")
+	}
+
+	bucket := os.Getenv("GCLOUD_TESTS_NODEJS_BUCKET")
+	if bucket == "" {
+		t.Fatalf("Getenv(GCLOUD_TESTS_NODEJS_BUCKET) got empty string")
+	}
+
+	tokenFile := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if projectID == "" {
+		t.Fatalf("Getenv(GOOGLE_APPLICATION_CREDENTIALS) got empty string")
+	}
+	token, err := tokenFromFile(tokenFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if *commit == "" {
+		t.Fatal("commit flag is not set")
+	}
+
+	ctx := context.Background()
+
+	client, err := google.DefaultClient(ctx, cloudScope)
+	if err != nil {
+		t.Fatalf("failed to get default client: %v", err)
+	}
+
+	containerService, err := container.New(client)
+	if err != nil {
+		t.Fatalf("failed to create container client: %v", err)
+	}
+
+	storageClient, err := storage.NewClient(ctx)
+	if err != nil {
+		t.Fatalf("storage.NewClient() error: %v", err)
+	}
+
+	gtc := nodeGKETestCase{
+		GKETestRunner{
+			TestRunner: TestRunner{
+				Client: client,
+			},
+			ContainerService: containerService,
+			StorageClient:    storageClient,
+			Token:            token,
+		},
+		ClusterConfig{
+			ProjectID:       projectID,
+			Zone:            zone,
+			ClusterName:     fmt.Sprintf("nodejs-%s", runID),
+			PodName:         fmt.Sprintf("profiler-test-nodejs-pod-%s", runID),
+			ImageSourceName: fmt.Sprintf("profiler-test-nodejs/%s/Dockerfile.zip", runID),
+			ImageName:       fmt.Sprintf("%s/profiler-test-nodejs-%s", projectID, runID),
+			Bucket:          bucket,
+		},
+		fmt.Sprintf("profiler-test-nodejs-gke-%s", runID),
+		"10",
+	}
+
+	template, err := template.New("dockerfile").Parse(dockerfileTemplate)
+	if err != nil {
+		t.Fatalf("failed to parse startup script template: %v", err)
+	}
+
+	gtc.initializeDockerfile(template)
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute*25)
+	defer cancel()
+
+	errs := gtc.GKETestRunner.RunTestOnGKE(timeoutCtx, &gtc.ClusterConfig, benchFinishString)
+	for _, err := range errs {
+		t.Error(err)
+	}
+
+	/*
+		for _, wantProfile := range []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}} {
+			pr, err := gceTr.TestRunner.QueryProfiles(gtc.ProjectID, tc.name, startTime, endTime, wantProfile.profileType)
+			if err != nil {
+				t.Errorf("QueryProfiles(%s, %s, %s, %s, %s) got error: %v", tc.ProjectID, tc.name, startTime, endTime, wantProfile.profileType, err)
+				continue
+			}
+			if err := pr.HasFunction(wantProfile.functionName); err != nil {
+				t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.functionName, wantProfile.profileType, err)
+			}
+		}
+	*/
+
+}
+
+/*
 func TestAgentIntegration(t *testing.T) {
 	projectID := os.Getenv("GCLOUD_TESTS_NODEJS_PROJECT_ID")
 	if projectID == "" {
@@ -208,8 +371,8 @@ func TestAgentIntegration(t *testing.T) {
 		t.Fatalf("failed to parse startup script template: %v", err)
 	}
 
-	gceTr := proftest.GCETestRunner{
-		TestRunner: proftest.TestRunner{
+	gceTr := GCETestRunner{
+		TestRunner: TestRunner{
 			Client: client,
 		},
 		ComputeService: computeService,
@@ -217,7 +380,7 @@ func TestAgentIntegration(t *testing.T) {
 
 	testcases := []nodeGCETestCase{
 		{
-			InstanceConfig: proftest.InstanceConfig{
+			InstanceConfig: InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-node6-%s", runID),
@@ -228,7 +391,7 @@ func TestAgentIntegration(t *testing.T) {
 			nodeVersion:  "6",
 		},
 		{
-			InstanceConfig: proftest.InstanceConfig{
+			InstanceConfig: InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-node8-%s", runID),
@@ -239,7 +402,7 @@ func TestAgentIntegration(t *testing.T) {
 			nodeVersion:  "8",
 		},
 		{
-			InstanceConfig: proftest.InstanceConfig{
+			InstanceConfig: InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-node10-%s", runID),
@@ -250,7 +413,7 @@ func TestAgentIntegration(t *testing.T) {
 			nodeVersion:  "10",
 		},
 		{
-			InstanceConfig: proftest.InstanceConfig{
+			InstanceConfig: InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-node11-%s", runID),
@@ -263,7 +426,7 @@ func TestAgentIntegration(t *testing.T) {
 	}
 	if *runOnlyV8CanaryTest {
 		testcases = []nodeGCETestCase{{
-			InstanceConfig: proftest.InstanceConfig{
+			InstanceConfig: InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-v8-canary-%s", runID),
@@ -316,3 +479,4 @@ func TestAgentIntegration(t *testing.T) {
 		})
 	}
 }
+*/

@@ -44,12 +44,6 @@ chmod 755 "${LINUX_BUILD_SCRIPT}"
 docker build -t linux-image prebuild_binaries/native >/dev/null
 docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-image "${LINUX_BUILD_SCRIPT}"
 
-# Create binaries for Linux Arm
-LINUX_ARM_BUILD_SCRIPT="${base_dir}/prebuild_binaries/build_scripts/linux_arm_build.sh"
-chmod 755 "${LINUX_ARM_BUILD_SCRIPT}"
-docker build -t linux-arm-image prebuild_binaries/arm >/dev/null
-docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-arm-image "${LINUX_ARM_BUILD_SCRIPT}"
-
 # Create binaries for Linux Alpine
 docker build -t linux-alpine-image prebuild_binaries/alpine >/dev/null
 docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir linux-alpine-image "${LINUX_BUILD_SCRIPT}" --with-alpine
@@ -67,5 +61,5 @@ export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
 
 INTEGRATION_TEST="${base_dir}/testing/integration_test.sh"
 chmod 755 "${INTEGRATION_TEST}"
-sh "${INTEGRATION_TEST}"
+"${INTEGRATION_TEST}"
 

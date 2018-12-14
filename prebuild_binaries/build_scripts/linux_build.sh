@@ -15,7 +15,7 @@
 
 set -ex
 
-arch_list=( ia32 x64 )
+arch_list=( x64 )
 node_versions=( 6.0.0 8.0.0 10.0.0 11.0.0 )
 
 while true ; do
