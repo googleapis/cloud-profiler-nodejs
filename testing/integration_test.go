@@ -51,10 +51,11 @@ const cloudScope = "https://www.googleapis.com/auth/cloud-platform"
 const startupTemplate = `
 #! /bin/bash
 
+(
+
 # Signal any unexpected error.
 trap 'echo "{{.ErrorString}}"' ERR
 
-(
 # Shut down the VM in 5 minutes after this script exits
 # to stop accounting the VM for billing and cores quota.
 trap "sleep 300 && poweroff" EXIT
@@ -97,7 +98,7 @@ git checkout pull_branch
 git reset --hard {{.Commit}}
 
 {{if.BinaryHost}}
-retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
 {{else}}
 retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
 {{end}}
@@ -120,7 +121,7 @@ cd "$TESTDIR/busybench"
 
 retry npm install node-pre-gyp
 {{if .BinaryHost}}
-retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
+retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
 {{else}}
 retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
 {{end}}

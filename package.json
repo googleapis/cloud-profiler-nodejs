@@ -102,7 +102,7 @@
   "binary": {
     "module_name": "google_cloud_profiler",
     "module_path": "./build/{node_abi}-{platform}-{arch}-{libc}",
-    "host": "https://storage.googleapis.com/cloud-profiler-e2e/cprof-e2e-artifacts/nodejs/release",
+    "host": "https://storage.googleapis.com/cloud-profiler/nodejs/release",
     "package_name": "{node_abi}-{platform}-{arch}-{libc}.tar.gz"
   }
 }

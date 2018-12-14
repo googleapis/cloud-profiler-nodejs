@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Copyright 2018 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,21 +20,19 @@ set -e pipefail
 # Display commands
 set -x
 
-node_versions=( 6.0.0 8.0.0 10.0.0 11.0.0 )
-
 cd $(dirname $0)/../..
 base_dir=$(pwd)
 
-export ARTIFACTS_OUT=$base_dir/artifacts
+ARTIFACTS_OUT=$base_dir/artifacts
 mkdir -p "${ARTIFACTS_OUT}"
 
 npm install
 
-for version in ${node_versions[@]}
+for version in 6.0.0 8.0.0 10.0.0 11.0.0
 do
   ./node_modules/.bin/node-pre-gyp configure rebuild package \
       --target=$version --target_arch="x64"
   cp -r build/stage/* "${ARTIFACTS_OUT}"/
 done
 
-rm -rf build || true
+rm -rf build
