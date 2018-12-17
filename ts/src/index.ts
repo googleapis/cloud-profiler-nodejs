@@ -127,10 +127,11 @@ async function initConfigAsync(config: ProfilerConfig):
   if (!config.disableSourceMaps) {
     const mapFiles = await getMapFiles(false, config.workingDirectory);
     if (config.sourcemapPaths) {
-      config.sourcemapPaths.forEach((mapFile: string, parentDir: string) => {
-        mapFiles.set(mapFile, path.resolve(parentDir));
-      });
+      mapFiles.concat(config.sourcemapPaths);
     }
+    mapFiles.forEach((element, idx) => {
+      mapFiles[idx] = path.join(config.workingDirectory, element);
+    });
     config.sourcemapPaths = mapFiles;
   }
   return config;

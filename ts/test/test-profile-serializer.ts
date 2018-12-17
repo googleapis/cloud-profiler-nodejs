@@ -76,10 +76,7 @@ describe('profile-serializer', () => {
       bazMap = await tmpFile({postfix: '.js.map'});
       await writeFile(bazMap, mapBaz.toString());
 
-
-      const sourceMapFiles = new Map<string, string>();
-      sourceMapFiles.set(fooMap, '');
-      sourceMapFiles.set(bazMap, 'tmp');
+      const sourceMapFiles = [fooMap, bazMap];
       sourceMapper = await createSourceMapper(sourceMapFiles);
     });
 

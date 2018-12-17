@@ -618,23 +618,23 @@ export const decodedHeapProfileExcludePath = Object.freeze(
     perftools.profiles.Profile.decode(encodedHeapProfileExcludePath));
 
 
-export const mapFoo = new SourceMapGenerator({file: 'foo.js'});
+export const mapFoo = new SourceMapGenerator({file: '/dir/foo.js'});
 mapFoo.addMapping({
-  source: 'foo.ts',
+  source: '/foo.ts',
   name: 'foo1',
   generated: {line: 1, column: 3},
   original: {line: 10, column: 0}
 });
 mapFoo.addMapping({
-  source: 'foo.ts',
+  source: '/foo.ts',
   name: 'foo2',
   generated: {line: 5, column: 5},
   original: {line: 20, column: 0}
 });
 
-export const mapBaz = new SourceMapGenerator({file: 'baz.js'});
+export const mapBaz = new SourceMapGenerator({file: '/dir/baz.js'});
 mapBaz.addMapping({
-  source: 'baz.ts',
+  source: '/baz.ts',
   name: 'baz',
   generated: {line: 3, column: 0},
   original: {line: 5, column: 0}
@@ -642,7 +642,7 @@ mapBaz.addMapping({
 
 const heapGeneratedLeaf1 = {
   name: 'foo2',
-  scriptName: 'foo.js',
+  scriptName: '/dir/foo.js',
   scriptId: 1,
   lineNumber: 5,
   columnNumber: 5,
@@ -652,7 +652,7 @@ const heapGeneratedLeaf1 = {
 
 const heapGeneratedLeaf2 = {
   name: 'baz',
-  scriptName: 'tmp/baz.js',
+  scriptName: '/dir/baz.js',
   scriptId: 3,
   lineNumber: 3,
   columnNumber: 0,
@@ -662,7 +662,7 @@ const heapGeneratedLeaf2 = {
 
 const heapGeneratedNode2 = {
   name: 'bar',
-  scriptName: 'bar.js',
+  scriptName: '/dir/bar.js',
   scriptId: 2,
   lineNumber: 10,
   columnNumber: 0,
@@ -672,7 +672,7 @@ const heapGeneratedNode2 = {
 
 const heapGeneratedNode1 = {
   name: 'foo1',
-  scriptName: 'foo.js',
+  scriptName: '/dir/foo.js',
   scriptId: 1,
   lineNumber: 1,
   columnNumber: 3,
@@ -725,12 +725,12 @@ export const heapSourceProfile: perftools.profiles.IProfile = Object.freeze({
     'space',
     'bytes',
     'foo1',
-    'foo.ts',
+    '/foo.ts',
     'foo2',
     'bar',
-    'bar.js',
+    '/dir/bar.js',
     'baz',
-    'baz.ts',
+    '/baz.ts',
   ],
   timeNanos: 0,
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -739,7 +739,7 @@ export const heapSourceProfile: perftools.profiles.IProfile = Object.freeze({
 
 const timeGeneratedLeaf1 = {
   name: 'foo',
-  scriptName: 'foo.js',
+  scriptName: '/dir/foo.js',
   scriptId: 1,
   lineNumber: 5,
   columnNumber: 5,
@@ -749,7 +749,7 @@ const timeGeneratedLeaf1 = {
 
 const timeGeneratedLeaf2 = {
   name: 'baz',
-  scriptName: 'tmp/baz.js',
+  scriptName: '/dir/baz.js',
   scriptId: 3,
   lineNumber: 3,
   columnNumber: 0,
@@ -759,7 +759,7 @@ const timeGeneratedLeaf2 = {
 
 const timeGeneratedNode2 = {
   name: 'bar',
-  scriptName: 'bar.js',
+  scriptName: '/dir/bar.js',
   scriptId: 2,
   lineNumber: 10,
   columnNumber: 0,
@@ -768,7 +768,7 @@ const timeGeneratedNode2 = {
 
 const timeGeneratedNode1 = {
   name: 'foo1',
-  scriptName: 'foo.js',
+  scriptName: '/dir/foo.js',
   scriptId: 1,
   lineNumber: 1,
   columnNumber: 3,
@@ -828,12 +828,12 @@ export const timeSourceProfile: perftools.profiles.IProfile = Object.freeze({
     'wall',
     'microseconds',
     'foo1',
-    'foo.ts',
+    '/foo.ts',
     'foo2',
     'bar',
-    'bar.js',
+    '/dir/bar.js',
     'baz',
-    'baz.ts',
+    '/baz.ts',
   ],
   timeNanos: 0,
   durationNanos: 10 * 1000 * 1000 * 1000,

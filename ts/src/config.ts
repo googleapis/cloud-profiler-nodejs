@@ -129,17 +129,11 @@ export interface Config extends GoogleAuthOptions {
   // JavaScript.
   disableSourceMaps?: boolean;
 
-  // Map of files containing source maps to directories where generated code
-  // refered to by source maps is located. Source maps can be used to
-  // map javascript locations in transpiled code that is running to original
-  // locations in the source code.
   // All .js.map files which are available in the runtime and within the
-  // application's working directory are added to this map. It is assumed that
-  // these maps will be in the same directory as the generated code.
+  // application's working directory are added to this array.
   // This can be used to specify source maps which are available in the runtime,
-  // but outside of the working directory, or not in the same directory as the
-  // generated code.
-  sourcemapPaths?: Map<string, string>;
+  // but outside of the working directory.
+  sourcemapPaths?: string[];
 
   // The working directory of the application being profiled. That is, the
   // directory containing the application's package.json file.
@@ -170,7 +164,7 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localLogPeriodMillis: number;
   localTimeDurationMillis: number;
   disableSourceMaps: boolean;
-  sourcemapPaths?: Map<string, string>;
+  sourcemapPaths?: string[];
   workingDirectory: string;
 }
 

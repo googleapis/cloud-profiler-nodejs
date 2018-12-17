@@ -38,7 +38,7 @@ interface Entry<T extends ProfileNode> {
   stack: Stack;
 }
 
-function hasLineAndColumnNumber(location: SourceLocation):
+function isGeneratedLocation(location: SourceLocation):
     location is GeneratedLocation {
   return location.column !== undefined && location.line !== undefined &&
       location.line > 0;
@@ -129,7 +129,7 @@ function serialize<T extends ProfileNode>(
     };
 
     if (profLoc.line) {
-      if (sourceMapper && hasLineAndColumnNumber(profLoc)) {
+      if (sourceMapper && isGeneratedLocation(profLoc)) {
         profLoc = sourceMapper.mappingInfo(profLoc);
       }
     }

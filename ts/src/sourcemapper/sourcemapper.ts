@@ -34,7 +34,7 @@ const CONCURRENCY = 10;
 const MAP_EXT = '.map';
 
 export interface MapInfoCompiled {
-  mapFile: string;
+  mapFileDir: string;
   mapConsumer: sourceMap.RawSourceMap;
 }
 
@@ -60,8 +60,7 @@ export interface SourceLocation {
  * @private
  */
 async function processSourcemap(
-    infoMap: Map<string, MapInfoCompiled>, mapPath: string,
-    sourceDir: string): Promise<void> {
+    infoMap: Map<string, MapInfoCompiled>, mapPath: string): Promise<void> {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
@@ -99,11 +98,12 @@ async function processSourcemap(
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
    */
-  const outputBase =
+  const mapFileDir = path.dirname(mapPath);
+  const generatedBase =
       consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
-  const outputPath = path.normalize(path.join(sourceDir, outputBase));
+  const generatedPath = path.resolve(mapFileDir, generatedBase);
 
-  infoMap.set(outputPath, {mapFile: mapPath, mapConsumer: consumer});
+  infoMap.set(generatedPath, {mapFileDir, mapConsumer: consumer});
 }
 
 export class SourceMapper {
@@ -136,7 +136,6 @@ export class SourceMapper {
     if (this.infoMap.has(path.normalize(inputPath))) {
       return this.infoMap.get(inputPath) as MapInfoCompiled;
     }
-
     return null;
   }
 
@@ -194,7 +193,7 @@ export class SourceMapper {
       return location;
     }
     return {
-      file: pos.source,
+      file: path.resolve(entry.mapFileDir, pos.source),
       line: pos.line || undefined,
       name: pos.name || location.name,
       // TODO: The `sourceMap.Position` type definition has a `column`
@@ -205,14 +204,11 @@ export class SourceMapper {
   }
 }
 
-export async function create(sourcemapPaths: Map<string, string>):
-    Promise<SourceMapper> {
+export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const promises: Array<Promise<void>> = [];
-  sourcemapPaths.forEach((parentDir, path) => {
-    promises.push(processSourcemap(mapper.infoMap, path, parentDir));
-  });
+  const promises: Array<Promise<void>> = sourcemapPaths.map(
+      path => limit(() => processSourcemap(mapper.infoMap, path)));
   try {
     await Promise.all(promises);
   } catch (err) {
@@ -223,13 +219,8 @@ export async function create(sourcemapPaths: Map<string, string>):
 }
 
 export async function getMapFiles(
-    shouldHash: boolean, baseDir: string): Promise<Map<string, string>> {
+    shouldHash: boolean, baseDir: string): Promise<string[]> {
   const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
   const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
-  const mapFilesAndLocs: Map<string, string> = new Map<string, string>();
-  mapFiles.forEach(mapPath => {
-    const parentDir = path.resolve(path.dirname(mapPath));
-    mapFilesAndLocs.set(mapPath, parentDir);
-  });
-  return mapFilesAndLocs;
+  return mapFiles;
 }
