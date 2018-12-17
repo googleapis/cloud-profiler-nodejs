@@ -21,10 +21,10 @@ set -e pipefail
 set -x
 
 cd $(dirname $0)/../..
-base_dir=$(pwd)
+BASE_DIR=$(pwd)
 
-ARTIFACTS_OUT=$base_dir/artifacts
-mkdir -p "${ARTIFACTS_OUT}"
+ARTIFACTS_OUT="${BASE_DIR}/artifacts"
+mkdir -p "$ARTIFACTS_OUT"
 
 npm install
 
@@ -32,7 +32,7 @@ for version in 6.0.0 8.0.0 10.0.0 11.0.0
 do
   ./node_modules/.bin/node-pre-gyp configure rebuild package \
       --target=$version --target_arch="x64"
-  cp -r build/stage/* "${ARTIFACTS_OUT}"/
+  cp -r build/stage/* "${ARTIFACTS_OUT}/"
 done
 
 rm -rf build

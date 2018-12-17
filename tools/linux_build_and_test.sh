@@ -36,11 +36,12 @@ case $KOKORO_JOB_TYPE in
 esac
 
 cd $(dirname $0)/..
-base_dir=$(pwd)
+BASE_DIR=$(pwd)
 
-BUILD_SCRIPT="${base_dir}/tools/build_scripts/build.sh"
 docker build -t kokoro-image tools/linux
-docker run -v /var/run/docker.sock:/var/run/docker.sock -v $base_dir:$base_dir kokoro-image "${BUILD_SCRIPT}"
+docker run -v /var/run/docker.sock:/var/run/docker.sock -v \
+    "${BASE_DIR}":"${BASE_DIR}" kokoro-image \
+    "${BASE_DIR}/tools/build_scripts/build.sh"
 
 if [ "" -eq "release" ]; then
   GCS_LOCATION="cloud-profiler/nodejs/release"
@@ -49,11 +50,9 @@ else
   gcloud auth activate-service-account --key-file="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
 fi
 
-gsutil cp -r "${base_dir}/artifacts/." "gs://${GCS_LOCATION}/"
+gsutil cp -r "${BASE_DIR}/artifacts/." "gs://${GCS_LOCATION}/"
 
 # Test the agent
 export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
 
-INTEGRATION_TEST="${base_dir}/testing/integration_test.sh"
-"${INTEGRATION_TEST}"
-
+"${BASE_DIR}/testing/integration_test.sh"
