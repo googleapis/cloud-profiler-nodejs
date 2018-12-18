@@ -52,6 +52,7 @@ Local<Value> TranslateAllocationProfile(AllocationProfile::Node* node) {
   return js_node;
 }
 
+// startSampingHeapProfiler(samplingInterval: number, stackDepth: number)
 NAN_METHOD(StartSamplingHeapProfiler) {
   if (info.Length() == 2) {
     if (!info[0]->IsUint32()) {
@@ -76,10 +77,12 @@ NAN_METHOD(StartSamplingHeapProfiler) {
   }
 }
 
+// stopSampingHeapProfiler()
 NAN_METHOD(StopSamplingHeapProfiler) {
   info.GetIsolate()->GetHeapProfiler()->StopSamplingHeapProfiler();
 }
 
+// getAllocationProfile(): AllocationProfileNode
 NAN_METHOD(GetAllocationProfile) {
   std::unique_ptr<v8::AllocationProfile> profile(
       info.GetIsolate()->GetHeapProfiler()->GetAllocationProfile());
@@ -98,7 +101,7 @@ CpuProfiler* cpuProfiler = v8::Isolate::GetCurrent()->GetCpuProfiler();
 #endif
 
 Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node,
-                                      bool hasLines) {
+                                      bool hasDetailedLines) {
   Local<Object> js_node = Nan::New<Object>();
   js_node->Set(Nan::New<String>("name").ToLocalChecked(),
                node->GetFunctionName());
@@ -120,7 +123,7 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node,
   // Add nodes corresponding to lines within the node's function.
   unsigned int hitLineCount = node->GetHitLineCount();
   std::vector<CpuProfileNode::LineTick> entries(hitLineCount);
-  if (hasLines && node->GetLineTicks(&entries[0], hitLineCount)) {
+  if (hasDetailedLines && node->GetLineTicks(&entries[0], hitLineCount)) {
     children = Nan::New<Array>(count + entries.size());
     js_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),
                  Nan::New<Integer>(0));
@@ -149,20 +152,20 @@ Local<Value> TranslateTimeProfileNode(const CpuProfileNode* node,
   // Add nodes corresponding to functions called by the node's function.
   for (int32_t i = 0; i < count; i++) {
     children->Set(index++,
-                  TranslateTimeProfileNode(node->GetChild(i), hasLines));
+                  TranslateTimeProfileNode(node->GetChild(i), hasDetailedLines));
   }
 
   js_node->Set(Nan::New<String>("children").ToLocalChecked(), children);
   return js_node;
 }
 
-Local<Value> TranslateTimeProfile(const CpuProfile* profile, bool hasLines) {
+Local<Value> TranslateTimeProfile(const CpuProfile* profile, bool hasDetailedLines) {
   Local<Object> js_profile = Nan::New<Object>();
   js_profile->Set(Nan::New<String>("title").ToLocalChecked(),
                   profile->GetTitle());
   js_profile->Set(
       Nan::New<String>("topDownRoot").ToLocalChecked(),
-      TranslateTimeProfileNode(profile->GetTopDownRoot(), hasLines));
+      TranslateTimeProfileNode(profile->GetTopDownRoot(), hasDetailedLines));
   js_profile->Set(Nan::New<String>("startTime").ToLocalChecked(),
                   Nan::New<Number>(profile->GetStartTime()));
   js_profile->Set(Nan::New<String>("endTime").ToLocalChecked(),
@@ -170,6 +173,7 @@ Local<Value> TranslateTimeProfile(const CpuProfile* profile, bool hasLines) {
   return js_profile;
 }
 
+// startProfiling(runName: string, includeLineInfo?: boolean)
 NAN_METHOD(StartProfiling) {
   if (info.Length() != 2) {
     return Nan::ThrowTypeError("StartProfling must have two arguments.");
@@ -200,6 +204,7 @@ NAN_METHOD(StartProfiling) {
 #endif
 }
 
+// stopProfiling(runName: string, includedLineInfo?: boolean): TimeProfile
 NAN_METHOD(StopProfiling) {
   if (info.Length() != 2) {
     return Nan::ThrowTypeError("StopProfling must have two arguments.");
@@ -222,6 +227,7 @@ NAN_METHOD(StopProfiling) {
   info.GetReturnValue().Set(translated_profile);
 }
 
+// setSamplingInterval(intervalMicros: number)
 NAN_METHOD(SetSamplingInterval) {
 #if NODE_MODULE_VERSION > NODE_8_0_MODULE_VERSION
   int us = info[0].As<Integer>()->Value();
