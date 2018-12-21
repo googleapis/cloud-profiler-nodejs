@@ -55,16 +55,16 @@ export interface SourceLocation {
 /**
  * @param {!Map} infoMap The map that maps input source files to
  *  SourceMapConsumer objects that are used to calculate mapping information
- * @param {string} mapPath The path to the sourcemap file to process.  The
+ * @param {string} mapPath The path to the source map file to process.  The
  *  path should be relative to the process's current working directory
  * @private
  */
-async function processSourcemap(
+async function processSourceMap(
     infoMap: Map<string, MapInfoCompiled>, mapPath: string): Promise<void> {
   // this handles the case when the path is undefined, null, or
   // the empty string
   if (!mapPath || !mapPath.endsWith(MAP_EXT)) {
-    throw new Error(`The path "${mapPath}" does not specify a sourcemap file`);
+    throw new Error(`The path "${mapPath}" does not specify a source map file`);
   }
   mapPath = path.normalize(mapPath);
 
@@ -72,7 +72,7 @@ async function processSourcemap(
   try {
     contents = await readFile(mapPath, 'utf8');
   } catch (e) {
-    throw new Error('Could not read sourcemap file ' + mapPath + ': ' + e);
+    throw new Error('Could not read source map file ' + mapPath + ': ' + e);
   }
 
   let consumer: sourceMap.RawSourceMap;
@@ -89,11 +89,11 @@ async function processSourcemap(
   } catch (e) {
     throw new Error(
         'An error occurred while reading the ' +
-        'sourcemap file ' + mapPath + ': ' + e);
+        'sourceMap file ' + mapPath + ': ' + e);
   }
 
   /*
-   * If the sourcemap file defines a "file" attribute, use it as
+   * If the source map file defines a "file" attribute, use it as
    * the output file where the path is relative to the directory
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
@@ -110,11 +110,11 @@ export class SourceMapper {
   infoMap: Map<string, MapInfoCompiled>;
 
   /**
-   * @param {Array.<string>} sourcemapPaths An array of paths to .map sourcemap
+   * @param {Array.<string>} sourceMapPaths An array of paths to .map source map
    *  files that should be processed.  The paths should be relative to the
    *  current process's current working directory
    * @param {Logger} logger A logger that reports errors that occurred while
-   *  processing the given sourcemap files
+   *  processing the given source map files
    * @constructor
    */
   constructor() {
@@ -196,24 +196,21 @@ export class SourceMapper {
       file: path.resolve(entry.mapFileDir, pos.source),
       line: pos.line || undefined,
       name: pos.name || location.name,
-      // TODO: The `sourceMap.Position` type definition has a `column`
-      //       attribute and not a `col` attribute.  Determine if the type
-      //       definition or this code is correct.
-      column: (pos as {} as {col: number}).col
+      column: pos.column,
     };
   }
 }
 
-export async function create(sourcemapPaths: string[]): Promise<SourceMapper> {
+export async function create(sourceMapPaths: string[]): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const promises: Array<Promise<void>> = sourcemapPaths.map(
-      path => limit(() => processSourcemap(mapper.infoMap, path)));
+  const promises: Array<Promise<void>> = sourceMapPaths.map(
+      path => limit(() => processSourceMap(mapper.infoMap, path)));
   try {
     await Promise.all(promises);
   } catch (err) {
     throw new Error(
-        'An error occurred while processing the sourcemap files' + err);
+        'An error occurred while processing the source map files' + err);
   }
   return mapper;
 }

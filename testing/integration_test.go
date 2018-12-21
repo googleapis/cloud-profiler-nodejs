@@ -310,7 +310,7 @@ func TestAgentIntegration(t *testing.T) {
 					t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.functionName, wantProfile.profileType, err)
 				}
 				if err := pr.HasSourceFile(wantProfile.sourceFile); err != nil {
-					t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.functionName, wantProfile.profileType, err)
+					t.Errorf("Source file %s not found in profiles of type %s: %v", wantProfile.sourceFile, wantProfile.profileType, err)
 				}
 			}
 		})

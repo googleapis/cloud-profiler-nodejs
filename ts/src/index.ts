@@ -17,6 +17,7 @@
 import delay from 'delay';
 import * as extend from 'extend';
 import * as fs from 'fs';
+import {appendFile} from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
 import * as path from 'path';
 import * as semver from 'semver';
@@ -86,6 +87,12 @@ function initConfigLocal(config: Config): ProfilerConfig {
   const mergedConfig =
       extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
+  // If sourceMapSearchPath is empty array, extend will override its value
+  // with the default value in mergedConfig.
+  if (config.sourceMapSearchPath === []) {
+    mergedConfig.sourceMapSearchPath = [];
+  }
+
   if (!hasService(mergedConfig)) {
     throw new Error('Service must be specified in the configuration');
   }
@@ -124,16 +131,18 @@ async function initConfigAsync(config: ProfilerConfig):
       config.instance = instance;
     }
   }
-  if (!config.disableSourceMaps) {
-    const mapFiles = await getMapFiles(false, config.workingDirectory);
-    if (config.sourcemapPaths) {
-      mapFiles.concat(config.sourcemapPaths);
+  const mapFiles: string[] = [];
+  for (const sourceMapDir of config.sourceMapSearchPath) {
+    try {
+      const mf = await getMapFiles(false, sourceMapDir);
+      mf.forEach((sourceMapPath) => {
+        mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
+      });
+    } catch (e) {
+      logError(`failed to get source maps from ${sourceMapDir}: ${e}`, config);
     }
-    mapFiles.forEach((element, idx) => {
-      mapFiles[idx] = path.join(config.workingDirectory, element);
-    });
-    config.sourcemapPaths = mapFiles;
   }
+  config.sourceMapPaths = mapFiles;
   return config;
 }
 

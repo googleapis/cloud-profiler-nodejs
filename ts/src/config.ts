@@ -124,22 +124,21 @@ export interface Config extends GoogleAuthOptions {
   // For testing with startLocal() only.
   localTimeDurationMillis?: number;
 
-  // When true, source map support will be disabled.
-  // All locations in the profiler will reference locations in the running
-  // JavaScript.
-  disableSourceMaps?: boolean;
-
-  // All .js.map files which are available in the runtime and within the
-  // application's working directory are added to this array.
-  // This can be used to specify source maps which are available in the runtime,
-  // but outside of the working directory.
-  sourcemapPaths?: string[];
-
-  // The working directory of the application being profiled. That is, the
-  // directory containing the application's package.json file.
-  // This is the directory which the profiling agent searches for .js.map files
-  // The default value is the value of process.cwd().
-  workingDirectory?: string;
+  // List of directories recursively searched for *.js.map files. Defaults to
+  // process.cwd().
+  //
+  // The profiler uses these files to re-map the source file paths in the
+  // profiles. The most common use case of having a source map is an application
+  // or dependency written in TypeScript: the source file paths that
+  // the profiler observes in the profiling data are the transpiled *.js files;
+  // to attribute the data back to the TypeScript source that the developer
+  // wrote source map needs to be generated, distribute and used.
+  //
+  // The source map of the application typically resides directly in
+  // process.cwd() and the source maps of dependencies can normally be found
+  // via recursive search in process.cwd()/node_modules so the default value
+  // should work well pretty much always.
+  sourceMapSearchPath?: string[];
 }
 
 // Interface for an initialized config.
@@ -163,9 +162,8 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localProfilingPeriodMillis: number;
   localLogPeriodMillis: number;
   localTimeDurationMillis: number;
-  disableSourceMaps: boolean;
-  sourcemapPaths?: string[];
-  workingDirectory: string;
+  sourceMapSearchPath: string[];
+  sourceMapPaths: string[];
 }
 
 // Default values for configuration for a profiler.
@@ -191,6 +189,6 @@ export const defaultConfig = {
   localProfilingPeriodMillis: 1000,
   localLogPeriodMillis: 10000,
   localTimeDurationMillis: 1000,
-  disableSourceMaps: false,
-  workingDirectory: process.cwd()
+  sourceMapSearchPath: [process.cwd()],
+  sourceMapPaths: [],
 };

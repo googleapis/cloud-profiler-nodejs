@@ -252,7 +252,7 @@ export class Profiler extends ServiceObject {
   private deployment: Deployment;
   private profileTypes: string[];
   private retryer: Retryer;
-  private sourcemap: SourceMapper|undefined;
+  private sourceMap: SourceMapper|undefined;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -320,8 +320,8 @@ export class Profiler extends ServiceObject {
    * error level and getting profile type will be retried.
    */
   async start() {
-    if (this.config.sourcemapPaths) {
-      this.sourcemap = await createSourceMapper(this.config.sourcemapPaths);
+    if (this.config.sourceMapPaths) {
+      this.sourceMap = await createSourceMapper(this.config.sourceMapPaths);
     }
     this.runLoop();
   }
@@ -491,7 +491,7 @@ export class Profiler extends ServiceObject {
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
           ` be parsed.`);
     }
-    const p = await this.timeProfiler.profile(durationMillis, this.sourcemap);
+    const p = await this.timeProfiler.profile(durationMillis, this.sourceMap);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
@@ -507,7 +507,7 @@ export class Profiler extends ServiceObject {
       throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
     const p =
-        heapProfiler.profile(this.config.ignoreHeapSamplesPath, this.sourcemap);
+        heapProfiler.profile(this.config.ignoreHeapSamplesPath, this.sourceMap);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
