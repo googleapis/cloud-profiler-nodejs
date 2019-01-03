@@ -85,7 +85,8 @@ describe('createProfiler', () => {
   };
   const sourceMapSearchPath: string[] = [];
   const disableSourceMapParams = {
-    sourceMapSearchPath: [''],
+    sourceMapSearchPath: [],
+    disableSourceMaps: true,
   };
   let defaultConfig: {};
 

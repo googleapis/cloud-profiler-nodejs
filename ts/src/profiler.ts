@@ -320,8 +320,15 @@ export class Profiler extends ServiceObject {
    * error level and getting profile type will be retried.
    */
   async start() {
-    if (this.config.sourceMapPaths) {
-      this.sourceMapper = await createSourceMapper(this.config.sourceMapPaths);
+    if (this.config.sourceMapPaths && !this.config.disableSourceMaps) {
+      try {
+        this.sourceMapper =
+            await createSourceMapper(this.config.sourceMapPaths);
+      } catch (err) {
+        this.logger.error(
+            `Failed to initialize source maps and start profiler: ${err}`);
+        return;
+      }
     }
     this.runLoop();
   }

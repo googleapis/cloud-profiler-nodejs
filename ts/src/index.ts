@@ -89,7 +89,8 @@ function initConfigLocal(config: Config): ProfilerConfig {
 
   // If sourceMapSearchPath is empty array, extend will override its value
   // with the default value in mergedConfig.
-  if (config.sourceMapSearchPath === []) {
+  if (Array.isArray(config.sourceMapSearchPath) &&
+      config.sourceMapSearchPath.length === 0) {
     mergedConfig.sourceMapSearchPath = [];
   }
 
@@ -131,18 +132,21 @@ async function initConfigAsync(config: ProfilerConfig):
       config.instance = instance;
     }
   }
-  const mapFiles: string[] = [];
-  for (const sourceMapDir of config.sourceMapSearchPath) {
-    try {
-      const mf = await getMapFiles(false, sourceMapDir);
-      mf.forEach((sourceMapPath) => {
-        mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
-      });
-    } catch (e) {
-      logError(`failed to get source maps from ${sourceMapDir}: ${e}`, config);
+  if (!config.disableSourceMaps) {
+    const mapFiles: string[] = [];
+    for (const sourceMapDir of config.sourceMapSearchPath) {
+      try {
+        const mf = await getMapFiles(false, sourceMapDir);
+        mf.forEach((sourceMapPath) => {
+          mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
+        });
+      } catch (e) {
+        logError(
+            `failed to get source maps from ${sourceMapDir}: ${e}`, config);
+      }
     }
+    config.sourceMapPaths = mapFiles;
   }
-  config.sourceMapPaths = mapFiles;
   return config;
 }
 
