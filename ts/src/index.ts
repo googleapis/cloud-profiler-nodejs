@@ -17,9 +17,7 @@
 import delay from 'delay';
 import * as extend from 'extend';
 import * as fs from 'fs';
-import {appendFile} from 'fs';
 import * as gcpMetadata from 'gcp-metadata';
-import * as path from 'path';
 import * as semver from 'semver';
 import {SemVer} from 'semver';
 
@@ -109,9 +107,9 @@ function initConfigLocal(config: Config): ProfilerConfig {
 
 /**
  * Sets unset values in the configuration which can be retrieved from GCP
- * metadata and initialize source maps.
+ * metadata.
  */
-async function initConfigAsync(config: ProfilerConfig):
+async function initConfigMetadata(config: ProfilerConfig):
     Promise<ProfilerConfig> {
   if (!config.zone || !config.instance) {
     const [instance, zone] =
@@ -171,7 +169,7 @@ export async function createProfiler(config: Config): Promise<Profiler> {
     heapProfiler.start(
         profilerConfig.heapIntervalBytes, profilerConfig.heapMaxStackDepth);
   }
-  profilerConfig = await initConfigAsync(profilerConfig);
+  profilerConfig = await initConfigMetadata(profilerConfig);
   return new Profiler(profilerConfig);
 }
 
