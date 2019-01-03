@@ -139,6 +139,8 @@ export interface Config extends GoogleAuthOptions {
   // via recursive search in process.cwd()/node_modules so the default value
   // should work well pretty much always.
   sourceMapSearchPath?: string[];
+
+  disableSourceMaps?: boolean;
 }
 
 // Interface for an initialized config.

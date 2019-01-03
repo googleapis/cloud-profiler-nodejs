@@ -491,7 +491,8 @@ export class Profiler extends ServiceObject {
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
           ` be parsed.`);
     }
-    const p = await this.timeProfiler.profile(durationMillis, this.sourceMapper);
+    const p =
+        await this.timeProfiler.profile(durationMillis, this.sourceMapper);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
@@ -506,8 +507,8 @@ export class Profiler extends ServiceObject {
     if (this.config.disableHeap) {
       throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
-    const p =
-        heapProfiler.profile(this.config.ignoreHeapSamplesPath, this.sourceMapper);
+    const p = heapProfiler.profile(
+        this.config.ignoreHeapSamplesPath, this.sourceMapper);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }

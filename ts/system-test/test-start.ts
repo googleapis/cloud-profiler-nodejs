@@ -86,7 +86,7 @@ before(async () => {
 
   // start profiling and wait to collect profiles.
   const profiler = require('../src/index');
-  profiler.start({credentials: fakeCredentials, logLevel: 5});
+  profiler.start({credentials: fakeCredentials});
   await delay(30 * 1000);
 
   // copy over currently uploaded profiles, so all tests look at same profiles.
