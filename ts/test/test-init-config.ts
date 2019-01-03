@@ -81,7 +81,6 @@ describe('createProfiler', () => {
     localTimeDurationMillis: 1000,
     localLogPeriodMillis: 10000,
     baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
-    sourceMapPaths: [],
   };
   const sourceMapSearchPath: string[] = [];
   const disableSourceMapParams = {

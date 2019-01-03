@@ -169,7 +169,7 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localTimeDurationMillis: number;
   sourceMapSearchPath: string[];
   disableSourceMaps?: boolean;
-  sourceMapPaths: string[];
+  sourceMapPaths?: string[];
 }
 
 // Default values for configuration for a profiler.
@@ -197,5 +197,4 @@ export const defaultConfig = {
   localTimeDurationMillis: 1000,
   sourceMapSearchPath: [process.cwd()],
   disableSourceMaps: false,
-  sourceMapPaths: [],
 };
