@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import * as fs from 'fs';
+import * as path from 'path';
 import * as pify from 'pify';
 import * as sinon from 'sinon';
 import * as tmp from 'tmp';
@@ -27,6 +28,7 @@ import {anonymousFunctionHeapProfile, anonymousFunctionTimeProfile, heapProfile,
 
 const assert = require('assert');
 const tmpFile = pify(tmp.file);
+const tmpDir = pify(tmp.dir);
 const writeFile = pify(fs.writeFile);
 
 describe('profile-serializer', () => {
@@ -66,17 +68,14 @@ describe('profile-serializer', () => {
   });
 
   describe('source map specified', () => {
-    let fooMap: string;
-    let bazMap: string;
     let sourceMapper: SourceMapper;
     before(async () => {
-      fooMap = await tmpFile({postfix: '.js.map'});
-      await writeFile(fooMap, mapFoo.toString());
+      const mapDir: string = await tmpDir();
 
-      bazMap = await tmpFile({postfix: '.js.map'});
-      await writeFile(bazMap, mapBaz.toString());
+      await writeFile(path.join(mapDir, 'foo.js.map'), mapFoo.toString());
+      await writeFile(path.join(mapDir, 'baz.js.map'), mapBaz.toString());
 
-      const sourceMapFiles = [fooMap, bazMap];
+      const sourceMapFiles = [mapDir];
       sourceMapper = await createSourceMapper(sourceMapFiles);
     });
 

@@ -201,7 +201,24 @@ export class SourceMapper {
   }
 }
 
-export async function create(sourceMapPaths: string[]): Promise<SourceMapper> {
+export async function create(sourceMapSearchPath: string[]):
+    Promise<SourceMapper> {
+  const mapFiles: string[] = [];
+  for (const sourceMapDir of sourceMapSearchPath) {
+    try {
+      const mf = await getMapFiles(false, sourceMapDir);
+      mf.forEach((sourceMapPath) => {
+        mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
+      });
+    } catch (e) {
+      throw new Error(`failed to get source maps from ${sourceMapDir}: ${e}`);
+    }
+  }
+  return createFromSourceMapPaths(mapFiles);
+}
+
+async function createFromSourceMapPaths(sourceMapPaths: string[]):
+    Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
   const promises: Array<Promise<void>> = sourceMapPaths.map(
@@ -215,7 +232,7 @@ export async function create(sourceMapPaths: string[]): Promise<SourceMapper> {
   return mapper;
 }
 
-export async function getMapFiles(
+async function getMapFiles(
     shouldHash: boolean, baseDir: string): Promise<string[]> {
   const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
   const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());

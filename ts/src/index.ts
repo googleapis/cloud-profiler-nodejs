@@ -27,7 +27,6 @@ import {Config, defaultConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 import * as heapProfiler from './profilers/heap-profiler';
-import {getMapFiles} from './sourcemapper/sourcemapper';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
@@ -131,21 +130,6 @@ async function initConfigAsync(config: ProfilerConfig):
     if (!config.instance && instance) {
       config.instance = instance;
     }
-  }
-  if (!config.disableSourceMaps) {
-    const mapFiles: string[] = [];
-    for (const sourceMapDir of config.sourceMapSearchPath) {
-      try {
-        const mf = await getMapFiles(false, sourceMapDir);
-        mf.forEach((sourceMapPath) => {
-          mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
-        });
-      } catch (e) {
-        logError(
-            `failed to get source maps from ${sourceMapDir}: ${e}`, config);
-      }
-    }
-    config.sourceMapPaths = mapFiles;
   }
   return config;
 }

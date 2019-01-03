@@ -61,7 +61,6 @@ const testConfig: ProfilerConfig = {
   localTimeDurationMillis: 1000,
   localLogPeriodMillis: 1000,
   sourceMapSearchPath: [],
-  sourceMapPaths: [],
 };
 
 const mockTimeProfiler = mock(TimeProfiler);
