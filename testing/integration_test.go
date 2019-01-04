@@ -81,11 +81,9 @@ retry curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.
 export NVM_DIR="$HOME/.nvm" >/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" >/dev/null
 
-# nvm install writes to stderr and stdout on successful install, so some
-# output will appear on successful installs. To reduce the amount of output, 
-# while maintaining error messages printed when nvm install fails, output to
-# stdout is redirected to /dev/null.
-{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} >/dev/null
+# nvm install writes to stderr and stdout on successful install, so both are
+# redirected.
+{{if .NVMMirror}}NVM_NODEJS_ORG_MIRROR={{.NVMMirror}}{{end}} retry nvm install {{.NodeVersion}} &>/dev/null
 npm -v
 node -v
 NODEDIR=$(dirname $(dirname $(which node)))
@@ -97,11 +95,7 @@ retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pul
 git checkout pull_branch
 git reset --hard {{.Commit}}
 
-{{if.BinaryHost}}
-retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
-{{else}}
-retry npm install --nodedir="$NODEDIR" --build-from-source=google_cloud_profiler >/dev/null
-{{end}}
+retry npm install --nodedir="$NODEDIR" {{if.BinaryHost}}--fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}}{{end}} >/dev/null
 
 # TODO: remove this workaround.
 # For v8-canary tests, we need to use the version of NAN on github, which 
