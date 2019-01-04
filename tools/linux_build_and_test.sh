@@ -43,7 +43,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock -v \
     "${BASE_DIR}":"${BASE_DIR}" kokoro-image \
     "${BASE_DIR}/tools/build_scripts/build.sh"
 
-if [ "" -eq "release" ]; then
+if [ "$BUILD_TYPE" -eq "release" ]; then
   GCS_LOCATION="cloud-profiler/nodejs/release"
 else 
   GCS_LOCATION="cloud-profiler-nodejs-artifacts/nodejs/kokoro/${BUILD_TYPE}/${KOKORO_BUILD_NUMBER}"
@@ -54,5 +54,6 @@ gsutil cp -r "${BASE_DIR}/artifacts/." "gs://${GCS_LOCATION}/"
 
 # Test the agent
 export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
-
 "${BASE_DIR}/testing/integration_test.sh"
+
+

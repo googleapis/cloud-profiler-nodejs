@@ -100,7 +100,7 @@ git reset --hard {{.Commit}}
 {{if.BinaryHost}}
 retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}} >/dev/null
 {{else}}
-retry npm install --nodedir="$NODEDIR" --build-from-source=profiler >/dev/null
+retry npm install --nodedir="$NODEDIR" --build-from-source=google_cloud_profiler >/dev/null
 {{end}}
 
 # TODO: remove this workaround.
@@ -123,7 +123,7 @@ retry npm install node-pre-gyp
 {{if .BinaryHost}}
 retry npm install --nodedir="$NODEDIR" --fallback-to-build=false --google_cloud_profiler_binary_host_mirror={{.BinaryHost}} "$PROFILER" typescript gts >/dev/null
 {{else}}
-retry npm install --nodedir="$NODEDIR" --build-from-source=profiler "$PROFILER" typescript gts >/dev/null
+retry npm install --nodedir="$NODEDIR" --build-from-source=google_cloud_profiler "$PROFILER" typescript gts >/dev/null
 {{end}}
 
 npm run compile
