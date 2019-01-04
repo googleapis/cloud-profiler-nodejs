@@ -272,6 +272,28 @@ describe('createProfiler', () => {
     assert.deepEqual(profiler.config, expConfig);
   });
 
+  it('should set sourceMapSearchPaths when specified in the config',
+     async () => {
+       metadataStub = sinon.stub(gcpMetadata, 'instance');
+       metadataStub.throwsException('cannot access metadata');
+
+       const config = Object.assign(
+           {
+             logLevel: 2,
+             serviceContext: {version: '', service: 'fake-service'},
+             disableHeap: true,
+             disableTime: true,
+             instance: 'instance',
+             zone: 'zone',
+             sourceMapSearchPath: ['path'],
+           },
+           disableSourceMapParams);
+       const profiler: Profiler = await createProfiler(config);
+       const expConfig =
+           Object.assign({}, config, disableSourceMapParams, defaultConfig);
+       assert.deepEqual(profiler.config, expConfig);
+     });
+
   it('should set baseApiUrl to non-default value', async () => {
     metadataStub = sinon.stub(gcpMetadata, 'instance');
     metadataStub.throwsException('cannot access metadata');

@@ -308,7 +308,7 @@ func TestAgentIntegration(t *testing.T) {
 				}
 				if wantProfile.sourceFile != "" {
 					if err := pr.HasFunctionInFile(wantProfile.functionName, wantProfile.sourceFile); err != nil {
-						t.Errorf("Function %s not found source file %s in profiles of type %s: %v", wantProfile.functionName, wantProfile.sourceFile, wantProfile.profileType, err)
+						t.Errorf("Function %s not found in source file %s in profiles of type %s: %v", wantProfile.functionName, wantProfile.sourceFile, wantProfile.profileType, err)
 					}
 					continue
 				}

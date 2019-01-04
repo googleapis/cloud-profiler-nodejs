@@ -84,8 +84,10 @@ function initConfigLocal(config: Config): ProfilerConfig {
   const mergedConfig =
       extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
 
-  // If sourceMapSearchPath is empty array, extend will override its value
-  // with the default value in mergedConfig.
+  // If sourceMapSearchPath is empty array in config, extend will override
+  // its value with the default value in mergedConfig (as if
+  // sourceMapSearchPath were not specified in config), rather than keep the
+  // empty array as sourceMapSearchPath's value in mergedConfig.
   if (Array.isArray(config.sourceMapSearchPath) &&
       config.sourceMapSearchPath.length === 0) {
     mergedConfig.sourceMapSearchPath = [];

@@ -142,7 +142,7 @@ export interface Config extends GoogleAuthOptions {
 
   // When true, source map support will be disabled.
   // All locations in profiles will reference locations in the running
-  // javascript.
+  // JavaScript.
   disableSourceMaps?: boolean;
 }
 
@@ -168,7 +168,7 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localLogPeriodMillis: number;
   localTimeDurationMillis: number;
   sourceMapSearchPath: string[];
-  disableSourceMaps?: boolean;
+  disableSourceMaps: boolean;
 }
 
 // Default values for configuration for a profiler.

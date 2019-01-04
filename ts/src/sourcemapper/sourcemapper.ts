@@ -98,12 +98,12 @@ async function processSourceMap(
    * containing the map file.  Otherwise, use the name of the output
    * file (with the .map extension removed) as the output file.
    */
-  const mapFileDir = path.dirname(mapPath);
+  const dir = path.dirname(mapPath);
   const generatedBase =
       consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
-  const generatedPath = path.resolve(mapFileDir, generatedBase);
+  const generatedPath = path.resolve(dir, generatedBase);
 
-  infoMap.set(generatedPath, {mapFileDir, mapConsumer: consumer});
+  infoMap.set(generatedPath, {mapFileDir: dir, mapConsumer: consumer});
 }
 
 export class SourceMapper {
@@ -201,28 +201,26 @@ export class SourceMapper {
   }
 }
 
-export async function create(sourceMapSearchPath: string[]):
-    Promise<SourceMapper> {
+export async function create(searchDirs: string[]): Promise<SourceMapper> {
   const mapFiles: string[] = [];
-  for (const sourceMapDir of sourceMapSearchPath) {
+  for (const dir of searchDirs) {
     try {
-      const mf = await getMapFiles(false, sourceMapDir);
-      mf.forEach((sourceMapPath) => {
-        mapFiles.push(path.resolve(sourceMapDir, sourceMapPath));
+      const mf = await getMapFiles(dir);
+      mf.forEach((mapFile) => {
+        mapFiles.push(path.resolve(dir, mapFile));
       });
     } catch (e) {
-      throw new Error(`failed to get source maps from ${sourceMapDir}: ${e}`);
+      throw new Error(`failed to get source maps from ${dir}: ${e}`);
     }
   }
-  return createFromSourceMapPaths(mapFiles);
+  return createFromMapFiles(mapFiles);
 }
 
-async function createFromSourceMapPaths(sourceMapPaths: string[]):
-    Promise<SourceMapper> {
+async function createFromMapFiles(mapFiles: string[]): Promise<SourceMapper> {
   const limit = pLimit(CONCURRENCY);
   const mapper = new SourceMapper();
-  const promises: Array<Promise<void>> = sourceMapPaths.map(
-      path => limit(() => processSourceMap(mapper.infoMap, path)));
+  const promises: Array<Promise<void>> = mapFiles.map(
+      mapPath => limit(() => processSourceMap(mapper.infoMap, mapPath)));
   try {
     await Promise.all(promises);
   } catch (err) {
@@ -232,8 +230,7 @@ async function createFromSourceMapPaths(sourceMapPaths: string[]):
   return mapper;
 }
 
-async function getMapFiles(
-    shouldHash: boolean, baseDir: string): Promise<string[]> {
+async function getMapFiles(baseDir: string): Promise<string[]> {
   const fileStats = await scanner.scan(false, baseDir, /.js.map$/);
   const mapFiles = fileStats.selectFiles(/.js.map$/, process.cwd());
   return mapFiles;

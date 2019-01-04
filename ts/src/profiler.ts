@@ -319,7 +319,7 @@ export class Profiler extends ServiceObject {
    * on the type of profile to be collected, this problem will be logged at the
    * error level and getting profile type will be retried.
    */
-  async start() {
+  async start(): Promise<void> {
     if (!this.config.disableSourceMaps) {
       try {
         this.sourceMapper =
