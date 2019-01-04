@@ -306,11 +306,14 @@ func TestAgentIntegration(t *testing.T) {
 					t.Errorf("QueryProfiles(%s, %s, %s, %s, %s) got error: %v", tc.ProjectID, tc.name, startTime, endTime, wantProfile.profileType, err)
 					continue
 				}
+				if wantProfile.sourceFile != "" {
+					if err := pr.HasFunctionInFile(wantProfile.functionName, wantProfile.sourceFile); err != nil {
+						t.Errorf("Function %s not found source file %s in profiles of type %s: %v", wantProfile.functionName, wantProfile.sourceFile, wantProfile.profileType, err)
+					}
+					continue
+				}
 				if err := pr.HasFunction(wantProfile.functionName); err != nil {
 					t.Errorf("Function %s not found in profiles of type %s: %v", wantProfile.functionName, wantProfile.profileType, err)
-				}
-				if err := pr.HasSourceFile(wantProfile.sourceFile); err != nil {
-					t.Errorf("Source file %s not found in profiles of type %s: %v", wantProfile.sourceFile, wantProfile.profileType, err)
 				}
 			}
 		})
