@@ -37,14 +37,13 @@ esac
 
 cd $(dirname $0)/..
 BASE_DIR=$(pwd)
-VERSION=$(node -e "console.log(require('./package.json').version);")
 
 docker build -t kokoro-image tools/linux
 docker run -v /var/run/docker.sock:/var/run/docker.sock -v \
     "${BASE_DIR}":"${BASE_DIR}" kokoro-image \
     "${BASE_DIR}/tools/build.sh"
 
-GCS_LOCATION="cprof-e2e-nodejs-artifacts/nodejs/kokoro/${BUILD_TYPE}/${KOKORO_BUILD_NUMBER}/v${VERSION}"
+GCS_LOCATION="cprof-e2e-nodejs-artifacts/nodejs/kokoro/${BUILD_TYPE}/${KOKORO_BUILD_NUMBER}"
 gcloud auth activate-service-account --key-file="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
 
 gsutil cp -r "${BASE_DIR}/artifacts/." "gs://${GCS_LOCATION}/"
@@ -54,5 +53,5 @@ export BINARY_HOST="https://storage.googleapis.com/${GCS_LOCATION}"
 "${BASE_DIR}/testing/integration_test.sh"
 
 if [ "$BUILD_TYPE" -eq "release" ]; then
-  gsutil cp -r "${BASE_DIR}/artifacts/." "gs://cloud-profiler/nodejs/release/v${VERSION}"
+  gsutil cp -r "${BASE_DIR}/artifacts/." "gs://cloud-profiler/nodejs/release"
 fi
