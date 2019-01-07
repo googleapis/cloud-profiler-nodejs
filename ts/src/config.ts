@@ -135,9 +135,9 @@ export interface Config extends GoogleAuthOptions {
   // wrote source map needs to be generated, distribute and used.
   //
   // The source map of the application typically resides directly in
-  // process.cwd() and the source maps of dependencies can normally be found
-  // via recursive search in process.cwd()/node_modules so the default value
-  // should work well pretty much always.
+  // process.cwd(), so the default value should work well pretty much always.
+  // The node_modules directory is not searched for source maps, so
+  // source maps for dependencies will not be used.
   sourceMapSearchPath?: string[];
 
   // When true, source map support will be disabled.
