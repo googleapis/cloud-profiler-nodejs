@@ -103,6 +103,7 @@
     "module_name": "google_cloud_profiler",
     "module_path": "./build/{node_abi}-{platform}-{arch}-{libc}",
     "host": "https://storage.googleapis.com/cloud-profiler/nodejs/release",
+    "remote_path": "v{version}",
     "package_name": "{node_abi}-{platform}-{arch}-{libc}.tar.gz"
   }
 }
