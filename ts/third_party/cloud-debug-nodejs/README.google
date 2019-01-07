@@ -8,7 +8,8 @@ Description:
        that lets you debug your applications in production without stopping or
        pausing your application.
 Local Modifications:
-       All code except scanner.ts has been removed.
+       All code except scanner.ts has been removed. scanner.ts has been modified
+       so that node_modules directory will be searched when using scanner.ts.
 
        Imported as a git-subtree.
 

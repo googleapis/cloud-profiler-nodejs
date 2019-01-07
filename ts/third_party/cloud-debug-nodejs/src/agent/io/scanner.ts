@@ -194,7 +194,7 @@ function findFiles(baseDir: string, regex: RegExp): Promise<string[]> {
 
     find.on('directory', (dir: string, ignore: fs.Stats, stop: () => void) => {
       const base = path.basename(dir);
-      if (base === '.git' || base === 'node_modules') {
+      if (base === '.git') {
         stop();  // do not descend
       }
     });
