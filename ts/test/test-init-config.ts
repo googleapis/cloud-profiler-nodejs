@@ -84,7 +84,7 @@ describe('createProfiler', () => {
   };
   const sourceMapSearchPath: string[] = [];
   const disableSourceMapParams = {
-    sourceMapSearchPath: [],
+    sourceMapSearchPath: ['path'],
     disableSourceMaps: true,
   };
   let defaultConfig: {};
@@ -292,6 +292,30 @@ describe('createProfiler', () => {
        const expConfig =
            Object.assign({}, config, disableSourceMapParams, defaultConfig);
        assert.deepEqual(profiler.config, expConfig);
+     });
+
+  it('should reject when sourceMapSearchPaths is empty array and source map support is enabled',
+     async () => {
+       metadataStub = sinon.stub(gcpMetadata, 'instance');
+       metadataStub.throwsException('cannot access metadata');
+
+       const config = {
+         serviceContext: {version: '', service: 'fake-service'},
+         instance: 'instance',
+         zone: 'zone',
+         sourceMapSearchPath: [],
+         disableSourceMaps: false,
+       };
+
+       try {
+         await createProfiler(config);
+         assert.fail('expected an error because invalid service was specified');
+       } catch (e) {
+         assert.strictEqual(
+             e.message,
+             'serviceMapSearchPath is an empty array. Use disableSourceMaps ' +
+                 'to disable source map support instead.');
+       }
      });
 
   it('should set baseApiUrl to non-default value', async () => {

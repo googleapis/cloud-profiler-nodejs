@@ -81,17 +81,16 @@ function initConfigLocal(config: Config): ProfilerConfig {
     }
   }
 
-  const mergedConfig =
-      extend(true, {}, defaultConfig, envSetConfig, envConfig, config);
-
-  // If sourceMapSearchPath is empty array in config, extend will override
-  // its value with the default value in mergedConfig (as if
-  // sourceMapSearchPath were not specified in config), rather than keep the
-  // empty array as sourceMapSearchPath's value in mergedConfig.
-  if (Array.isArray(config.sourceMapSearchPath) &&
-      config.sourceMapSearchPath.length === 0) {
-    mergedConfig.sourceMapSearchPath = [];
+  const mergedUserConfigs = extend(true, {}, envSetConfig, envConfig, config);
+  if (Array.isArray(mergedUserConfigs.sourceMapSearchPath) &&
+      mergedUserConfigs.sourceMapSearchPath.length === 0 &&
+      !mergedUserConfigs.disableSourceMaps) {
+    throw new Error(
+        'serviceMapSearchPath is an empty array. Use disableSourceMaps to' +
+        ' disable source map support instead.');
   }
+
+  const mergedConfig = extend(true, {}, defaultConfig, mergedUserConfigs);
 
   if (!hasService(mergedConfig)) {
     throw new Error('Service must be specified in the configuration');
