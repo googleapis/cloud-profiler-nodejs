@@ -129,10 +129,10 @@ export interface Config extends GoogleAuthOptions {
   //
   // The profiler uses these files to re-map the source file paths in the
   // profiles. The most common use case of having a source map is an application
-  // or dependency written in TypeScript: the source file paths that
-  // the profiler observes in the profiling data are the transpiled *.js files;
-  // to attribute the data back to the TypeScript source that the developer
-  // wrote source map needs to be generated, distribute and used.
+  // written in TypeScript: the source file paths that the profiler observes in
+  // the profiling data are the transpiled *.js files; to attribute the data
+  // back to the TypeScript source that the developer wrote source map needs to
+  // be generated, distribute and used.
   //
   // The source map of the application typically resides directly in
   // process.cwd(), so the default value should work well pretty much always.
