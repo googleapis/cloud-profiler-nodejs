@@ -33,6 +33,5 @@ do
   ./node_modules/.bin/node-pre-gyp configure rebuild package \
       --target=$version --target_arch="x64"
   cp -r build/stage/* "${ARTIFACTS_OUT}/"
+  rm -rf build
 done
-
-rm -rf build
