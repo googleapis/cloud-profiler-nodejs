@@ -14,10 +14,13 @@
 
 @echo "Starting Windows build"
 
+type c:\cygwin64\home\kbuilder\.bash_profile
+type c:\cygwin64\home\kbuilder\.bashrc
+
 cd /d %~dp0
 cd ..
 
-call npm install -g npm@latest || goto :error
+call nvm || goto :error
 call npm install || goto :error
 call npm run test || goto :error
 
