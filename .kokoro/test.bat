@@ -12,20 +12,4 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 
-@echo "Starting Windows build"
-
-@echo %PATH%
-@echo %USER%
-@echo %SHELL%
-
-cd /d %~dp0
-cd ..
-
-call nvm || goto :error
-call npm install || goto :error
-call npm run test || goto :error
-
-goto :EOF
-
-:error
-exit /b 1
+"C:\Program Files\Git\bin\bash.exe" github/cloud-profiler-nodejs/.kokoro/test.sh
