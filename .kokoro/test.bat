@@ -12,4 +12,7 @@
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
 
+cd /d %~dp0	
+cd ..
+
 "C:\Program Files\Git\bin\bash.exe" github/cloud-profiler-nodejs/.kokoro/test.sh
