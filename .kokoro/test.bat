@@ -15,6 +15,8 @@
 @echo "Starting Windows build"
 
 @echo %PATH%
+@echo %USER%
+@echo %SHELL%
 
 cd /d %~dp0
 cd ..
