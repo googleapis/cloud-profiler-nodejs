@@ -14,8 +14,7 @@
 
 @echo "Starting Windows build"
 
-type c:\cygwin64\home\kbuilder\.bash_profile
-type c:\cygwin64\home\kbuilder\.bashrc
+@echo %PATH%
 
 cd /d %~dp0
 cd ..
