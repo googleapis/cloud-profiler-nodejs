@@ -15,4 +15,4 @@
 cd /d %~dp0	
 cd ..
 
-"C:\Program Files\Git\bin\bash.exe" github/cloud-profiler-nodejs/.kokoro/test.sh
+"C:\Program Files\Git\bin\bash.exe" github/cloud-profiler-nodejs/.kokoro/test.bat
