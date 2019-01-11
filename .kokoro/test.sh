@@ -24,4 +24,16 @@ npm install
 npm test
 ./node_modules/nyc/bin/nyc.js report
 
+ case $1 in
+  --windows)
+    $KOKORO_GFILE_DIR=$(wslpath -a $KOKORO_GFILE_DIR)
+    ;;
+  "")
+    ;;
+  *)
+    echo "Unknown parameter: $1"
+    exit 1
+    ;;
+  esac
+
 bash $KOKORO_GFILE_DIR/codecov.sh
