@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {SourceMapGenerator} from 'source-map';
+import * as path from 'path';
 
+import {SourceMapGenerator} from 'source-map';
 import {perftools} from '../../proto/profile';
 import {TimeProfile} from '../src/v8-types';
 
@@ -620,13 +621,13 @@ export const decodedHeapProfileExcludePath = Object.freeze(
 
 export const mapFoo = new SourceMapGenerator({file: '/dir/foo.js'});
 mapFoo.addMapping({
-  source: '/foo.ts',
+  source: path.normalize('/foo.ts'),
   name: 'foo1',
   generated: {line: 1, column: 3},
   original: {line: 10, column: 0}
 });
 mapFoo.addMapping({
-  source: '/foo.ts',
+  source: path.normalize('/foo.ts'),
   name: 'foo2',
   generated: {line: 5, column: 5},
   original: {line: 20, column: 0}
@@ -634,7 +635,7 @@ mapFoo.addMapping({
 
 export const mapBaz = new SourceMapGenerator({file: '/dir/baz.js'});
 mapBaz.addMapping({
-  source: '/baz.ts',
+  source: path.normalize('/baz.ts'),
   name: 'baz',
   generated: {line: 3, column: 0},
   original: {line: 5, column: 0}
@@ -642,7 +643,7 @@ mapBaz.addMapping({
 
 const heapGeneratedLeaf1 = {
   name: 'foo2',
-  scriptName: '/dir/foo.js',
+  scriptName: path.normalize('/dir/foo.js'),
   scriptId: 1,
   lineNumber: 5,
   columnNumber: 5,
@@ -652,7 +653,7 @@ const heapGeneratedLeaf1 = {
 
 const heapGeneratedLeaf2 = {
   name: 'baz',
-  scriptName: '/dir/baz.js',
+  scriptName: path.normalize('/dir/baz.js'),
   scriptId: 3,
   lineNumber: 3,
   columnNumber: 0,
@@ -662,7 +663,7 @@ const heapGeneratedLeaf2 = {
 
 const heapGeneratedNode2 = {
   name: 'bar',
-  scriptName: '/dir/bar.js',
+  scriptName: path.normalize('/dir/bar.js'),
   scriptId: 2,
   lineNumber: 10,
   columnNumber: 0,
@@ -672,7 +673,7 @@ const heapGeneratedNode2 = {
 
 const heapGeneratedNode1 = {
   name: 'foo1',
-  scriptName: '/dir/foo.js',
+  scriptName: path.normalize('/dir/foo.js'),
   scriptId: 1,
   lineNumber: 1,
   columnNumber: 3,
@@ -725,12 +726,12 @@ export const heapSourceProfile: perftools.profiles.IProfile = Object.freeze({
     'space',
     'bytes',
     'foo1',
-    '/foo.ts',
+    path.normalize('/foo.ts'),
     'foo2',
     'bar',
-    '/dir/bar.js',
+    path.normalize('/dir/bar.js'),
     'baz',
-    '/baz.ts',
+    path.normalize('/baz.ts'),
   ],
   timeNanos: 0,
   periodType: new perftools.profiles.ValueType({type: 3, unit: 4}),
@@ -739,7 +740,7 @@ export const heapSourceProfile: perftools.profiles.IProfile = Object.freeze({
 
 const timeGeneratedLeaf1 = {
   name: 'foo',
-  scriptName: '/dir/foo.js',
+  scriptName: path.normalize('/dir/foo.js'),
   scriptId: 1,
   lineNumber: 5,
   columnNumber: 5,
@@ -749,7 +750,7 @@ const timeGeneratedLeaf1 = {
 
 const timeGeneratedLeaf2 = {
   name: 'baz',
-  scriptName: '/dir/baz.js',
+  scriptName: path.normalize('/dir/baz.js'),
   scriptId: 3,
   lineNumber: 3,
   columnNumber: 0,
@@ -759,7 +760,7 @@ const timeGeneratedLeaf2 = {
 
 const timeGeneratedNode2 = {
   name: 'bar',
-  scriptName: '/dir/bar.js',
+  scriptName: path.normalize('/dir/bar.js'),
   scriptId: 2,
   lineNumber: 10,
   columnNumber: 0,
@@ -768,7 +769,7 @@ const timeGeneratedNode2 = {
 
 const timeGeneratedNode1 = {
   name: 'foo1',
-  scriptName: '/dir/foo.js',
+  scriptName: path.normalize('/dir/foo.js'),
   scriptId: 1,
   lineNumber: 1,
   columnNumber: 3,
@@ -828,12 +829,12 @@ export const timeSourceProfile: perftools.profiles.IProfile = Object.freeze({
     'wall',
     'microseconds',
     'foo1',
-    '/foo.ts',
+    path.normalize('/foo.ts'),
     'foo2',
     'bar',
-    '/dir/bar.js',
+    path.normalize('/dir/bar.js'),
     'baz',
-    '/baz.ts',
+    path.normalize('/baz.ts'),
   ],
   timeNanos: 0,
   durationNanos: 10 * 1000 * 1000 * 1000,
