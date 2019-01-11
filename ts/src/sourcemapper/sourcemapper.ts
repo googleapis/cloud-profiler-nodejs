@@ -177,6 +177,7 @@ export class SourceMapper {
    */
   mappingInfo(location: GeneratedLocation): SourceLocation {
     const inputPath = path.normalize(location.file);
+    console.log(inputPath);
     const entry = this.getMappingInfo(inputPath);
     if (entry === null) {
       return location;

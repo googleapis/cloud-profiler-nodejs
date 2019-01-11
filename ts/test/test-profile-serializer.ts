@@ -77,6 +77,7 @@ describe('profile-serializer', () => {
 
       const sourceMapFiles = [mapDir];
       sourceMapper = await createSourceMapper(sourceMapFiles);
+      console.log(sourceMapper);
     });
 
     describe('serializeHeapProfile', () => {
