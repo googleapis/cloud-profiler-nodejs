@@ -24,9 +24,12 @@ npm install
 npm test
 ./node_modules/nyc/bin/nyc.js report
 
+
+WINDOWS="false"
+
  case $1 in
   --windows)
-    $KOKORO_GFILE_DIR=$(wslpath -a $KOKORO_GFILE_DIR)
+    WINDOWS="true"
     ;;
   "")
     ;;
@@ -36,4 +39,7 @@ npm test
     ;;
   esac
 
-bash $KOKORO_GFILE_DIR/codecov.sh
+if [ "$WINDOWS" -ne "true" ]; then
+  bash $KOKORO_GFILE_DIR/codecov.sh  
+fi
+
