@@ -93,6 +93,13 @@ retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pul
 git checkout pull_branch
 git reset --hard {{.Commit}}
 retry npm install --nodedir="$NODEDIR" >/dev/null
+
+# TODO: remove this workaround.
+# For v8-canary tests, we need to use the version of NAN on github, which 
+# contains unreleased fixes which allows the native component to be compiled
+# with Node 11.
+{{if .NVMMirror}} retry npm install https://github.com/nodejs/nan.git {{end}}
+
 npm run compile 
 npm pack --nodedir="$NODEDIR" >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
@@ -119,6 +126,7 @@ echo "{{.FinishString}}"
 type profileSummary struct {
 	profileType  string
 	functionName string
+	sourceFile   string
 }
 
 type nodeGCETestCase struct {
@@ -199,6 +207,11 @@ func TestAgentIntegration(t *testing.T) {
 		ComputeService: computeService,
 	}
 
+	wantProfiles := []profileSummary{
+		{"WALL", "busyLoop", "busybench.ts"},
+		{"HEAP", "benchmark", "busybench.ts"},
+	}
+
 	testcases := []nodeGCETestCase{
 		{
 			InstanceConfig: proftest.InstanceConfig{
@@ -208,7 +221,7 @@ func TestAgentIntegration(t *testing.T) {
 				MachineType: "n1-standard-1",
 			},
 			name:         fmt.Sprintf("profiler-test-node6-%s-gce", runID),
-			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			wantProfiles: wantProfiles,
 			nodeVersion:  "6",
 		},
 		{
@@ -219,7 +232,7 @@ func TestAgentIntegration(t *testing.T) {
 				MachineType: "n1-standard-1",
 			},
 			name:         fmt.Sprintf("profiler-test-node8-%s-gce", runID),
-			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			wantProfiles: wantProfiles,
 			nodeVersion:  "8",
 		},
 		{
@@ -230,7 +243,7 @@ func TestAgentIntegration(t *testing.T) {
 				MachineType: "n1-standard-1",
 			},
 			name:         fmt.Sprintf("profiler-test-node10-%s-gce", runID),
-			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			wantProfiles: wantProfiles,
 			nodeVersion:  "10",
 		},
 		{
@@ -241,7 +254,7 @@ func TestAgentIntegration(t *testing.T) {
 				MachineType: "n1-standard-1",
 			},
 			name:         fmt.Sprintf("profiler-test-node11-%s-gce", runID),
-			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			wantProfiles: wantProfiles,
 			nodeVersion:  "11",
 		},
 	}
@@ -254,7 +267,7 @@ func TestAgentIntegration(t *testing.T) {
 				MachineType: "n1-standard-1",
 			},
 			name:         fmt.Sprintf("profiler-test-v8-canary-%s-gce", runID),
-			wantProfiles: []profileSummary{{"WALL", "busyLoop"}, {"HEAP", "benchmark"}},
+			wantProfiles: wantProfiles,
 			nodeVersion:  "node", // install latest version of node
 			nvmMirror:    "https://nodejs.org/download/v8-canary",
 		}}
@@ -291,6 +304,12 @@ func TestAgentIntegration(t *testing.T) {
 				pr, err := gceTr.TestRunner.QueryProfiles(tc.ProjectID, tc.name, startTime, endTime, wantProfile.profileType)
 				if err != nil {
 					t.Errorf("QueryProfiles(%s, %s, %s, %s, %s) got error: %v", tc.ProjectID, tc.name, startTime, endTime, wantProfile.profileType, err)
+					continue
+				}
+				if wantProfile.sourceFile != "" {
+					if err := pr.HasFunctionInFile(wantProfile.functionName, wantProfile.sourceFile); err != nil {
+						t.Errorf("Function %s not found in source file %s in profiles of type %s: %v", wantProfile.functionName, wantProfile.sourceFile, wantProfile.profileType, err)
+					}
 					continue
 				}
 				if err := pr.HasFunction(wantProfile.functionName); err != nil {

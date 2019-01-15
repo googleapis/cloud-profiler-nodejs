@@ -27,6 +27,7 @@ import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import * as heapProfiler from './profilers/heap-profiler';
 import {TimeProfiler} from './profilers/time-profiler';
+import {create as createSourceMapper, SourceMapper} from './sourcemapper/sourcemapper';
 
 const parseDuration: (str: string) => number = require('parse-duration');
 const pjson = require('../../package.json');
@@ -75,11 +76,15 @@ export interface RequestProfile {
 }
 
 /**
- * @return the message of the response body, if that field exists. Otherwise,
- * returns the response status message.
+ * @return the error's message, if present. Otherwise returns the
+ * message of the response body, if that field exists, or the response status
+ * message.
  */
-function getResponseErrorMessage(response: http.IncomingMessage): string|
-    undefined {
+function getResponseErrorMessage(
+    response: http.IncomingMessage, err: Error|null): string|undefined {
+  if (err && err.message) {
+    return err.message;
+  }
   // tslint:disable-next-line: no-any
   const body = (response as any).body;
   if (body && body.message && typeof body.message === 'string') {
@@ -92,14 +97,14 @@ function getResponseErrorMessage(response: http.IncomingMessage): string|
  * @return number indicated by backoff if the response indicates a backoff and
  * that backoff is greater than 0. Otherwise returns undefined.
  */
-function getServerResponseBackoff(response: http.IncomingMessage): number|
-    undefined {
+function getServerResponseBackoff(
+    response: http.IncomingMessage, err: Error|null): number|undefined {
   // The response currently does not have field containing the server-specified
   // backoff. As a workaround, response body's message is parsed to get the
   // backoff.
   // TODO (issue #250): Remove this workaround and get the retry delay from
   // body.error.details.
-  const message = getResponseErrorMessage(response);
+  const message = getResponseErrorMessage(response, err);
   if (message) {
     return parseBackoffDuration(message);
   }
@@ -222,8 +227,8 @@ function responseToProfileOrError(
     response?: http.IncomingMessage): RequestProfile {
   // response.statusCode is guaranteed to exist on client requests.
   if (response && isErrorResponseStatusCode(response.statusCode!)) {
-    const message = getResponseErrorMessage(response);
-    const delayMillis = getServerResponseBackoff(response);
+    const message = getResponseErrorMessage(response, err);
+    const delayMillis = getServerResponseBackoff(response, err);
     if (delayMillis) {
       throw new BackoffResponseError(message, delayMillis);
     }
@@ -251,6 +256,7 @@ export class Profiler extends ServiceObject {
   private deployment: Deployment;
   private profileTypes: string[];
   private retryer: Retryer;
+  private sourceMapper: SourceMapper|undefined;
 
   // Public for testing.
   timeProfiler: TimeProfiler|undefined;
@@ -317,7 +323,17 @@ export class Profiler extends ServiceObject {
    * on the type of profile to be collected, this problem will be logged at the
    * error level and getting profile type will be retried.
    */
-  start() {
+  async start(): Promise<void> {
+    if (!this.config.disableSourceMaps) {
+      try {
+        this.sourceMapper =
+            await createSourceMapper(this.config.sourceMapSearchPath);
+      } catch (err) {
+        this.logger.error(
+            `Failed to initialize source maps and start profiler: ${err}`);
+        return;
+      }
+    }
     this.runLoop();
   }
 
@@ -433,7 +449,7 @@ export class Profiler extends ServiceObject {
     };
 
     try {
-      const res = await this.request(options);
+      const [, res] = await this.request(options);
       if (isErrorResponseStatusCode(res.statusCode)) {
         let message: number|string = res.statusCode;
         if (res.statusMessage) {
@@ -486,7 +502,8 @@ export class Profiler extends ServiceObject {
           `Cannot collect time profile, duration "${prof.duration}" cannot` +
           ` be parsed.`);
     }
-    const p = await this.timeProfiler.profile(durationMillis);
+    const p =
+        await this.timeProfiler.profile(durationMillis, this.sourceMapper);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
@@ -501,7 +518,8 @@ export class Profiler extends ServiceObject {
     if (this.config.disableHeap) {
       throw Error('Cannot collect heap profile, heap profiler not enabled.');
     }
-    const p = heapProfiler.profile();
+    const p = heapProfiler.profile(
+        this.config.ignoreHeapSamplesPath, this.sourceMapper);
     prof.profileBytes = await profileBytes(p);
     return prof;
   }
