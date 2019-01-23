@@ -290,8 +290,8 @@ export function serializeTimeProfile(
   };
 
   serialize(
-      profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable, true,
-      undefined, sourceMapper);
+      profile, prof.topDownRoot, appendTimeEntryToSamples, stringTable,
+      hasLines || false, undefined, sourceMapper);
 
   return profile;
 }

@@ -239,8 +239,8 @@ func TestAgentIntegration(t *testing.T) {
 	}
 
 	wantProfiles := []profileSummary{
-		{"WALL", "busyLoop", "busybench.ts"},
-		{"HEAP", "benchmark", "busybench.ts"},
+		{profileType: "WALL", functionName: "busyLoop", sourceFile: "busybench.ts"},
+		{profileType: "HEAP", functionName: "benchmark", sourceFile: "busybench.ts"},
 	}
 
 	testcases := []nodeGCETestCase{
