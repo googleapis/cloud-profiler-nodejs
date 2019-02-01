@@ -35,7 +35,7 @@ const MAP_EXT = '.map';
 
 export interface MapInfoCompiled {
   mapFileDir: string;
-  mapConsumer: sourceMap.RawSourceMap;
+  mapConsumer: sourceMap.SourceMapConsumer;
 }
 
 export interface GeneratedLocation {
@@ -68,24 +68,15 @@ async function processSourceMap(
   }
   mapPath = path.normalize(mapPath);
 
-  let contents;
+  let contents: sourceMap.RawSourceMap;
   try {
     contents = await readFile(mapPath, 'utf8');
   } catch (e) {
     throw new Error('Could not read source map file ' + mapPath + ': ' + e);
   }
-
-  let consumer: sourceMap.RawSourceMap;
+  let consumer: sourceMap.SourceMapConsumer;
   try {
-    // TODO: Determine how to reconsile the type conflict where `consumer`
-    //       is constructed as a SourceMapConsumer but is used as a
-    //       RawSourceMap.
-    // TODO: Resolve the cast of `contents as any` (This is needed because the
-    //       type is expected to be of `RawSourceMap` but the existing
-    //       working code uses a string.)
-    consumer = new sourceMap.SourceMapConsumer(
-                   contents as {} as sourceMap.RawSourceMap) as {} as
-        sourceMap.RawSourceMap;
+    consumer = await new sourceMap.SourceMapConsumer(contents);
   } catch (e) {
     throw new Error(
         'An error occurred while reading the ' +
@@ -100,7 +91,7 @@ async function processSourceMap(
    */
   const dir = path.dirname(mapPath);
   const generatedBase =
-      consumer.file ? consumer.file : path.basename(mapPath, MAP_EXT);
+      contents.file ? contents.file : path.basename(mapPath, MAP_EXT);
   const generatedPath = path.resolve(dir, generatedBase);
 
   infoMap.set(generatedPath, {mapFileDir: dir, mapConsumer: consumer});
@@ -196,7 +187,7 @@ export class SourceMapper {
       file: path.resolve(entry.mapFileDir, pos.source),
       line: pos.line || undefined,
       name: pos.name || location.name,
-      column: pos.column,
+      column: pos.column || undefined,
     };
   }
 }
