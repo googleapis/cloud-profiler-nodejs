@@ -369,7 +369,7 @@ describe('createProfiler', () => {
        assert.deepEqual(profiler.config, expConfig);
      });
 
-  it('should get values from  knative environment variable when not specified in config or other environment variables',
+  it('should get values from Knative environment variables when values not specified in config or other environment variables',
      async () => {
        process.env.K_SERVICE = 'k-service';
        process.env.K_REVISION = 'k-version';
@@ -387,8 +387,7 @@ describe('createProfiler', () => {
        assert.deepEqual(profiler.config, expConfig);
      });
 
-
-  it('should get values from GAE environment variables, when both GAE and KNative environment variables are specified.',
+  it('should get values from GAE environment variables when both GAE and Knative environment variables are specified',
      async () => {
        process.env.GAE_SERVICE = 'process-service';
        process.env.GAE_VERSION = 'process-version';
