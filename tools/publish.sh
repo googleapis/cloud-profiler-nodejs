@@ -31,8 +31,9 @@ retry nvm install 10 &>/dev/null
 
 cd $(dirname $0)/..
 
-NPM_TOKEN=$(cat $KOKORO_KEYSTORE_DIR/73713_google_cloud_npm_token)
-echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+NPM_TOKEN=$(cat $KOKORO_KEYSTORE_DIR/73713_google-cloud-profiler-npm-token)
+echo "//wombat-dressing-room.appspot.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 
 retry npm install
-npm publish --access=public
+npm publish --access=public \
+  --registry=https://wombat-dressing-room.appspot.com
