@@ -69,5 +69,7 @@ git_repository(
     name = "submodule_grpc",
     remote = "https://github.com/grpc/grpc",
     # TODO(makdharma): replace with version when bazel file fix is released
+    commit = "a339a13591cb1fab70abe41ffa03a31d1b196eab",
+): replace with version when bazel file fix is released
     commit = "eb064ec7b81b60c5e1eb47d6124d0c05056b3097",
 )
