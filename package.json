@@ -49,8 +49,7 @@
     "protobufjs": "~6.8.6",
     "semver": "^6.0.0",
     "source-map": "^0.6.1",
-    "split": "^1.0.1",
-    "teeny-request": "^3.3.0"
+    "split": "^1.0.1"
   },
   "devDependencies": {
     "@types/extend": "^3.0.0",
