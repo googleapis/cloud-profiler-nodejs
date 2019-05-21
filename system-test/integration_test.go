@@ -93,7 +93,7 @@ retry git fetch origin {{if .PR}}pull/{{.PR}}/head{{else}}{{.Branch}}{{end}}:pul
 git checkout pull_branch
 git reset --hard {{.Commit}}
 
-retry npm install --nodedir="$NODEDIR" &>/dev/ttyS2
+retry node $HOME/cloud-profiler-nodejs/system-test/npm-install-retry.js 60000 3 install --nodedir="$NODEDIR" &>/dev/ttyS2
 
 npm run compile 
 npm pack --nodedir="$NODEDIR" >/dev/null
@@ -105,8 +105,8 @@ mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
-retry npm install node-pre-gyp &>/dev/ttyS2
-retry npm install --nodedir="$NODEDIR" --build-from-source=google_cloud_profiler "$PROFILER" typescript gts &>/dev/ttyS2
+retry node $HOME/cloud-profiler-nodejs/system-test/npm-install-retry.js 60000 3 install node-pre-gyp &>/dev/ttyS2
+retry node $HOME/cloud-profiler-nodejs/system-test/npm-install-retry.js 60000 3 install --nodedir="$NODEDIR" "$PROFILER" typescript gts &>/dev/ttyS2
 
 npm run compile
 
