@@ -15,13 +15,13 @@ set -x
 
 cd $(dirname $0)/..
 
-SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
+# SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
 COMMIT=$(git rev-parse HEAD)
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 REPO=$(git config --get remote.origin.url)
-export GCLOUD_TESTS_NODEJS_PROJECT_ID="cloud-profiler-e2e"
+export GCLOUD_TESTS_NODEJS_PROJECT_ID="secure-gcp-test-project5"
 export GCLOUD_TESTS_NODEJS_ZONE="us-east1-b"
-export GOOGLE_APPLICATION_CREDENTIALS="${SERVICE_KEY}"
+# export GOOGLE_APPLICATION_CREDENTIALS="${SERVICE_KEY}"
 
 # Move test to go path.
 export GOPATH="$HOME/go"
