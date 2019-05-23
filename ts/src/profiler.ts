@@ -16,7 +16,7 @@
 
 import { Service, ServiceConfig, ServiceObject } from '@google-cloud/common';
 import * as http from 'http';
-import {promisify} from 'util';
+import { promisify } from 'util';
 import {
   heap as heapProfiler,
   SourceMapper,
