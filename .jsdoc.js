@@ -28,10 +28,13 @@ module.exports = {
   plugins: [
     'plugins/markdown'
   ],
+  markdown: {
+    idInHeadings: true
+  },
   source: {
     excludePattern: '(^|\\/|\\\\)[._]',
     include: [
-      'src'
+      'out/src'
     ],
     includePattern: '\\.js$'
   },
