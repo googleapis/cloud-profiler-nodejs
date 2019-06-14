@@ -285,8 +285,8 @@ export class Profiler extends ServiceObject {
   config: ProfilerConfig;
 
   constructor(config: ProfilerConfig) {
-    config = config || ({} as ProfilerConfig);
     const serviceConfig: ServiceConfig = {
+      apiEndpoint: config.apiEndpoint!,
       baseUrl: config.baseApiUrl,
       scopes: [SCOPE],
       packageJson: pjson,

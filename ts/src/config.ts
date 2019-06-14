@@ -20,6 +20,12 @@ const parseDuration: (str: string) => number = require('parse-duration');
 
 // Configuration for Profiler.
 export interface Config extends GoogleAuthOptions {
+  /**
+   * The API endpoint of the service used to make requests.
+   * Defaults to `cloudprofiler.googleapis.com`.
+   */
+  apiEndpoint?: string;
+
   // Cloud Console projectId to associate profiles with instead of one read
   // from VM metadata server.
   projectId?: string;
@@ -148,6 +154,11 @@ export interface Config extends GoogleAuthOptions {
 
 // Interface for an initialized config.
 export interface ProfilerConfig extends GoogleAuthOptions {
+  /**
+   * The API endpoint of the service used to make requests.
+   * Defaults to `cloudprofiler.googleapis.com`.
+   */
+  apiEndpoint?: string;
   projectId?: string;
   logLevel: number;
   serviceContext: {service: string; version?: string};
@@ -184,6 +195,7 @@ export const defaultConfig = {
   initialBackoffMillis: 60 * 1000, // 1 minute
   backoffCapMillis: parseDuration('1h'),
   backoffMultiplier: 1.3,
+  apiEndpoint: 'cloudprofiler.googleapis.com',
   baseApiUrl: 'https://cloudprofiler.googleapis.com/v2',
 
   // This is the largest duration for setTimeout which does not cause it to
