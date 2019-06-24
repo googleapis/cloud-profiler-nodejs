@@ -96,7 +96,6 @@ function initConfigLocal(config: Config): ProfilerConfig {
   }
 
   const mergedConfig = extend(true, {}, defaultConfig, mergedUserConfigs);
-  mergedConfig.baseApiUrl = `https://${mergedConfig.apiEndpoint}/v2`;
 
   if (!hasService(mergedConfig)) {
     throw new Error('Service must be specified in the configuration');
