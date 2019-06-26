@@ -19,20 +19,12 @@ import * as gcpMetadata from 'gcp-metadata';
 import {heap as heapProfiler} from 'pprof';
 import * as semver from 'semver';
 
-import {Config, defaultConfig, ProfilerConfig} from './config';
+import {Config, defaultConfig, LocalConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
-
-/**
- * @return value of metadata field.
- * Throws error if there is a problem accessing metadata API.
- */
-async function getMetadataInstanceField(field: string): Promise<string> {
-  return gcpMetadata.instance(field);
-}
 
 function hasService(
   config: Config
@@ -43,12 +35,16 @@ function hasService(
   );
 }
 
+function hasProjectId(config: Config): config is {projectId: string} {
+  return typeof config.projectId === 'string';
+}
+
 /**
  * Sets unset values in the configuration to the value retrieved from
  * environment variables or specified in defaultConfig.
  * Throws error if value that must be set cannot be initialized.
  */
-function initConfigLocal(config: Config): ProfilerConfig {
+function initConfigLocal(config: Config): LocalConfig {
   const envConfig: Config = {
     projectId: process.env.GCLOUD_PROJECT,
     serviceContext: {
@@ -109,20 +105,40 @@ function initConfigLocal(config: Config): ProfilerConfig {
   return mergedConfig;
 }
 
+async function getGcpMetadata(
+  retriesLeft: number,
+  backoffMillis: number
+): Promise<[string | undefined, string | undefined, string | undefined]> {
+  try {
+    return await Promise.all([
+      gcpMetadata.project('project-id'),
+      gcpMetadata.instance('name'),
+      gcpMetadata.instance('zone'),
+    ]);
+  } catch (err) {
+    if (retriesLeft > 0) {
+      await delay(backoffMillis);
+      return getGcpMetadata(retriesLeft - 1, backoffMillis);
+    }
+    return [undefined, undefined, undefined];
+  }
+}
+
 /**
  * Sets unset values in the configuration which can be retrieved from GCP
  * metadata.
  */
 async function initConfigMetadata(
-  config: ProfilerConfig
+  config: LocalConfig
 ): Promise<ProfilerConfig> {
-  if (!config.zone || !config.instance) {
-    const [instance, zone] = (await Promise.all([
-      getMetadataInstanceField('name'),
-      getMetadataInstanceField('zone'),
-    ]).catch((_: Error) => {
-      // ignore errors, which will occur when not on GCE.
-    })) || [undefined, undefined];
+  if (!config.projectId || !config.zone || !config.instance) {
+    const [projectId, instance, zone] = await getGcpMetadata(
+      config.metadataRetries,
+      config.metadataBackoffMillis
+    );
+    if (!config.projectId && projectId) {
+      config.projectId = projectId;
+    }
     if (!config.zone && zone) {
       config.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
@@ -130,6 +146,15 @@ async function initConfigMetadata(
       config.instance = instance;
     }
   }
+
+  // Remove fields not needed on the ProfilerConfig.
+  delete config.metadataRetries;
+  delete config.metadataBackoffMillis;
+
+  if (!hasProjectId(config)) {
+    throw new Error('Project ID must be specified in the configuration');
+  }
+
   return config;
 }
 
@@ -161,18 +186,18 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
     );
   }
 
-  let profilerConfig = initConfigLocal(config);
+  const localConfig: LocalConfig = initConfigLocal(config);
 
   // Start the heap profiler if profiler config does not indicate heap profiling
   // is disabled. This must be done before any asynchronous calls are made so
   // all memory allocations made after start() is called can be captured.
-  if (!profilerConfig.disableHeap) {
+  if (!localConfig.disableHeap) {
     heapProfiler.start(
-      profilerConfig.heapIntervalBytes,
-      profilerConfig.heapMaxStackDepth
+      localConfig.heapIntervalBytes,
+      localConfig.heapMaxStackDepth
     );
   }
-  profilerConfig = await initConfigMetadata(profilerConfig);
+  const profilerConfig: ProfilerConfig = await initConfigMetadata(localConfig);
   return new Profiler(profilerConfig);
 }
 

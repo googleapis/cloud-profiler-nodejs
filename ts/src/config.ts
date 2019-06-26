@@ -144,12 +144,19 @@ export interface Config extends GoogleAuthOptions {
   // All locations in profiles will reference locations in the running
   // JavaScript.
   disableSourceMaps?: boolean;
+
+  // Number of times to retry querying GCP metadata for the instance, zone,
+  // and projectId.
+  metadataRetries?: number;
+
+  // Milliseconds after failed query to GCP metadata to wait before retrying.
+  metadataBackoffMillis?: number;
 }
 
-// Interface for an initialized config.
-export interface ProfilerConfig extends GoogleAuthOptions {
-  apiEndpoint: string;
+// Config fields common to LocalConfig and ProfilerConfig
+interface BaseConfig extends GoogleAuthOptions {
   projectId?: string;
+  apiEndpoint: string;
   logLevel: number;
   serviceContext: {service: string; version?: string};
   instance?: string;
@@ -169,6 +176,17 @@ export interface ProfilerConfig extends GoogleAuthOptions {
   localTimeDurationMillis: number;
   sourceMapSearchPath: string[];
   disableSourceMaps: boolean;
+}
+
+// Interface for config after local initialization.
+export interface LocalConfig extends BaseConfig {
+  metadataRetries: number;
+  metadataBackoffMillis: number;
+}
+
+// Interface for an initialized profiler config.
+export interface ProfilerConfig extends BaseConfig {
+  projectId: string;
 }
 
 // Default values for configuration for a profiler.
@@ -196,4 +214,6 @@ export const defaultConfig = {
   localTimeDurationMillis: 1000,
   sourceMapSearchPath: [process.cwd()],
   disableSourceMaps: false,
+  metadataRetries: 3,
+  metadataBackoffMillis: 500,
 };
