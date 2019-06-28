@@ -165,7 +165,7 @@ describe('createProfiler', () => {
     assert.deepStrictEqual(profiler.config, expConfig);
   });
 
-  it('should get project id, zone and instance from metadata', async () => {
+  it('should get project ID, zone and instance from metadata', async () => {
     instanceMetadataStub = sinon.stub(gcpMetadata, 'instance');
     instanceMetadataStub
       .withArgs('name')
@@ -564,7 +564,7 @@ describe('createProfiler', () => {
     await createProfiler(config);
     assert.ok(!startStub.called, 'expected heap profiler to not be started');
   });
-  it('should retry specifed number of times to get project id from metadata', async () => {
+  it('should retry specifed number of times to get project ID from metadata', async () => {
     instanceMetadataStub = sinon.stub(gcpMetadata, 'instance');
     instanceMetadataStub
       .withArgs('name')
@@ -574,11 +574,11 @@ describe('createProfiler', () => {
     projectMetadataStub = sinon.stub(gcpMetadata, 'project');
     projectMetadataStub
       .onCall(0)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(1)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(2)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(3)
       .resolves('gce-project');
     const config = Object.assign(
@@ -610,7 +610,7 @@ describe('createProfiler', () => {
     assert.deepStrictEqual(profiler.config, expConfig);
   });
 
-  it('should not retry more than specified number of times to get project id from metadata', async () => {
+  it('should not retry more than specified number of times to get project ID from metadata', async () => {
     instanceMetadataStub = sinon.stub(gcpMetadata, 'instance');
     instanceMetadataStub
       .withArgs('name')
@@ -620,13 +620,13 @@ describe('createProfiler', () => {
     projectMetadataStub = sinon.stub(gcpMetadata, 'project');
     projectMetadataStub
       .onCall(0)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(1)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(2)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(3)
-      .rejects('cannot get project id')
+      .rejects('cannot get project ID')
       .onCall(4)
       .resolves('gce-project');
     const config = {

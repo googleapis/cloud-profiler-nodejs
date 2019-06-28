@@ -197,7 +197,13 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
       localConfig.heapMaxStackDepth
     );
   }
-  const profilerConfig: ProfilerConfig = await initConfigMetadata(localConfig);
+  let profilerConfig: ProfilerConfig;
+  try {
+    profilerConfig = await initConfigMetadata(localConfig);
+  } catch (err) {
+    heapProfiler.stop();
+    throw err;
+  }
   return new Profiler(profilerConfig);
 }
 
@@ -217,12 +223,7 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
  */
 export async function start(config: Config = {}): Promise<void> {
   let profiler: Profiler;
-  try {
-    profiler = await createProfiler(config);
-  } catch (e) {
-    logError(`${e}`, config);
-    return;
-  }
+  profiler = await createProfiler(config);
   profiler.start();
 }
 
