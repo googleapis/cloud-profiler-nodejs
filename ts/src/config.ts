@@ -149,7 +149,7 @@ export interface Config extends GoogleAuthOptions {
   // and projectId.
   metadataRetries?: number;
 
-  // Milliseconds after failed query to GCP metadata to wait before retrying.
+  // Delay after a failed query to GCP metadata before retrying.
   metadataBackoffMillis?: number;
 }
 

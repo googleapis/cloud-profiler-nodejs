@@ -165,9 +165,9 @@ You can specify which version of Node.js you're using by adding a snippet like
 the following to your `package.json`:
 
 ```json
-  "engines": {
-    "node": ">=8.9.4"
-  }
+"engines": {
+  "node": ">=8.9.4"
+}
 ```
 The above snippet will ensure that you're using 8.9.4 or greater.
 
@@ -214,15 +214,15 @@ collected profiles to be associated with, and (optionally) the version of
 the service when starting the profiler:
 
   ```js
-    require('@google-cloud/profiler').start({
-      projectId: 'project-id',
-      serviceContext: {
-        service: 'your-service',
-        version: '1.0.0'
-      }
-    }).catch((err) => {
-      console.log(`failed to start profiler: ${err}`);
-    });
+  require('@google-cloud/profiler').start({
+    projectId: 'project-id',
+    serviceContext: {
+      service: 'your-service',
+      version: '1.0.0'
+    }
+  }).catch((err) => {
+    console.log(`failed to start profiler:  keyFilename: '/path/to/keyfile'
+  });
   ```
 2. You will need to provide credential for your application.
 
@@ -249,33 +249,33 @@ the service when starting the profiler:
 
       This is how you would set `keyFilename`:
       ```js
-        require('@google-cloud/profiler').start({
-          projectId: 'project-id',
-          serviceContext: {
-            service: 'your-service',
-            version: '1.0.0'
-          },
-         keyFilename: '/path/to/keyfile'
-        }).catch((err) => {
-          console.log(`failed to start profiler: ${err}`);
-        });
+      require('@google-cloud/profiler').start({
+        projectId: 'project-id',
+        serviceContext: {
+          service: 'your-service',
+          version: '1.0.0'
+        },
+        keyFilename: '/path/to/keyfile'
+      }).catch((err) => {
+        console.log(`failed to start profiler: ${err}`);
+      });
       ```
 
       This is how you would set  `credentials`:
       ```js
-        require('@google-cloud/profiler').start({
-          projectId: 'project-id',
-          serviceContext: {
-            service: 'your-service',
-            version: '1.0.0'
-          },
-          credentials: {
-            client_email: 'email',
-            private_key: 'private_key'
-          }
-        }).catch((err) => {
-          console.log(`failed to start profiler: ${err}`);
-        });
+      require('@google-cloud/profiler').start({
+        projectId: 'project-id',
+        serviceContext: {
+          service: 'your-service',
+          version: '1.0.0'
+        },
+        credentials: {
+          client_email: 'email',
+          private_key: 'private_key'
+        }
+      }).catch((err) => {
+        console.log(`failed to start profiler: ${err}`);
+      });
       ```
 [app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
 [circle-image]: https://circleci.com/gh/googleapis/cloud-profiler-nodejs.svg?style=svg

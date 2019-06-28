@@ -105,25 +105,6 @@ function initConfigLocal(config: Config): LocalConfig {
   return mergedConfig;
 }
 
-async function getGcpMetadata(
-  retriesLeft: number,
-  backoffMillis: number
-): Promise<[string | undefined, string | undefined, string | undefined]> {
-  try {
-    return await Promise.all([
-      gcpMetadata.project('project-id'),
-      gcpMetadata.instance('name'),
-      gcpMetadata.instance('zone'),
-    ]);
-  } catch (err) {
-    if (retriesLeft > 0) {
-      await delay(backoffMillis);
-      return getGcpMetadata(retriesLeft - 1, backoffMillis);
-    }
-    return [undefined, undefined, undefined];
-  }
-}
-
 /**
  * Sets unset values in the configuration which can be retrieved from GCP
  * metadata.
@@ -131,19 +112,53 @@ async function getGcpMetadata(
 async function initConfigMetadata(
   config: LocalConfig
 ): Promise<ProfilerConfig> {
+  const retry = async (f: (s: string) => Promise<string>, field: string) => {
+    let retries = config.metadataRetries;
+    while (retries >= 0) {
+      retries--;
+      try {
+        return await f(field);
+      } catch (_) {
+        // ignore errors; could indicate that code is not running in GCP or
+        // that metadata server has not started yet.
+      }
+      if (retries >= 0) {
+        await delay(config.metadataBackoffMillis);
+      }
+    }
+    return undefined;
+  };
+
   if (!config.projectId || !config.zone || !config.instance) {
-    const [projectId, instance, zone] = await getGcpMetadata(
-      config.metadataRetries,
-      config.metadataBackoffMillis
-    );
-    if (!config.projectId && projectId) {
+    const projectIdPromise = new Promise<string>(async resolve => {
+      resolve(
+        config.projectId || (await retry(gcpMetadata.project, 'project-id'))
+      );
+    });
+    const instancePromise = new Promise<string>(async resolve => {
+      resolve(config.instance || (await retry(gcpMetadata.instance, 'name')));
+    });
+    const zonePromise = new Promise<string>(async resolve => {
+      if (config.zone) {
+        resolve(config.zone);
+      }
+      const zone = await retry(gcpMetadata.instance, 'zone');
+      return resolve(
+        zone ? zone.substring(zone.lastIndexOf('/') + 1) : undefined
+      );
+    });
+
+    const projectId = await projectIdPromise;
+    if (projectId) {
       config.projectId = projectId;
     }
-    if (!config.zone && zone) {
-      config.zone = zone.substring(zone.lastIndexOf('/') + 1);
-    }
-    if (!config.instance && instance) {
+    const instance = await instancePromise;
+    if (instance) {
       config.instance = instance;
+    }
+    const zone = await zonePromise;
+    if (zone) {
+      config.zone = zone;
     }
   }
 
