@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/@google-cloud/profiler?activeTab=versions
 
+## [2.1.0](https://www.github.com/googleapis/cloud-profiler-nodejs/compare/v2.0.2...v2.1.0) (2019-09-17)
+
+
+### Bug Fixes
+
+* **dep:** update to be compatible with @google-cloud/common 2.1.X ([#529](https://www.github.com/googleapis/cloud-profiler-nodejs/issues/529)) ([3fd0035](https://www.github.com/googleapis/cloud-profiler-nodejs/commit/3fd0035))
+* **deps:** update dependency gcp-metadata to v3 ([#541](https://www.github.com/googleapis/cloud-profiler-nodejs/issues/541)) ([acfd60b](https://www.github.com/googleapis/cloud-profiler-nodejs/commit/acfd60b))
+* **deps:** use the latest extend ([#523](https://www.github.com/googleapis/cloud-profiler-nodejs/issues/523)) ([f665938](https://www.github.com/googleapis/cloud-profiler-nodejs/commit/f665938))
+* **deps:** use the latest extend ([#525](https://www.github.com/googleapis/cloud-profiler-nodejs/issues/525)) ([1b24522](https://www.github.com/googleapis/cloud-profiler-nodejs/commit/1b24522))
+
+
+### Features
+
+* **breaking!:** support API endpoint override ([#509](https://www.github.com/googleapis/cloud-profiler-nodejs/issues/509)) ([9bd110e](https://www.github.com/googleapis/cloud-profiler-nodejs/commit/9bd110e))
+
 ## v2.0.2
 
 06-26-2019 08:59 PDT
@@ -81,4 +96,3 @@
 No changes since last release.
 
 Confirming that we can use [releasetool](https://github.com/googleapis/releasetool) to release the agent going forward.
-
