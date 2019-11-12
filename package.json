@@ -37,6 +37,7 @@
     "delay": "^4.0.1",
     "extend": "^3.0.2",
     "gcp-metadata": "^3.0.0",
+    "jsdoc-region-tag": "^1.0.2",
     "parse-duration": "^0.1.1",
     "pprof": "1.2.0",
     "pretty-ms": "^5.0.0",
