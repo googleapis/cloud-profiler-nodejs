@@ -112,59 +112,36 @@ function initConfigLocal(config: Config): LocalConfig {
 async function initConfigMetadata(
   config: LocalConfig
 ): Promise<ProfilerConfig> {
-  const retry = async (f: (s: string) => Promise<string>, field: string) => {
-    let retries = config.metadataRetries;
-    while (retries >= 0) {
-      retries--;
-      try {
-        return await f(field);
-      } catch (_) {
-        // ignore errors; could indicate that code is not running in GCP or
-        // that metadata server has not started yet.
-      }
-      if (retries >= 0) {
-        await delay(config.metadataBackoffMillis);
-      }
+  const logger = createLogger(config.logLevel);
+  const getMetadataProperty = async (
+    f: (s: string) => Promise<string>,
+    field: string
+  ) => {
+    try {
+      return await f(field);
+    } catch (e) {
+      logger.debug(`Failed to fetch ${field} from metadata: ${e}`);
     }
     return undefined;
   };
 
   if (!config.projectId || !config.zone || !config.instance) {
-    const projectIdPromise = new Promise<string>(async resolve => {
-      resolve(
-        config.projectId || (await retry(gcpMetadata.project, 'project-id'))
-      );
-    });
-    const instancePromise = new Promise<string>(async resolve => {
-      resolve(config.instance || (await retry(gcpMetadata.instance, 'name')));
-    });
-    const zonePromise = new Promise<string>(async resolve => {
-      if (config.zone) {
-        resolve(config.zone);
-      }
-      const zone = await retry(gcpMetadata.instance, 'zone');
-      return resolve(
-        zone ? zone.substring(zone.lastIndexOf('/') + 1) : undefined
-      );
-    });
+    const [projectId, instance, zone] = await Promise.all([
+      getMetadataProperty(gcpMetadata.project, 'project-id'),
+      getMetadataProperty(gcpMetadata.instance, 'name'),
+      getMetadataProperty(gcpMetadata.instance, 'zone'),
+    ]);
 
-    const projectId = await projectIdPromise;
-    if (projectId) {
-      config.projectId = projectId;
+    if (!config.zone && zone) {
+      config.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
-    const instance = await instancePromise;
-    if (instance) {
+    if (!config.instance && instance) {
       config.instance = instance;
     }
-    const zone = await zonePromise;
-    if (zone) {
-      config.zone = zone;
+    if (!config.projectId && projectId) {
+      config.projectId = projectId;
     }
   }
-
-  // Remove fields not needed on the ProfilerConfig.
-  delete config.metadataRetries;
-  delete config.metadataBackoffMillis;
 
   if (!hasProjectId(config)) {
     throw new Error('Project ID must be specified in the configuration');
@@ -238,7 +215,11 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
  */
 export async function start(config: Config = {}): Promise<void> {
   let profiler: Profiler;
-  profiler = await createProfiler(config);
+  try {
+    profiler = await createProfiler(config);
+  } catch (e) {
+    throw e;
+  }
   profiler.start();
 }
 

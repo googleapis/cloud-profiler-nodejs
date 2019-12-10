@@ -59,7 +59,7 @@ to your [`package.json`](https://docs.npmjs.com/files/package.json#dependencies)
 
     ```js
     var profiler = require('@google-cloud/profiler').start().catch((err) => {
-      console.log(`failed to start profiler: ${err}`);
+      console.log(`Failed to start profiler: ${err}`);
     });
     ```
 
@@ -89,7 +89,7 @@ object argument to the start command shown below:
 
 ```js
 require('@google-cloud/profiler').start({disableTime: true}).catch((err) => {
-  console.log(`failed to start profiler: ${err}`);
+  console.log(`Failed to start profiler: ${err}`);
 });
 ```
 
@@ -116,7 +116,7 @@ do this:
 
 ```js
 require('@google-cloud/profiler').start({logLevel: 4}).catch((err) => {
-  console.log(`failed to start profiler: ${err}`);
+  console.log(`Failed to start profiler: ${err}`);
 });
 ```
 
@@ -131,7 +131,7 @@ To disable time profile collection, set `disableTime` to true:
 
 ```js
 require('@google-cloud/profiler').start({disableTime: true}).catch((err) => {
-  console.log(`failed to start profiler: ${err}`);
+  console.log(`Failed to start profiler: ${err}`);
 });
 ```
 
@@ -139,9 +139,10 @@ To disable heap profile collection, set `disableHeap` to true:
 
 ```js
 require('@google-cloud/profiler').start({disableHeap: true}).catch((err) => {
-  console.log(`failed to start profiler: ${err}`);
+  console.log(`Failed to start profiler: ${err}`);
 });
 ```
+
 ## Running on Google Cloud Platform
 
 There are three different services that can host Node.js applications within
@@ -165,9 +166,9 @@ You can specify which version of Node.js you're using by adding a snippet like
 the following to your `package.json`:
 
 ```json
-"engines": {
-  "node": ">=8.9.4"
-}
+  "engines": {
+    "node": ">=8.9.4"
+  }
 ```
 The above snippet will ensure that you're using 8.9.4 or greater.
 
@@ -203,26 +204,57 @@ require('@google-cloud/profiler').start({
 });
 ```
 
+### Running on Istio
+
+On Istio, the GCP Metadata server may not be available for a few seconds after
+your application has started. When this occurs, the profiling agent may fail
+to start because it cannot initialize required fields. One can retry when
+starting the profiler with the following snippet.
+
+```js
+const profiler = require('@google-cloud/profiler');
+async function startProfiler() {
+  for (let i = 0; i < 3; i++) {
+    try {
+      await profiler.start({
+        serviceContext: {
+          service: 'your-service',
+          version: '1.0.0',
+        },
+      });
+    } catch(e) {
+      console.log(`Failed to start profiler: ${e}`)
+    }
+
+    // Wait for 1 second before trying again.
+    await new Promise(r => setTimeout(r, 1000))
+  }
+}
+startProfiler();
+
+```
+
+
 ## Running elsewhere
 
 You can still use `@google-cloud/profiler` if your application is running
 outside of Google Cloud Platform, for example, running locally, on-premise, or
 on another cloud provider.
 
-1. You will need to specify your project ID and the service you want the
+1. You will need to specify your project id and the service you want the
 collected profiles to be associated with, and (optionally) the version of
 the service when starting the profiler:
 
   ```js
-  require('@google-cloud/profiler').start({
-    projectId: 'project-id',
-    serviceContext: {
-      service: 'your-service',
-      version: '1.0.0'
-    }
-  }).catch((err) => {
-    console.log(`failed to start profiler:  keyFilename: '/path/to/keyfile'
-  });
+    require('@google-cloud/profiler').start({
+      projectId: 'project-id',
+      serviceContext: {
+        service: 'your-service',
+        version: '1.0.0'
+      }
+    }).catch((err) => {
+      console.log(`Failed to start profiler: ${e}`)
+    });
   ```
 2. You will need to provide credential for your application.
 
@@ -247,36 +279,36 @@ the service when starting the profiler:
    fields will override either setting `GOOGLE_APPLICATION_CREDENTIALS` or
    logging in using `gcloud`.
 
-      This is how you would set `keyFilename`:
-      ```js
-      require('@google-cloud/profiler').start({
-        projectId: 'project-id',
-        serviceContext: {
-          service: 'your-service',
-          version: '1.0.0'
-        },
-        keyFilename: '/path/to/keyfile'
-      }).catch((err) => {
-        console.log(`failed to start profiler: ${err}`);
-      });
-      ```
+       This is how you would set `keyFilename`:
+       ```js
+       require('@google-cloud/profiler').start({
+         projectId: 'project-id',
+         serviceContext: {
+           service: 'your-service',
+           version: '1.0.0'
+         },
+         keyFilename: '/path/to/keyfile'
+       }).catch((err) => {
+         console.log(`Failed to start profiler: ${err}`);
+       });
+       ```
 
-      This is how you would set  `credentials`:
-      ```js
-      require('@google-cloud/profiler').start({
-        projectId: 'project-id',
-        serviceContext: {
-          service: 'your-service',
-          version: '1.0.0'
-        },
-        credentials: {
-          client_email: 'email',
-          private_key: 'private_key'
-        }
-      }).catch((err) => {
-        console.log(`failed to start profiler: ${err}`);
-      });
-      ```
+       This is how you would set  `credentials`:
+       ```js
+       require('@google-cloud/profiler').start({
+         projectId: 'project-id',
+         serviceContext: {
+           service: 'your-service',
+           version: '1.0.0'
+         },
+         credentials: {
+           client_email: 'email',
+           private_key: 'private_key'
+         }
+       }).catch((err) => {
+         console.log(`Failed to start profiler: ${err}`);
+       });
+       ```
 [app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
 [circle-image]: https://circleci.com/gh/googleapis/cloud-profiler-nodejs.svg?style=svg
 [circle-url]: https://circleci.com/gh/googleapis/cloud-profiler-nodejs
