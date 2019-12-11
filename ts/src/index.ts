@@ -214,8 +214,7 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
  *
  */
 export async function start(config: Config = {}): Promise<void> {
-  let profiler: Profiler;
-  profiler = await createProfiler(config);
+  const profiler = await createProfiler(config);
   profiler.start();
 }
 
@@ -224,8 +223,7 @@ export async function start(config: Config = {}): Promise<void> {
  * profiles.
  */
 export async function startLocal(config: Config = {}): Promise<void> {
-  let profiler: Profiler;
-  profiler = await createProfiler(config);
+  const profiler = await createProfiler(config);
 
   // Set up periodic logging.
   const logger = createLogger(config.logLevel);
