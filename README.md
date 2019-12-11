@@ -58,7 +58,7 @@ to your [`package.json`](https://docs.npmjs.com/files/package.json#dependencies)
 2. Include and start the profiler at the beginning of your application:
 
     ```js
-    var profiler = require('@google-cloud/profiler').start().catch((err) => {
+    require('@google-cloud/profiler').start().catch((err) => {
       console.log(`Failed to start profiler: ${err}`);
     });
     ```
@@ -88,9 +88,7 @@ configuration options. These options can be passed to the agent through the
 object argument to the start command shown below:
 
 ```js
-require('@google-cloud/profiler').start({disableTime: true}).catch((err) => {
-  console.log(`Failed to start profiler: ${err}`);
-});
+await require('@google-cloud/profiler').start({disableTime: true});
 ```
 
 Alternatively, you can provide the configuration through a config file. This
@@ -115,9 +113,7 @@ So, for example, to start the profiler with the log level at debug, you would
 do this:
 
 ```js
-require('@google-cloud/profiler').start({logLevel: 4}).catch((err) => {
-  console.log(`Failed to start profiler: ${err}`);
-});
+await require('@google-cloud/profiler').start({logLevel: 4});
 ```
 
 ### Disabling heap or time profile collection
@@ -130,17 +126,13 @@ disable the collection of either type of profile.
 To disable time profile collection, set `disableTime` to true:
 
 ```js
-require('@google-cloud/profiler').start({disableTime: true}).catch((err) => {
-  console.log(`Failed to start profiler: ${err}`);
-});
+await require('@google-cloud/profiler').start({disableTime: true});
 ```
 
 To disable heap profile collection, set `disableHeap` to true:
 
 ```js
-require('@google-cloud/profiler').start({disableHeap: true}).catch((err) => {
-  console.log(`Failed to start profiler: ${err}`);
-});
+await require('@google-cloud/profiler').start({disableHeap: true});
 ```
 
 ## Running on Google Cloud Platform
@@ -159,7 +151,7 @@ flexible environment, import the agent at the top of your application’s main
 script or entry point by including the following code snippet:
 
 ```js
-var profiler = require('@google-cloud/profiler').start();
+require('@google-cloud/profiler').start();
 ```
 
 You can specify which version of Node.js you're using by adding a snippet like
@@ -223,11 +215,11 @@ async function startProfiler() {
         },
       });
     } catch(e) {
-      console.log(`Failed to start profiler: ${e}`)
+      console.log(`Failed to start profiler: ${e}`);
     }
 
     // Wait for 1 second before trying again.
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 1000));
   }
 }
 startProfiler();
@@ -246,14 +238,12 @@ collected profiles to be associated with, and (optionally) the version of
 the service when starting the profiler:
 
   ```js
-    require('@google-cloud/profiler').start({
+    await require('@google-cloud/profiler').start({
       projectId: 'project-id',
       serviceContext: {
         service: 'your-service',
         version: '1.0.0'
       }
-    }).catch((err) => {
-      console.log(`Failed to start profiler: ${e}`)
     });
   ```
 2. You will need to provide credential for your application.
@@ -281,21 +271,19 @@ the service when starting the profiler:
 
        This is how you would set `keyFilename`:
        ```js
-       require('@google-cloud/profiler').start({
+       await require('@google-cloud/profiler').start({
          projectId: 'project-id',
          serviceContext: {
            service: 'your-service',
            version: '1.0.0'
          },
          keyFilename: '/path/to/keyfile'
-       }).catch((err) => {
-         console.log(`Failed to start profiler: ${err}`);
        });
        ```
 
        This is how you would set  `credentials`:
        ```js
-       require('@google-cloud/profiler').start({
+       await require('@google-cloud/profiler').start({
          projectId: 'project-id',
          serviceContext: {
            service: 'your-service',
@@ -305,8 +293,6 @@ the service when starting the profiler:
            client_email: 'email',
            private_key: 'private_key'
          }
-       }).catch((err) => {
-         console.log(`Failed to start profiler: ${err}`);
        });
        ```
 [app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials

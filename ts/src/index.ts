@@ -215,18 +215,8 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
  */
 export async function start(config: Config = {}): Promise<void> {
   let profiler: Profiler;
-  try {
-    profiler = await createProfiler(config);
-  } catch (e) {
-    throw e;
-  }
+  profiler = await createProfiler(config);
   profiler.start();
-}
-
-function logError(msg: string, config: Config) {
-  // FIXME: do not create a new logger on each error.
-  const logger = createLogger(config.logLevel);
-  logger.error(msg);
 }
 
 /**
@@ -235,12 +225,7 @@ function logError(msg: string, config: Config) {
  */
 export async function startLocal(config: Config = {}): Promise<void> {
   let profiler: Profiler;
-  try {
-    profiler = await createProfiler(config);
-  } catch (e) {
-    logError(`${e}`, config);
-    return;
-  }
+  profiler = await createProfiler(config);
 
   // Set up periodic logging.
   const logger = createLogger(config.logLevel);
