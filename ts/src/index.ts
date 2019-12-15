@@ -1,18 +1,16 @@
-/**
- * Copyright 2017 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2017 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import delay from 'delay';
 import * as extend from 'extend';
@@ -21,20 +19,12 @@ import * as gcpMetadata from 'gcp-metadata';
 import {heap as heapProfiler} from 'pprof';
 import * as semver from 'semver';
 
-import {Config, defaultConfig, ProfilerConfig} from './config';
+import {Config, defaultConfig, LocalConfig, ProfilerConfig} from './config';
 import {createLogger} from './logger';
 import {Profiler} from './profiler';
 
 const pjson = require('../../package.json');
 const serviceRegex = /^[a-z]([-a-z0-9_.]{0,253}[a-z0-9])?$/;
-
-/**
- * @return value of metadata field.
- * Throws error if there is a problem accessing metadata API.
- */
-async function getMetadataInstanceField(field: string): Promise<string> {
-  return gcpMetadata.instance(field);
-}
 
 function hasService(
   config: Config
@@ -45,12 +35,16 @@ function hasService(
   );
 }
 
+function hasProjectId(config: Config): config is {projectId: string} {
+  return typeof config.projectId === 'string';
+}
+
 /**
  * Sets unset values in the configuration to the value retrieved from
  * environment variables or specified in defaultConfig.
  * Throws error if value that must be set cannot be initialized.
  */
-function initConfigLocal(config: Config): ProfilerConfig {
+function initConfigLocal(config: Config): LocalConfig {
   const envConfig: Config = {
     projectId: process.env.GCLOUD_PROJECT,
     serviceContext: {
@@ -116,22 +110,43 @@ function initConfigLocal(config: Config): ProfilerConfig {
  * metadata.
  */
 async function initConfigMetadata(
-  config: ProfilerConfig
+  config: LocalConfig
 ): Promise<ProfilerConfig> {
-  if (!config.zone || !config.instance) {
-    const [instance, zone] = (await Promise.all([
-      getMetadataInstanceField('name'),
-      getMetadataInstanceField('zone'),
-    ]).catch((_: Error) => {
-      // ignore errors, which will occur when not on GCE.
-    })) || [undefined, undefined];
+  const logger = createLogger(config.logLevel);
+  const getMetadataProperty = async (
+    f: (s: string) => Promise<string>,
+    field: string
+  ) => {
+    try {
+      return await f(field);
+    } catch (e) {
+      logger.debug(`Failed to fetch ${field} from metadata: ${e}`);
+    }
+    return undefined;
+  };
+
+  if (!config.projectId || !config.zone || !config.instance) {
+    const [projectId, instance, zone] = await Promise.all([
+      getMetadataProperty(gcpMetadata.project, 'project-id'),
+      getMetadataProperty(gcpMetadata.instance, 'name'),
+      getMetadataProperty(gcpMetadata.instance, 'zone'),
+    ]);
+
     if (!config.zone && zone) {
       config.zone = zone.substring(zone.lastIndexOf('/') + 1);
     }
     if (!config.instance && instance) {
       config.instance = instance;
     }
+    if (!config.projectId && projectId) {
+      config.projectId = projectId;
+    }
   }
+
+  if (!hasProjectId(config)) {
+    throw new Error('Project ID must be specified in the configuration');
+  }
+
   return config;
 }
 
@@ -163,18 +178,24 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
     );
   }
 
-  let profilerConfig = initConfigLocal(config);
+  const localConfig: LocalConfig = initConfigLocal(config);
 
   // Start the heap profiler if profiler config does not indicate heap profiling
   // is disabled. This must be done before any asynchronous calls are made so
   // all memory allocations made after start() is called can be captured.
-  if (!profilerConfig.disableHeap) {
+  if (!localConfig.disableHeap) {
     heapProfiler.start(
-      profilerConfig.heapIntervalBytes,
-      profilerConfig.heapMaxStackDepth
+      localConfig.heapIntervalBytes,
+      localConfig.heapMaxStackDepth
     );
   }
-  profilerConfig = await initConfigMetadata(profilerConfig);
+  let profilerConfig: ProfilerConfig;
+  try {
+    profilerConfig = await initConfigMetadata(localConfig);
+  } catch (err) {
+    heapProfiler.stop();
+    throw err;
+  }
   return new Profiler(profilerConfig);
 }
 
@@ -193,20 +214,8 @@ export async function createProfiler(config: Config = {}): Promise<Profiler> {
  *
  */
 export async function start(config: Config = {}): Promise<void> {
-  let profiler: Profiler;
-  try {
-    profiler = await createProfiler(config);
-  } catch (e) {
-    logError(`${e}`, config);
-    return;
-  }
+  const profiler = await createProfiler(config);
   profiler.start();
-}
-
-function logError(msg: string, config: Config) {
-  // FIXME: do not create a new logger on each error.
-  const logger = createLogger(config.logLevel);
-  logger.error(msg);
 }
 
 /**
@@ -214,13 +223,7 @@ function logError(msg: string, config: Config) {
  * profiles.
  */
 export async function startLocal(config: Config = {}): Promise<void> {
-  let profiler: Profiler;
-  try {
-    profiler = await createProfiler(config);
-  } catch (e) {
-    logError(`${e}`, config);
-    return;
-  }
+  const profiler = await createProfiler(config);
 
   // Set up periodic logging.
   const logger = createLogger(config.logLevel);
