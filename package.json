@@ -41,7 +41,7 @@
     "pprof": "1.2.0",
     "pretty-ms": "^5.0.0",
     "protobufjs": "~6.8.6",
-    "semver": "^6.0.0"
+    "semver": "^7.0.0"
   },
   "devDependencies": {
     "@types/extend": "^3.0.0",
@@ -57,14 +57,15 @@
     "js-green-licenses": "^1.0.0",
     "jsdoc": "^3.6.2",
     "jsdoc-fresh": "^1.0.1",
+    "jsdoc-region-tag": "^1.0.2",
     "linkinator": "^1.5.0",
     "mocha": "^6.1.4",
     "nock": "^11.0.0",
     "nyc": "^14.1.0",
-    "sinon": "^7.3.2",
+    "sinon": "^8.0.0",
     "source-map": "^0.7.0",
     "tmp": "0.1.0",
-    "typescript": "~3.7.0"
+    "typescript": "3.6.4"
   },
   "files": [
     "out/src",
