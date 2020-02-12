@@ -22,7 +22,8 @@
     "proto:profiler": "mkdir -p proto && pbjs -t static-module -w commonjs -o proto/profiler.js third_party/googleapis/google/devtools/cloudprofiler/v2/profiler.proto && pbts -o proto/profiler.d.ts proto/profiler.js",
     "license-check": "jsgl --local .",
     "docs-test": "linkinator docs",
-    "predocs-test": "npm run docs"
+    "predocs-test": "npm run docs",
+    "prelint": "cd samples; npm link ../"
   },
   "author": {
     "name": "Google Inc."
