@@ -14,6 +14,7 @@
     "fix": "gts fix",
     "lint": "gts check",
     "docs": "jsdoc -c .jsdoc.js",
+    "prelint": "cd samples; npm link ../; npm install",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "proto": "mkdir -p protos && pbjs -t static-module -w commonjs -o protos/profiler.js third_party/googleapis/google/devtools/cloudprofiler/v2/profiler.proto && pbts -o protos/profiler.d.ts protos/profiler.js",
