@@ -288,6 +288,38 @@ the service when starting the profiler:
          }
        });
        ```
+
+## Supported Node.js Versions
+
+Our client libraries follow the [Node.js release schedule](https://nodejs.org/en/about/releases/).
+Libraries are compatible with all current _active_ and _maintenance_ versions of
+Node.js.
+
+Client libraries targetting some end-of-life versions of Node.js are available, and
+can be installed via npm [dist-tags](https://docs.npmjs.com/cli/dist-tag).
+The dist-tags follow the naming convention `legacy-(version)`.
+
+_Legacy Node.js versions are supported as a best effort:_
+
+* Legacy versions will not be tested in continuous integration.
+* Some security patches may not be able to be backported.
+* Dependencies will not be kept up-to-date, and features will not be backported.
+
+#### Legacy tags available
+
+* `legacy-8`: install client libraries from this dist-tag for versions
+  compatible with Node.js 8.
+
+## Versioning
+
+This library follows [Semantic Versioning](http://semver.org/).
+
+This library is considered to be **General Availability (GA)**. This means it
+is stable; the code surface will not change in backwards-incompatible ways
+unless absolutely necessary (e.g. because of critical security issues) or with
+an extensive deprecation period. Issues and requests against **GA** libraries
+are addressed with the highest priority.
+
 [app-default-credentials]: https://developers.google.com/identity/protocols/application-default-credentials
 [cloud-console]: https://console.cloud.google.com
 [coveralls-image]: https://coveralls.io/repos/googleapis/cloud-profiler-nodejs/badge.svg?branch=master&service=github
