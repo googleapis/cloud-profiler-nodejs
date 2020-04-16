@@ -30,7 +30,7 @@ cd "system-test"
 # dependencies specified by their go.mod files. This reduces the likelihood of
 # dependencies breaking this test.
 go version
-retry go mod init e2e
+go mod init e2e
 retry go get -t -d -tags=integration .
 
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
