@@ -37,7 +37,7 @@ import {
   timeProfile,
 } from './profiles-for-tests';
 
-import parseDuration = require('parse-duration');
+import parseDuration from 'parse-duration';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fakeCredentials = require('../../test/fixtures/gcloud-credentials.json');
 

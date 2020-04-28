@@ -27,8 +27,8 @@ import * as r from 'teeny-request';
 import {perftools} from '../protos/profile';
 import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
+import parseDuration from 'parse-duration';
 
-import parseDuration = require('parse-duration');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
 const SCOPE = 'https://www.googleapis.com/auth/monitoring.write';
