@@ -2,6 +2,7 @@
 
 retry() {
   for i in {1..3}; do
+  [ $i == 1 ] || sleep 10  # Backing off after a failed attempt.
     "${@}" && return 0
   done
   return 1
@@ -31,11 +32,11 @@ cd "system-test"
 # dependencies breaking this test.
 go version
 go mod init e2e
-retry go get -t -d -tags=integration .
+retry go test -c -tags=integration .
 
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
-  go test -timeout=30m -tags=integration -run TestAgentIntegration -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO"
+  ./e2e.test -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO"
 else
-  go test -timeout=30m -tags=integration -run TestAgentIntegration -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER"
+  ./e2e.test -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER"
 fi
 
