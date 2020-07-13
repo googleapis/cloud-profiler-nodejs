@@ -37,7 +37,7 @@ function busyLoop(durationSeconds: number) {
 function benchmark(durationSeconds: number) {
   // Allocate arrMiB MiB in 1 MiB chunks.
   for (let i = 0; i < arrMiB; i++) {
-    // (64 bits / number) * (1 byte / 8 bits) * 128 * 1024 = 1 MiB
+    // 8 bytes per number * 128 * 1024 = 1 MiB
     testArr[i] = new Array<number>(128 * 1024);
   }
   busyLoop(durationSeconds);
