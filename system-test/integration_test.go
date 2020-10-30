@@ -280,19 +280,6 @@ func TestAgentIntegration(t *testing.T) {
 			timeout:       gceTestTimeout,
 			benchDuration: gceBenchDuration,
 		},
-		{
-			InstanceConfig: proftest.InstanceConfig{
-				ProjectID:   projectID,
-				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node13-%s", runID),
-				MachineType: "n1-standard-1",
-			},
-			name:          fmt.Sprintf("profiler-test-node13-%s-gce", runID),
-			wantProfiles:  wantProfiles,
-			nodeVersion:   "12",
-			timeout:       gceTestTimeout,
-			benchDuration: gceBenchDuration,
-		},
 	}
 
 	if *runBackoffTest {
