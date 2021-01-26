@@ -27,6 +27,7 @@ NAME=$(ls temp | sed s/.api.json*//)
 
 mkdir ./_devsite
 mkdir ./_devsite/$NAME
+mkdir ./yaml/$NAME
 cp ./yaml/$NAME/* ./_devsite/$NAME
 
 # Clean up TOC
