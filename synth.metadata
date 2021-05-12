@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/cloud-profiler-nodejs.git",
-        "sha": "aaf1e6c435dc9cc44be9c844de14548f406387e6"
+        "sha": "df224835c6a68de2ac8194cbf5cd482d8b6d3dae"
       }
     },
     {
