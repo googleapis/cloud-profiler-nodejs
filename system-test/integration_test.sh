@@ -14,6 +14,9 @@ set -eo pipefail
 # Display commands being run.
 set -x
 
+# Dump environment variables on error.
+trap 'printenv' ERR
+
 cd $(dirname $0)/..
 
 SERVICE_KEY="${KOKORO_KEYSTORE_DIR}/72935_cloud-profiler-e2e-service-account-key"
