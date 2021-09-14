@@ -28,7 +28,6 @@ branchProtectionRules:
   requiresStrictStatusChecks: true
   # List of required status check contexts that must pass for commits to be accepted to matching branches.
   requiredStatusCheckContexts:
-    - "Kokoro CI"
     - "ci/kokoro: Samples test"
     - "ci/kokoro: System test"
     - "cla/google"
