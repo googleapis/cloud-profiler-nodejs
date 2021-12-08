@@ -12,36 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as consoleLogLevel from 'console-log-level';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {defaultConfig} from './config';
+import {LogSync, Logging} from '@google-cloud/logging-min';
+
+const logging = new Logging();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
 
-const LEVEL_NAMES: consoleLogLevel.LogLevelNames[] = [
-  'fatal',
-  'error',
-  'warn',
-  'info',
-  'debug',
-  'trace',
-];
+export class Logger {
+  private log: LogSync;
+  private severityThreshold: number;
 
-function logLevelToName(level?: number): consoleLogLevel.LogLevelNames {
-  if (level === undefined) {
-    level = defaultConfig.logLevel;
-  } else if (level < 0) {
-    level = 0;
-  } else if (level > 4) {
-    level = 4;
+  constructor(readonly level?: number) {
+    if (level === undefined) {
+      level = defaultConfig.logLevel;
+    }
+    if (level < 0) {
+      level = 0;
+    } else if (level > 4) {
+      level = 4;
+    }
+    this.severityThreshold = level;
+    this.log = logging.logSync(pjson.name);
   }
-  return LEVEL_NAMES[level];
+
+  debug(...args: any[]) {
+    if (this.severityThreshold > 3) {
+      this.log.debug(this.log.entry(this.convertToMessage(args)));
+    }
+  }
+
+  info(...args: any[]) {
+    if (this.severityThreshold > 2) {
+      this.log.info(this.log.entry(this.convertToMessage(args)));
+    }
+  }
+
+  warn(...args: any[]) {
+    if (this.severityThreshold > 1) {
+      this.log.warning(this.log.entry(this.convertToMessage(args)));
+    }
+  }
+
+  error(...args: any[]) {
+    if (this.severityThreshold > 0) {
+      this.log.error(this.log.entry(this.convertToMessage(args)));
+    }
+  }
+
+  private convertToMessage(args: any[]): string {
+    const result = args.map(v => v + '').join(' ');
+    return result;
+  }
 }
 
-export function createLogger(level?: number) {
-  return consoleLogLevel({
-    stderr: true,
-    prefix: pjson.name,
-    level: logLevelToName(level),
-  });
+export function createLogger(level?: number): Logger {
+  return new Logger(level);
 }
