@@ -39,33 +39,32 @@ export class Logger {
     this.log = logging.logSync(pjson.name);
   }
 
-  debug(...args: any[]) {
+  debug(msg: string) {
     if (this.severityThreshold > 3) {
-      this.log.debug(this.log.entry(this.convertToMessage(args)));
+      this.log.debug(this.log.entry(this.toOneLine(msg)));
     }
   }
 
-  info(...args: any[]) {
+  info(msg: string) {
     if (this.severityThreshold > 2) {
-      this.log.info(this.log.entry(this.convertToMessage(args)));
+      this.log.info(this.log.entry(this.toOneLine(msg)));
     }
   }
 
-  warn(...args: any[]) {
+  warn(msg: string) {
     if (this.severityThreshold > 1) {
-      this.log.warning(this.log.entry(this.convertToMessage(args)));
+      this.log.warning(this.log.entry(this.toOneLine(msg)));
     }
   }
 
-  error(...args: any[]) {
+  error(msg: string) {
     if (this.severityThreshold > 0) {
-      this.log.error(this.log.entry(this.convertToMessage(args)));
+      this.log.error(this.log.entry(this.toOneLine(msg)));
     }
   }
 
-  private convertToMessage(args: any[]): string {
-    const result = args.map(v => v + '').join(' ');
-    return result;
+  private toOneLine(msg: string): string {
+    return msg.replace('\n', '\\n');
   }
 }
 
