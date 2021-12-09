@@ -19,6 +19,13 @@ import {LogSync, Logging} from '@google-cloud/logging-min';
 
 const logging = new Logging();
 
+logging.setProjectId().catch(err => {
+  console.error(`failed to set logging project id ${err}`);
+});
+logging.setDetectedResource().catch(err => {
+  console.error(`failed to discover resource metadata ${err}`);
+});
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pjson = require('../../package.json');
 
