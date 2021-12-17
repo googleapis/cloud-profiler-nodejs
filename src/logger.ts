@@ -19,6 +19,10 @@ import {LogSync, Logging} from '@google-cloud/logging-min';
 
 const logging = new Logging();
 
+// migrating from 'console-log-level' package we keep
+// min and max log levels numeric interface used there
+const [MIN_LEVEL, MAX_LEVEL] = [0, 4];
+
 logging.setProjectId().catch(err => {
   console.error(`failed to set logging project id ${err}`);
 });
@@ -37,10 +41,10 @@ export class Logger {
     if (level === undefined) {
       level = defaultConfig.logLevel;
     }
-    if (level < 0) {
-      level = 0;
-    } else if (level > 4) {
-      level = 4;
+    if (level < MIN_LEVEL) {
+      level = MIN_LEVEL;
+    } else if (level > MAX_LEVEL) {
+      level = MAX_LEVEL;
     }
     this.severityThreshold = level;
     this.log = logging.logSync(pjson.name);
@@ -71,7 +75,8 @@ export class Logger {
   }
 
   private toOneLine(msg: string): string {
-    return msg.replace('\n', '\\n');
+    const temp = msg.replace('\r\n', '\\r\\n');
+    return temp.replace('\n', '\\n');
   }
 }
 
