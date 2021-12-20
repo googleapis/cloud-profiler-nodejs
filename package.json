@@ -1,6 +1,6 @@
 {
   "name": "@google-cloud/profiler",
-  "version": "4.1.5",
+  "version": "4.1.6",
   "description": "Adds support for Cloud Profiler to Node.js applications",
   "repository": "googleapis/cloud-profiler-nodejs",
   "main": "build/src/index.js",
@@ -29,6 +29,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@google-cloud/common": "^3.0.0",
+    "@google-cloud/logging-min": "^9.6.3",
     "@types/console-log-level": "^1.4.0",
     "@types/semver": "^7.0.0",
     "console-log-level": "^1.4.0",
@@ -50,7 +51,7 @@
     "@types/node": "^16.0.0",
     "@types/pretty-ms": "^4.0.0",
     "@types/sinon": "^10.0.0",
-    "@types/tmp": "0.2.2",
+    "@types/tmp": "0.2.3",
     "c8": "^7.0.0",
     "codecov": "^3.0.0",
     "gts": "^2.0.0",
