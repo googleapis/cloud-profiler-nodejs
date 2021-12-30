@@ -6,7 +6,6 @@
 
 [![release level](https://img.shields.io/badge/release%20level-general%20availability%20%28GA%29-brightgreen.svg?style=flat)](https://cloud.google.com/terms/launch-stages)
 [![npm version](https://img.shields.io/npm/v/@google-cloud/profiler.svg)](https://www.npmjs.org/package/@google-cloud/profiler)
-[![codecov](https://img.shields.io/codecov/c/github/googleapis/cloud-profiler-nodejs/main.svg?style=flat)](https://codecov.io/gh/googleapis/cloud-profiler-nodejs)
 
 
 
