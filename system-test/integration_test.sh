@@ -45,4 +45,8 @@ go1.17.7 mod init e2e
 retry go1.17.7 get cloud.google.com/go/profiler/proftest@HEAD
 retry go1.17.7 test -c -tags=integration .
 
-./e2e.test -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO" -run_backoff_test=true
+if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
+  ./e2e.test -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO" -run_backoff_test=true
+else
+  ./e2e.test -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER" -run_backoff_test=true
+fi
