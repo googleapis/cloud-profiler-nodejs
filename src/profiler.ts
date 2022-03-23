@@ -402,7 +402,7 @@ export class Profiler extends ServiceObject {
       this.logger.warn(
         `Failed to create profile, waiting ${msToStr(
           backoff
-        )} to try again: ${err.stack}`
+        )} to try again: ${err}`
       );
       return backoff;
     }

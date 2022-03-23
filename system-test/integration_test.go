@@ -113,7 +113,7 @@ retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
 npm run compile
 
 export DEBUG_AUTH=true
-# export DETECT_GCP_RETRIES=3
+export DETECT_GCP_RETRIES=3
 {{- end }}
 
 {{ define "integration" -}}
