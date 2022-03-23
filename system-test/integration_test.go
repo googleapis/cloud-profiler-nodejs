@@ -111,6 +111,9 @@ retry npm_install node-pre-gyp
 retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
 
 npm run compile
+
+export DEBUG_AUTH=true
+# export DETECT_GCP_RETRIES=3
 {{- end }}
 
 {{ define "integration" -}}
@@ -138,7 +141,7 @@ for (( i = 0; i < {{.NumBackoffBenchmarks}}; i++ )); do
 	# A Node.js application will not exit while a CreateProfile request is
 	# inflight, so timeout is used to force the application to terminate.
 	(timeout {{.DurationSec}} sh -c \
-      'DETECT_GCP_RETRIES=3 GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js {{.DurationSec}} 1'
+      'GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js {{.DurationSec}} 1'
 	) |& while read line; do echo "benchmark $i: ${line}"; done || [ "$?" -eq "124" ] &
 done
 echo "Successfully started {{.NumBackoffBenchmarks}} benchmarks."
