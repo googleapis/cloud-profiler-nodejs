@@ -13,7 +13,6 @@
 // limitations under the License.
 
 //go:build integration && go1.7
-// +build integration,go1.7
 
 package e2e
 
