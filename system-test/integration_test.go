@@ -58,7 +58,7 @@ const (
 	// are able to wait for the backoff duration then send another request.
 	numBackoffBenchmarks = 45
 	backoffBenchDuration = 45 * time.Minute
-	backoffTestTimeout   = 15 * time.Minute
+	backoffTestTimeout   = 60 * time.Minute
 )
 
 const startupTemplate = `
@@ -112,8 +112,8 @@ retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
 
 npm run compile
 
-export DEBUG_AUTH=true
-export DETECT_GCP_RETRIES=3
+# Workaround to reduce flakiness connecting to the metadata server.
+export DETECT_GCP_RETRIES=5
 {{- end }}
 
 {{ define "integration" -}}
@@ -256,51 +256,51 @@ func TestAgentIntegration(t *testing.T) {
 		ComputeService: computeService,
 	}
 
-	// wantProfiles := []profileSummary{
-	// 	{"WALL", "busyLoop", "busybench.ts"},
-	// 	{"HEAP", "benchmark", "busybench.ts"},
-	// }
+	wantProfiles := []profileSummary{
+		{"WALL", "busyLoop", "busybench.ts"},
+		{"HEAP", "benchmark", "busybench.ts"},
+	}
 
 	testcases := []nodeGCETestCase{
-		// {
-		// 	InstanceConfig: proftest.InstanceConfig{
-		// 		ProjectID:   projectID,
-		// 		Zone:        zone,
-		// 		Name:        fmt.Sprintf("profiler-test-node10-%s", runID),
-		// 		MachineType: "n1-standard-1",
-		// 	},
-		// 	name:          fmt.Sprintf("profiler-test-node10-%s-gce", runID),
-		// 	wantProfiles:  wantProfiles,
-		// 	nodeVersion:   "10",
-		// 	timeout:       gceTestTimeout,
-		// 	benchDuration: gceBenchDuration,
-		// },
-		// {
-		// 	InstanceConfig: proftest.InstanceConfig{
-		// 		ProjectID:   projectID,
-		// 		Zone:        zone,
-		// 		Name:        fmt.Sprintf("profiler-test-node12-%s", runID),
-		// 		MachineType: "n1-standard-1",
-		// 	},
-		// 	name:          fmt.Sprintf("profiler-test-node12-%s-gce", runID),
-		// 	wantProfiles:  wantProfiles,
-		// 	nodeVersion:   "12",
-		// 	timeout:       gceTestTimeout,
-		// 	benchDuration: gceBenchDuration,
-		// },
-		// {
-		// 	InstanceConfig: proftest.InstanceConfig{
-		// 		ProjectID:   projectID,
-		// 		Zone:        zone,
-		// 		Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
-		// 		MachineType: "n1-standard-1",
-		// 	},
-		// 	name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
-		// 	wantProfiles:  wantProfiles,
-		// 	nodeVersion:   "14",
-		// 	timeout:       gceTestTimeout,
-		// 	benchDuration: gceBenchDuration,
-		// },
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-node10-%s", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:          fmt.Sprintf("profiler-test-node10-%s-gce", runID),
+			wantProfiles:  wantProfiles,
+			nodeVersion:   "10",
+			timeout:       gceTestTimeout,
+			benchDuration: gceBenchDuration,
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-node12-%s", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:          fmt.Sprintf("profiler-test-node12-%s-gce", runID),
+			wantProfiles:  wantProfiles,
+			nodeVersion:   "12",
+			timeout:       gceTestTimeout,
+			benchDuration: gceBenchDuration,
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
+			wantProfiles:  wantProfiles,
+			nodeVersion:   "14",
+			timeout:       gceTestTimeout,
+			benchDuration: gceBenchDuration,
+		},
 	}
 
 	if *runBackoffTest {
