@@ -253,10 +253,10 @@ func TestAgentIntegration(t *testing.T) {
 		ComputeService: computeService,
 	}
 
-	wantProfiles := []profileSummary{
-		{"WALL", "busyLoop", "busybench.ts"},
-		{"HEAP", "benchmark", "busybench.ts"},
-	}
+	// wantProfiles := []profileSummary{
+	// 	{"WALL", "busyLoop", "busybench.ts"},
+	// 	{"HEAP", "benchmark", "busybench.ts"},
+	// }
 
 	testcases := []nodeGCETestCase{
 		// {
