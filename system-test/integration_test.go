@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build integration && go1.7
 // +build integration,go1.7
 
 package e2e
@@ -57,7 +58,7 @@ const (
 	// are able to wait for the backoff duration then send another request.
 	numBackoffBenchmarks = 45
 	backoffBenchDuration = 45 * time.Minute
-	backoffTestTimeout   = 60 * time.Minute
+	backoffTestTimeout   = 15 * time.Minute
 )
 
 const startupTemplate = `
@@ -96,7 +97,7 @@ git reset --hard {{.Commit}}
 
 retry npm_install --nodedir="$NODEDIR"
 
-npm run compile 
+npm run compile
 npm pack --nodedir="$NODEDIR" >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
 PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
@@ -137,7 +138,7 @@ for (( i = 0; i < {{.NumBackoffBenchmarks}}; i++ )); do
 	# A Node.js application will not exit while a CreateProfile request is
 	# inflight, so timeout is used to force the application to terminate.
 	(timeout {{.DurationSec}} sh -c \
-      'GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js {{.DurationSec}} 1'
+      'DETECT_GCP_RETRIES=3 GCLOUD_PROFILER_LOGLEVEL=5 GAE_SERVICE={{.Service}} node --trace-warnings build/src/busybench.js {{.DurationSec}} 1'
 	) |& while read line; do echo "benchmark $i: ${line}"; done || [ "$?" -eq "124" ] &
 done
 echo "Successfully started {{.NumBackoffBenchmarks}} benchmarks."
@@ -258,45 +259,45 @@ func TestAgentIntegration(t *testing.T) {
 	}
 
 	testcases := []nodeGCETestCase{
-		{
-			InstanceConfig: proftest.InstanceConfig{
-				ProjectID:   projectID,
-				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node10-%s", runID),
-				MachineType: "n1-standard-1",
-			},
-			name:          fmt.Sprintf("profiler-test-node10-%s-gce", runID),
-			wantProfiles:  wantProfiles,
-			nodeVersion:   "10",
-			timeout:       gceTestTimeout,
-			benchDuration: gceBenchDuration,
-		},
-		{
-			InstanceConfig: proftest.InstanceConfig{
-				ProjectID:   projectID,
-				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node12-%s", runID),
-				MachineType: "n1-standard-1",
-			},
-			name:          fmt.Sprintf("profiler-test-node12-%s-gce", runID),
-			wantProfiles:  wantProfiles,
-			nodeVersion:   "12",
-			timeout:       gceTestTimeout,
-			benchDuration: gceBenchDuration,
-		},
-		{
-			InstanceConfig: proftest.InstanceConfig{
-				ProjectID:   projectID,
-				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
-				MachineType: "n1-standard-1",
-			},
-			name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
-			wantProfiles:  wantProfiles,
-			nodeVersion:   "14",
-			timeout:       gceTestTimeout,
-			benchDuration: gceBenchDuration,
-		},
+		// {
+		// 	InstanceConfig: proftest.InstanceConfig{
+		// 		ProjectID:   projectID,
+		// 		Zone:        zone,
+		// 		Name:        fmt.Sprintf("profiler-test-node10-%s", runID),
+		// 		MachineType: "n1-standard-1",
+		// 	},
+		// 	name:          fmt.Sprintf("profiler-test-node10-%s-gce", runID),
+		// 	wantProfiles:  wantProfiles,
+		// 	nodeVersion:   "10",
+		// 	timeout:       gceTestTimeout,
+		// 	benchDuration: gceBenchDuration,
+		// },
+		// {
+		// 	InstanceConfig: proftest.InstanceConfig{
+		// 		ProjectID:   projectID,
+		// 		Zone:        zone,
+		// 		Name:        fmt.Sprintf("profiler-test-node12-%s", runID),
+		// 		MachineType: "n1-standard-1",
+		// 	},
+		// 	name:          fmt.Sprintf("profiler-test-node12-%s-gce", runID),
+		// 	wantProfiles:  wantProfiles,
+		// 	nodeVersion:   "12",
+		// 	timeout:       gceTestTimeout,
+		// 	benchDuration: gceBenchDuration,
+		// },
+		// {
+		// 	InstanceConfig: proftest.InstanceConfig{
+		// 		ProjectID:   projectID,
+		// 		Zone:        zone,
+		// 		Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
+		// 		MachineType: "n1-standard-1",
+		// 	},
+		// 	name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
+		// 	wantProfiles:  wantProfiles,
+		// 	nodeVersion:   "14",
+		// 	timeout:       gceTestTimeout,
+		// 	benchDuration: gceBenchDuration,
+		// },
 	}
 
 	if *runBackoffTest {
