@@ -47,5 +47,5 @@ retry go1.17.7 test -c -tags=integration .
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
   ./e2e.test -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO" -run_backoff_test=true
 else
-  ./e2e.test -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER" -run_backoff_test=true
+  ./e2e.test -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER"
 fi
