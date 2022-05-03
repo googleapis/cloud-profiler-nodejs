@@ -10,14 +10,14 @@ jobs:
   system-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
       - run: npm install
       - run: npm run system-test
       - name: coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v2
         with:
           name: actions system-test
           fail_ci_if_error: false
