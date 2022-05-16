@@ -54,7 +54,7 @@
     "@types/tmp": "0.2.3",
     "c8": "^7.0.0",
     "codecov": "^3.0.0",
-    "gts": "^2.0.0",
+    "gts": "^3.1.0",
     "js-green-licenses": "^3.0.0",
     "jsdoc": "^3.6.2",
     "jsdoc-fresh": "^1.0.1",
