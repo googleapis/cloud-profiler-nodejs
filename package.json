@@ -60,12 +60,12 @@
     "jsdoc-fresh": "^1.0.1",
     "jsdoc-region-tag": "^1.0.2",
     "linkinator": "^2.0.0",
-    "mocha": "^8.0.0",
+    "mocha": "^9.2.2",
     "nock": "^13.0.0",
     "sinon": "^14.0.0",
     "source-map": "^0.7.0",
     "tmp": "0.2.1",
-    "typescript": "^3.8.3"
+    "typescript": "^4.6.4"
   },
   "files": [
     "build/src",
@@ -81,6 +81,6 @@
     ]
   },
   "engines": {
-    "node": ">=10.4.1"
+    "node": ">=12.0.0"
   }
 }
