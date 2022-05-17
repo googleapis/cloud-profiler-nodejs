@@ -23,22 +23,22 @@ import {Profiler} from '../src/profiler';
 
 describe('nodeVersionOkay', () => {
   it('should accept alpha versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v11.0.0-alpha.1'));
+    assert.strictEqual(true, nodeVersionOkay('v12.0.0-alpha.1'));
   });
   it('should accept beta versions', () => {
     assert.strictEqual(true, nodeVersionOkay('v12.9.10-beta.2'));
   });
   it('should accept nightly versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v11.0.0-nightly2018000000'));
+    assert.strictEqual(true, nodeVersionOkay('v12.0.0-nightly2018000000'));
   });
   it('should accept pre-release versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v11.0.0-pre'));
+    assert.strictEqual(true, nodeVersionOkay('v12.0.0-pre'));
   });
-  it('should accept v10.4.1', () => {
-    assert.strictEqual(true, nodeVersionOkay('v10.4.1'));
+  it('should accept v12.4.1', () => {
+    assert.strictEqual(true, nodeVersionOkay('v12.4.1'));
   });
-  it('should not accept v10.4.0', () => {
-    assert.strictEqual(false, nodeVersionOkay('v10.4.0'));
+  it('should not accept v12.4.0', () => {
+    assert.strictEqual(false, nodeVersionOkay('v12.4.0'));
   });
 });
 
