@@ -256,7 +256,7 @@ describe('createProfiler', () => {
       assert.fail('expected an error because invalid service was specified');
     } catch (e) {
       assert.strictEqual(
-        e.message,
+        (e as Error).message,
         'Service serviceName does not match regular expression "/^[a-z0-9]([-a-z0-9_.]{0,253}[a-z0-9])?$/"'
       );
     }
@@ -283,7 +283,7 @@ describe('createProfiler', () => {
       assert.fail('expected an error because invalid service was specified');
     } catch (e) {
       assert.strictEqual(
-        e.message,
+        (e as Error).message,
         'Project ID must be specified in the configuration'
       );
     }
@@ -335,7 +335,7 @@ describe('createProfiler', () => {
       assert.fail('expected an error because invalid service was specified');
     } catch (e) {
       assert.strictEqual(
-        e.message,
+        (e as Error).message,
         'serviceMapSearchPath is an empty array. Use disableSourceMaps ' +
           'to disable source map support instead.'
       );
