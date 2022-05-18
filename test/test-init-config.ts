@@ -20,25 +20,30 @@ import * as sinon from 'sinon';
 
 import {createProfiler, nodeVersionOkay} from '../src/index';
 import {Profiler} from '../src/profiler';
+import * as packageJson from '../package.json';
 
 describe('nodeVersionOkay', () => {
+  const version = Math.trunc(Number(packageJson.engines.node));
   it('should accept alpha versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v12.0.0-alpha.1'));
+    assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-alpha.1`));
   });
   it('should accept beta versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v12.9.10-beta.2'));
+    assert.strictEqual(true, nodeVersionOkay(`v${version}.9.10-beta.2`));
   });
   it('should accept nightly versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v12.0.0-nightly2018000000'));
+    assert.strictEqual(
+      true,
+      nodeVersionOkay(`v${version}.0.0-nightly2018000000`)
+    );
   });
   it('should accept pre-release versions', () => {
-    assert.strictEqual(true, nodeVersionOkay('v12.0.0-pre'));
+    assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-pre`));
   });
   it('should accept v12.4.1', () => {
-    assert.strictEqual(true, nodeVersionOkay('v12.4.1'));
+    assert.strictEqual(true, nodeVersionOkay(`v${version}.4.1`));
   });
   it('should not accept v11.4.0', () => {
-    assert.strictEqual(false, nodeVersionOkay('v11.4.0'));
+    assert.strictEqual(false, nodeVersionOkay(`v${version - 1}.4.0`));
   });
 });
 
