@@ -24,7 +24,8 @@ import * as packageJson from '../package.json';
 
 describe('nodeVersionOkay', () => {
   const version = Math.trunc(Number(packageJson.engines.node));
-  it('should accept alpha versions', () => {
+  it.only('should accept alpha versions', () => {
+    console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-alpha.1`));
   });
   it('should accept beta versions', () => {
