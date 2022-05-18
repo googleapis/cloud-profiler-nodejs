@@ -37,8 +37,8 @@ describe('nodeVersionOkay', () => {
   it('should accept v12.4.1', () => {
     assert.strictEqual(true, nodeVersionOkay('v12.4.1'));
   });
-  it('should not accept v12.4.0', () => {
-    assert.strictEqual(false, nodeVersionOkay('v12.4.0'));
+  it('should not accept v11.4.0', () => {
+    assert.strictEqual(false, nodeVersionOkay('v11.4.0'));
   });
 });
 
