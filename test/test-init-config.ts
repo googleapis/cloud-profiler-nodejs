@@ -25,24 +25,30 @@ import * as packageJson from '../package.json';
 describe('nodeVersionOkay', () => {
   const version = parseInt(packageJson.engines.node);
   it('should accept alpha versions', () => {
+    console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-alpha.1`));
   });
   it('should accept beta versions', () => {
+    console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.9.10-beta.2`));
   });
   it('should accept nightly versions', () => {
+    console.log(version);
     assert.strictEqual(
       true,
       nodeVersionOkay(`v${version}.0.0-nightly2018000000`)
     );
   });
   it('should accept pre-release versions', () => {
+    console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-pre`));
   });
   it('should accept v12.4.1', () => {
+    console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.4.1`));
   });
   it('should not accept v11.4.0', () => {
+    console.log(version);
     assert.strictEqual(false, nodeVersionOkay(`v${version - 1}.4.0`));
   });
 });
