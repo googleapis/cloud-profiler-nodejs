@@ -23,8 +23,9 @@ import {Profiler} from '../src/profiler';
 import * as packageJson from '../package.json';
 
 describe('nodeVersionOkay', () => {
-  const version = Math.trunc(Number(packageJson.engines.node));
+  const version = parseInt(packageJson.engines.node);
   it.only('should accept alpha versions', () => {
+    const version = packageJson.engines.node;
     console.log(version);
     assert.strictEqual(true, nodeVersionOkay(`v${version}.0.0-alpha.1`));
   });
