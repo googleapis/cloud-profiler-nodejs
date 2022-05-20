@@ -7,7 +7,7 @@
   "types": "build/src/index.d.ts",
   "scripts": {
     "test": "c8 mocha build/test/test-*.js",
-    "system-test": "cd system-test; npm link ../ && c8 --no-clean mocha build/system-test/test-*.js --timeout=60000",
+    "system-test": "cd system-test; npm link ../; npm run compile && c8 --no-clean mocha build/system-test/test-*.js --timeout=60000",
     "samples-test": "echo 'no sample tests'",
     "clean": "gts clean",
     "compile": "tsc -p . && cp -R protos build",
