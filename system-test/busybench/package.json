@@ -1,5 +1,5 @@
 {
-  "name": "samples",
+  "name": "system-test",
   "version": "0.0.0",
   "description": "",
   "main": "build/src/index.js",
