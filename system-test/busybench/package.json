@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "samples",
   "version": "0.0.0",
   "description": "",
   "main": "build/src/index.js",
@@ -20,5 +20,7 @@
     "posttest": "npm run check"
   },
   "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "@google-cloud/profiler": "^4.2.0"
+  }
 }
