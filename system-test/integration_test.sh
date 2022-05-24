@@ -25,7 +25,7 @@ export GCLOUD_TESTS_NODEJS_ZONE="us-east4-b"
 export GOOGLE_APPLICATION_CREDENTIALS="${SERVICE_KEY}"
 
 # Run test.
-cd "system-test"
+cd "system-test/busybench"
 npm install
 
 # Ensure a newer version of Go is used so it is compatible with newer libraries.
