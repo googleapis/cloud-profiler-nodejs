@@ -106,7 +106,7 @@ mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
-retry npm_install node-pre-gyp
+retry npm_install @mapbox/node-pre-gyp
 retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
 
 npm run compile
