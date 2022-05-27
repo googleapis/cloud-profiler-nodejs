@@ -26,7 +26,6 @@ export GOOGLE_APPLICATION_CREDENTIALS="${SERVICE_KEY}"
 
 # Run test.
 cd "system-test"
-npm install
 
 # Ensure a newer version of Go is used so it is compatible with newer libraries.
 # Here we install v1.17.7 which is the current version as of when this code
