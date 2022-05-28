@@ -108,6 +108,7 @@ cd "$TESTDIR/busybench"
 
 retry npm_install @mapbox/node-pre-gyp --save
 retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
+retry npm_install @google-cloud/profiler
 
 npm run compile
 
