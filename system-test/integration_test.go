@@ -105,7 +105,7 @@ TESTDIR="$HOME/test"
 mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
-npm link ../..; npm_install
+npm link ../../@google-cloud/profiler; npm_install
 
 retry npm_install @mapbox/node-pre-gyp --save
 retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
