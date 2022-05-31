@@ -95,7 +95,6 @@ git checkout pull_branch
 git reset --hard {{.Commit}}
 
 retry npm_install --nodedir="$NODEDIR"
-retry npm_install @google-cloud/profiler
 
 npm run compile
 npm pack --nodedir="$NODEDIR" >/dev/null
@@ -106,6 +105,7 @@ TESTDIR="$HOME/test"
 mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
+npm link ../; npm_install
 
 retry npm_install @mapbox/node-pre-gyp --save
 retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
