@@ -105,7 +105,6 @@ TESTDIR="$HOME/test"
 mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
-ls -a ../../cloud-profiler-nodejs
 npm link ../../cloud-profiler-nodejs; npm_install
 
 retry npm_install @mapbox/node-pre-gyp --save
