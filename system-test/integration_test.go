@@ -99,16 +99,14 @@ retry npm_install --nodedir="$NODEDIR"
 npm run compile
 npm pack --nodedir="$NODEDIR" >/dev/null
 VERSION=$(node -e "console.log(require('./package.json').version);")
-PROFILER="$HOME/cloud-profiler-nodejs/google-cloud-profiler-$VERSION.tgz"
 
 TESTDIR="$HOME/test"
 mkdir -p "$TESTDIR"
 cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
-npm link ../../cloud-profiler-nodejs; npm_install
 
 retry npm_install @mapbox/node-pre-gyp --save
-retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts
+retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts; npm link ../../cloud-profiler-nodejs
 
 npm run compile
 
