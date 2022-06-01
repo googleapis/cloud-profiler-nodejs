@@ -106,7 +106,7 @@ cp -r "system-test/busybench" "$TESTDIR"
 cd "$TESTDIR/busybench"
 
 retry npm_install @mapbox/node-pre-gyp --save
-retry npm_install --nodedir="$NODEDIR" "$PROFILER" typescript gts; npm link ../../cloud-profiler-nodejs
+retry npm_install --nodedir="$NODEDIR" typescript gts; npm link ../../cloud-profiler-nodejs
 
 npm run compile
 
