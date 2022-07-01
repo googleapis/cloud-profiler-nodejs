@@ -24,6 +24,6 @@
   },
   "devDependencies": {},
   "dependencies": {
-    "@google-cloud/profiler": "^4.2.0"
+    "@google-cloud/profiler": "^5.0.0"
   }
 }
