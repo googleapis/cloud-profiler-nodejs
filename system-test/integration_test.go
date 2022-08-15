@@ -265,12 +265,12 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node12-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:          fmt.Sprintf("profiler-test-node12-%s-gce", runID),
+			name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
 			wantProfiles:  wantProfiles,
-			nodeVersion:   "12",
+			nodeVersion:   "14",
 			timeout:       gceTestTimeout,
 			benchDuration: gceBenchDuration,
 		},
@@ -278,12 +278,25 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-node14-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-node16-%s", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:          fmt.Sprintf("profiler-test-node14-%s-gce", runID),
+			name:          fmt.Sprintf("profiler-test-node16-%s-gce", runID),
 			wantProfiles:  wantProfiles,
-			nodeVersion:   "14",
+			nodeVersion:   "16",
+			timeout:       gceTestTimeout,
+			benchDuration: gceBenchDuration,
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-node18-%s", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:          fmt.Sprintf("profiler-test-node18-%s-gce", runID),
+			wantProfiles:  wantProfiles,
+			nodeVersion:   "18",
 			timeout:       gceTestTimeout,
 			benchDuration: gceBenchDuration,
 		},
@@ -295,14 +308,14 @@ func TestAgentIntegration(t *testing.T) {
 				InstanceConfig: proftest.InstanceConfig{
 					ProjectID: projectID,
 					Zone:      zone,
-					Name:      fmt.Sprintf("profiler-backoff-test-node12-%s", runID),
+					Name:      fmt.Sprintf("profiler-backoff-test-node14-%s", runID),
 
 					// Running many copies of the benchmark requires more
 					// memory than is available on an n1-standard-1. Use a
 					// machine type with more memory for backoff test.
 					MachineType: "n1-highmem-2",
 				},
-				name:          fmt.Sprintf("profiler-backoff-test-node12-%s", runID),
+				name:          fmt.Sprintf("profiler-backoff-test-node14-%s", runID),
 				backoffTest:   true,
 				nodeVersion:   "12",
 				timeout:       backoffTestTimeout,
