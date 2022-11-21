@@ -33,7 +33,7 @@ cd "system-test"
 # Go modules might not be on for previous versions of Go, so we also have to
 # enable the module system explicitly.
 export GO111MODULE=on
-go install golang.org/dl/go1.17.7
+go install golang.org/dl/go1.17.7@latest
 go1.17.7 download
 
 # Initializing go modules allows our dependencies to install versions of their
