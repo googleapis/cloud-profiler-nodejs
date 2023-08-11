@@ -15,8 +15,8 @@ set -eo pipefail
 set -x
 
 # Install apt based deps
-apt update
-apt install -y build-essential
+apt-get update
+apt-get install -y make
 
 cd $(dirname $0)/..
 
