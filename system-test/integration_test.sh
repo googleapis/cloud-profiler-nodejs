@@ -14,6 +14,10 @@ set -eo pipefail
 # Display commands being run.
 set -x
 
+# Install apt based deps
+apt update
+apt install -y build-essential
+
 cd $(dirname $0)/..
 
 git config --global --add safe.directory /tmpfs/src/github/cloud-profiler-nodejs
@@ -49,5 +53,5 @@ retry go test -c -tags=integration .
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
   ./e2e.test -commit="$COMMIT" -branch="$BRANCH" -repo="$REPO" -run_backoff_test=true
 else
-  ./e2e.test -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER"
+  ./e2e.test -test.v -commit="$COMMIT" -pr="$KOKORO_GITHUB_PULL_REQUEST_NUMBER"
 fi
