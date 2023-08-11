@@ -14,10 +14,6 @@ set -eo pipefail
 # Display commands being run.
 set -x
 
-# Install apt based deps
-apt-get update
-apt-get install -y make
-
 cd $(dirname $0)/..
 
 git config --global --add safe.directory /tmpfs/src/github/cloud-profiler-nodejs

@@ -70,7 +70,7 @@ npm_install() {
 
 # Install git
 retry apt-get update >/dev/null
-retry apt-get -y -q install git >/dev/null
+retry apt-get -y -q install git build-essential >/dev/null
 
 # Install desired version of Node.js
 retry curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash >/dev/null
