@@ -335,7 +335,7 @@ logging in using `gcloud`.
 
 ## Samples
 
-Samples are in the [`samples/`](https://github.com/googleapis/cloud-profiler-nodejs/tree/main/samples) directory. Each sample's `README.md` has instructions for running its sample.
+Samples are in the [`samples/`](https://github.com/googleapis/cloud-profiler-nodejs/tree/main/packages/google-cloud-functions/samples) directory. Each sample's `README.md` has instructions for running its sample.
 
 | Sample                      | Source Code                       | Try it |
 | --------------------------- | --------------------------------- | ------ |
