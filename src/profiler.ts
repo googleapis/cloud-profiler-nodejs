@@ -20,12 +20,12 @@ import {
   DecorateRequestOptions,
 } from '@google-cloud/common';
 import {heap as heapProfiler, SourceMapper, time as timeProfiler} from 'pprof';
+import {perftools} from 'pprof/proto/profile';
 import * as msToStr from 'pretty-ms';
 import {promisify} from 'util';
 import * as zlib from 'zlib';
 import * as r from 'teeny-request';
 
-import {perftools} from '../protos/profile';
 import {ProfilerConfig} from './config';
 import {createLogger} from './logger';
 
@@ -197,7 +197,10 @@ async function profileBytes(p: perftools.profiles.IProfile): Promise<string> {
  * Error constructed from HTTP server response which indicates backoff.
  */
 export class BackoffResponseError extends Error {
-  constructor(message: string | undefined, readonly backoffMillis: number) {
+  constructor(
+    message: string | undefined,
+    readonly backoffMillis: number
+  ) {
     super(message);
   }
 }

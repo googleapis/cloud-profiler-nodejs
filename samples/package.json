@@ -8,7 +8,7 @@
     "test": "echo 'no test yet'"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
   "author": "Google LLC.",
   "license": "Apache-2.0",
   "dependencies": {
-    "@google-cloud/profiler": "^5.0.4"
+    "@google-cloud/profiler": "^6.0.0"
   },
   "files": [
     "*.js"

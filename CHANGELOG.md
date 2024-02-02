@@ -4,6 +4,24 @@
 
 [1]: https://www.npmjs.com/package/@google-cloud/profiler?activeTab=versions
 
+## [6.0.0](https://github.com/googleapis/cloud-profiler-nodejs/compare/v5.0.5...v6.0.0) (2023-08-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* upgrade to Node 14 ([#891](https://github.com/googleapis/cloud-profiler-nodejs/issues/891))
+
+### Miscellaneous Chores
+
+* Upgrade to Node 14 ([#891](https://github.com/googleapis/cloud-profiler-nodejs/issues/891)) ([66b7f4e](https://github.com/googleapis/cloud-profiler-nodejs/commit/66b7f4e4beeaf09e7bb1107368997bfafd2a4679))
+
+## [5.0.5](https://github.com/googleapis/cloud-profiler-nodejs/compare/v5.0.4...v5.0.5) (2023-07-24)
+
+
+### Bug Fixes
+
+* **deps:** Upgrade pprof to v3.2.1 [security] ([#885](https://github.com/googleapis/cloud-profiler-nodejs/issues/885)) ([c140fe5](https://github.com/googleapis/cloud-profiler-nodejs/commit/c140fe5bca0f07ce775fd0f10b0aae1537962a1b))
+
 ## [5.0.4](https://github.com/googleapis/cloud-profiler-nodejs/compare/v5.0.3...v5.0.4) (2023-02-09)
 
 
