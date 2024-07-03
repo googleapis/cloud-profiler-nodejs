@@ -41,7 +41,7 @@ go version
 # dependencies specified by their go.mod files. This reduces the likelihood of
 # dependencies breaking this test.
 go mod init e2e
-retry go get cloud.google.com/go/profiler/proftest@HEAD
+retry go get cloud.google.com/go/profiler@HEAD
 retry go test -c -tags=integration .
 
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
