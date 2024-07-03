@@ -42,6 +42,7 @@ go version
 # dependencies breaking this test.
 go mod init e2e
 retry go get cloud.google.com/go/profiler@HEAD
+retry go mod tidy
 retry go test -c -tags=integration .
 
 if [ "$KOKORO_GITHUB_PULL_REQUEST_NUMBER" = "" ]; then
