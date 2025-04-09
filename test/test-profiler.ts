@@ -872,6 +872,24 @@ describe('Profiler', () => {
       }
     );
     it(
+      'should return expected backoff when non-200 error and invalid server backoff' +
+        ' string specified',
+      async () => {
+        requestStub = sinon
+          .stub(common.ServiceObject.prototype, 'request')
+          .onCall(0)
+          .callsArgWith(
+            1,
+            undefined,
+            {error: {details: [{retryDelay: 'not a duration'}]}},
+            {statusCode: 409}
+          );
+        const profiler = new Profiler(testConfig);
+        const delayMillis = await profiler.collectProfile();
+        assert.strictEqual(500, delayMillis);
+      }
+    );
+    it(
       'should return backoff limit, when server specified backoff is greater' +
         ' then backoff limit',
       async () => {
