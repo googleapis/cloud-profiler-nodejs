@@ -111,6 +111,10 @@ function getServerResponseBackoff(body: object): number | undefined {
         item.retryDelay &&
         typeof item.retryDelay === 'string'
       ) {
+        // item is a RetryInfo
+        // https://github.com/googleapis/googleapis/blob/4ec607bd375cddbec6d28bc1931eab7da221e4bb/google/rpc/error_details.proto#L92
+        // and the ProtoJSON encoding of the duration will be a string of seconds with "s"
+        // suffix https://protobuf.dev/programming-guides/json
         const retryDelay: `${number}s` = item.retryDelay;
         const backoffMillis = ms(retryDelay);
         if (backoffMillis > 0) {
