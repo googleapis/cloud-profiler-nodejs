@@ -734,8 +734,12 @@ describe('Profiler', () => {
       | undefined
       | sinon.SinonStub<[DecorateRequestOptions, BodyResponseCallback], void>;
     let randomStub: sinon.SinonStub<[], number> | undefined;
+
+    const RANDOM_VALUE = 0.5;
+    // Retryer calculates expected backoff as RANDOM_VALUE * testConfig.initialBackoffMillis => 0.5 * 1000
+    const EXPECTED_BACKOFF = 500;
     before(() => {
-      randomStub = sinon.stub(Math, 'random').returns(0.5);
+      randomStub = sinon.stub(Math, 'random').returns(RANDOM_VALUE);
     });
     afterEach(() => {
       if (requestStub) {
@@ -782,7 +786,7 @@ describe('Profiler', () => {
 
         const profiler = new Profiler(testConfig);
         const delayMillis = await profiler.collectProfile();
-        assert.deepStrictEqual(500, delayMillis);
+        assert.deepStrictEqual(EXPECTED_BACKOFF, delayMillis);
       }
     );
     it('should reset backoff after success', async () => {
@@ -868,7 +872,7 @@ describe('Profiler', () => {
           );
         const profiler = new Profiler(testConfig);
         const delayMillis = await profiler.collectProfile();
-        assert.strictEqual(500, delayMillis);
+        assert.strictEqual(EXPECTED_BACKOFF, delayMillis);
       }
     );
     it(
@@ -886,7 +890,7 @@ describe('Profiler', () => {
           );
         const profiler = new Profiler(testConfig);
         const delayMillis = await profiler.collectProfile();
-        assert.strictEqual(500, delayMillis);
+        assert.strictEqual(EXPECTED_BACKOFF, delayMillis);
       }
     );
     it(
