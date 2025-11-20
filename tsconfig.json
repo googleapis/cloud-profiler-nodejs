@@ -4,7 +4,8 @@
     "rootDir": ".",
     "outDir": "build",
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/*.ts",
